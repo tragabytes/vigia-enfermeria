@@ -20,15 +20,35 @@ El workflow `daily.yml` tiene un step nuevo "Publicar JSON del dashboard en gh-p
 
 20 tests nuevos (`test_storage.py`, `test_dashboard.py`) cubren migración, persistencia del summary y los tres exports. Todos los runs de pytest son herméticos (no escriben en `docs/` ni `state/` reales).
 
-### Pendiente: HTML del dashboard
+### ~~HTML del dashboard~~ ✅ Resuelto (2026-04-25)
 
-Claude Design está iterando el visual estilo "hacker terminal / retro CRT" (especificado en el prompt enviado el 2026-04-25). Cuando llegue el HTML/CSS/JS:
+Claude Design entregó HTML/CSS/JS estilo "hacker terminal / retro CRT" con 9 secciones (hero, daily feed, historical DB, intelligence, sources, watchlist, subscribe, how it works, footer). Vive en `web/` de `main`; el workflow `daily.yml` lo copia a la raíz de `gh-pages` junto a `data/`. Live en `https://tragabytes.github.io/vigia-enfermeria/`.
 
-1. Push a la raíz de la rama `gh-pages` (no toca el directorio `data/`, ya gestionado por el workflow).
-2. Habilitar GitHub Pages: **Settings → Pages → Source = `gh-pages` / root**.
-3. El frontend hace `fetch('data/items.json')` y similares para renderizar.
+Ajustes aplicados sobre el diseño original:
+- `SOURCE_LABEL` con las keys reales del backend (snake_case) y `boam`/`metro_madrid`/`administracion_gob` añadidos.
+- `meta.json` ampliado con `sources_online`, `sources_total`, `next_run_at`, `version`, `commit` para alimentar el header.
+- `next_run_at` mostrado con día (`LUN 27/04 08:00 UTC`).
+- "vigía" con tilde en todos los textos visibles.
+- Mensaje Telegram termina con enlace al dashboard.
+- "CONTINUOUS UPTIME SINCE …" usa `meta.first_seen_at` (era hardcoded a 2022-11-25).
+- Mini-renderer de Markdown inline en el AI summary (`**bold**`, `*italic*`, `` `code` ``, saltos) — anti-XSS.
+- Eliminado el panel ACTIVITY HEATMAP + sparkline (sintético, no real).
+- Fix `dashboard.export_all`: `--maintenance` ya no degrada `sources_status.json`.
 
-Decidir: ¿commitea el HTML directamente a `gh-pages` o lo metemos en una carpeta `web/` de `main` y el workflow lo copia? Lo segundo es más editable.
+### Pendiente: hits clickables en la tabla SOURCES
+
+En la sección 05 (`SOURCES · TARGETS PROBED`) la columna **HITS** muestra el nº acumulado de hallazgos por fuente (ej. COMUNIDAD = 11). Hoy es solo informativo: no se puede pinchar para ver *cuáles* son esos 11 items.
+
+**Funcionalidad deseada:** click en una fila (o en el número de HITS) → filtra la sección 03 (`HISTORICAL DATABASE`) por esa fuente y hace scroll suave hasta ella, dejando el filtro visible en la `cmdbar`. El filtro `source: [...]` ya existe en esa cmdbar; solo hay que disparar el cambio desde JS y desplazar.
+
+Sketch técnico (frontend puro, no toca backend):
+- En `renderSources()`, añadir `data-source="{name}"` al `<tr>` y un handler `onclick` que:
+  1. Set del `<select>` `source:` al name de la fuente.
+  2. Re-render del feed historical aplicando el filtro.
+  3. `document.getElementById('historical-anchor').scrollIntoView({behavior:'smooth'})`.
+- Pista visual: cursor pointer + hover state en filas con `total_hits > 0`. Las filas a 0 hits no son clickables.
+
+Coste: ~30 líneas de JS, sin dependencias. Encaja con el "FIELD MEMO" que ya promete la cabecera de la sección.
 
 ### Pendiente: backend de suscripción Telegram
 
