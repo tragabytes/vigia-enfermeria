@@ -80,12 +80,21 @@ def extract(raw: RawItem) -> Optional[Item]:
 
     categoria = _classify(combined)
 
+    # Pasamos el texto del RawItem (truncado) al Item.extra para que el
+    # enricher (vigia/enricher.py) tenga contexto adicional sin necesidad
+    # de re-descargar el cuerpo. No se persiste en SQL — solo vive durante
+    # el run.
+    extra: dict = {}
+    if raw.text:
+        extra["raw_text"] = raw.text[:2000]
+
     return Item(
         source=raw.source,
         url=raw.url,
         titulo=raw.title,
         fecha=raw.date,
         categoria=categoria,
+        extra=extra,
     )
 
 

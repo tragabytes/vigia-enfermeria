@@ -21,6 +21,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 
+from vigia import enricher
 from vigia.config import SOURCES_ENABLED
 from vigia.extractor import extract
 from vigia.notifier import send
@@ -181,8 +182,6 @@ def main() -> None:
     logger.info("Total raw items: %d", len(raw_items_all))
 
     # --- Fase 2: Extracción (matching + clasificación) ---
-    # Punto de extensión: para añadir enricher.py insertar aquí:
-    #   matched = enricher.enrich(matched)
     matched = []
     for raw in raw_items_all:
         item = extract(raw)
@@ -206,6 +205,11 @@ def main() -> None:
     storage.close()
 
     logger.info("Nuevos (no vistos antes): %d", len(new_items))
+
+    # --- Fase 3.5: Enriquecimiento con IA (solo items nuevos, opcional) ---
+    # Si ANTHROPIC_API_KEY no está configurada, enricher.enrich() devuelve la
+    # lista intacta y el cron sigue funcionando como antes.
+    new_items = enricher.enrich(new_items)
 
     # --- Fase 4: Notificación ---
     if new_items or errors:
