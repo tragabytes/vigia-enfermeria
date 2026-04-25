@@ -1,0 +1,66 @@
+[
+  {
+    "date": "2026-04-25",
+    "commit": "8da07cf",
+    "kind": "feat",
+    "scope": "web",
+    "title": "FIELD NOTES y diagrama actualizados con datos reales",
+    "body": "- renderHowItWorks() lee DATA.changelog en lugar del array hardcoded."
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "6d87cf2",
+    "kind": "feat",
+    "scope": "dashboard",
+    "title": "FIELD NOTES dinámico desde git log",
+    "body": "vigia/dashboard.py:"
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "746d681",
+    "kind": "fix",
+    "scope": "web",
+    "title": "sección 07 honesta — bot real, sin promesas vacías",
+    "body": "La sección \"Subscribe · Telegram Enrollment\" prometía funcionalidad que"
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "1886944",
+    "kind": "feat",
+    "scope": "web",
+    "title": "consumir targets.json en lugar de WATCHLIST hardcoded",
+    "body": "Adaptaciones del frontend para usar la nueva fuente de verdad backend:"
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "84e7fe8",
+    "kind": "feat",
+    "scope": "dashboard",
+    "title": "watchlist real con hits y ACTIVE/COLD calculados de la BD",
+    "body": "Sustituye el array WATCHLIST hardcoded del frontend por una lista real"
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "570f5e0",
+    "kind": "fix",
+    "scope": "dashboard",
+    "title": "no degradar sources_status.json cuando no hay probe_results",
+    "body": "El run de --maintenance llamaba a export_all sin probe_results y"
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "5a3a36e",
+    "kind": "feat",
+    "scope": "extractor",
+    "title": "clasificar 'estabilización' y 'acceso libre' como oposición",
+    "body": "Dos casos reales detectados en sede.comunidad.madrid quedaban en 'otro':"
+  },
+  {
+    "date": "2026-04-25",
+    "commit": "e43f290",
+    "kind": "refactor",
+    "scope": "web",
+    "title": "eliminar sección ACTIVITY HEATMAP + sparkline",
+    "body": "Quita el panel.full de la sección 04 (Intelligence) — el heatmap mostraba"
+  }
+]

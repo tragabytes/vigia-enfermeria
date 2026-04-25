@@ -32,18 +32,22 @@ const CAT_COLOR = {
   'otro':         '#888888',
 };
 
-let DATA = { items: [], sources: [], meta: {}, targets: [] };
+let DATA = { items: [], sources: [], meta: {}, targets: [], changelog: [] };
 
 /* ---- bootstrap ------------------------------------------------------- */
 async function loadData() {
   const items   = await fetch('data/items.json').then(r => r.json());
   const sources = await fetch('data/sources_status.json').then(r => r.json());
   const meta    = await fetch('data/meta.json').then(r => r.json());
-  // targets.json es opcional (versión vieja del backend no lo genera).
+  // targets.json y changelog.json son opcionales (versión vieja del backend
+  // no los genera). Fallback a [] para no romper el render.
   const targets = await fetch('data/targets.json')
     .then(r => r.ok ? r.json() : [])
     .catch(() => []);
-  DATA = { items, sources, meta, targets };
+  const changelog = await fetch('data/changelog.json')
+    .then(r => r.ok ? r.json() : [])
+    .catch(() => []);
+  DATA = { items, sources, meta, targets, changelog };
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -650,15 +654,15 @@ function renderHowItWorks() {
 <span class="dim">│</span>  │  <span class="fg">8 SOURCES</span>   │───▶│  <span class="fg">EXTRACTOR</span>   │───▶│  <span class="fg">ENRICHER</span>    │
 <span class="dim">│</span>  │  BOE / BOCM  │    │  regex       │    │  claude-     │
 <span class="dim">│</span>  │  CMA / AYTO  │    │  strong+weak │    │  haiku-4.5   │
-<span class="dim">│</span>  │  CANAL CODEM │    │  hash dedupe │    │  summary +   │
-<span class="dim">│</span>  │  DATOS BOAM  │    │              │    │  category    │
+<span class="dim">│</span>  │  CANAL CODEM │    │  hash dedupe │    │  summary     │
+<span class="dim">│</span>  │  DATOS BOAM  │    │  + classify  │    │  generation  │
 <span class="dim">│</span>  └──────────────┘    └──────────────┘    └──────────────┘
 <span class="dim">│</span>          │                                          │
 <span class="dim">│</span>          ▼                                          ▼
 <span class="dim">│</span>  ┌──────────────┐                          ┌──────────────┐
 <span class="dim">│</span>  │  <span class="amb">SQLite</span>      │◀─────────────────────────│  <span class="fg">DISPATCH</span>    │
 <span class="dim">│</span>  │  vigía.db    │  store hits + summaries  │  Telegram    │──▶ subscribers
-<span class="dim">│</span>  │  WAL mode    │                          │  bot         │
+<span class="dim">│</span>  │  rama state  │                          │  bot         │
 <span class="dim">│</span>  └──────────────┘                          └──────────────┘
 <span class="dim">│</span>          │
 <span class="dim">│</span>          └──▶ <span class="fg">EXPORT</span> ──▶ data/*.json ──▶ git push gh-pages ──▶ <span class="amb">YOU ARE HERE</span>
@@ -666,29 +670,23 @@ function renderHowItWorks() {
 <span class="dim">└────────────────────────────────────────────────────────────┘</span>`;
   $('#diagram').innerHTML = diag;
 
-  $('#changelog').innerHTML = `
-    <h4>// FIELD NOTES</h4>
-    <div class="entry">
-      <span class="stamp">2026-04-25 · v0.7.3</span>
-      <div class="title">BOE 400 → fixed Accept header</div>
-      <p>BOE diario API silently 400s without <code>Accept: application/json</code>. Took 2 days to spot — the response body said "OK" with an empty XML.</p>
-    </div>
-    <div class="entry">
-      <span class="stamp">2026-04-19 · v0.7.2</span>
-      <div class="title">BOAM geo-block confirmed</div>
-      <p>403 from every Azure-region runner. Confirmed via cf-worker proxy too. Switched coverage to BOE 2B + datos.madrid.es; weekly manual fallback scheduled.</p>
-    </div>
-    <div class="entry">
-      <span class="stamp">2026-03-04 · v0.7.0</span>
-      <div class="title">Strong+weak match scoring</div>
-      <p>Added a two-pass extractor — strong on <code>"enfermería del trabajo"</code>, weak on <code>"salud laboral|prevención|enfermer*"</code> with title-bigram filter. False positive rate dropped 12% → 1.8%.</p>
-    </div>
-    <div class="entry">
-      <span class="stamp">2026-02-11 · v0.6.4</span>
-      <div class="title">Haiku migration</div>
-      <p>Moved enrichment from sonnet-3.5 to haiku-4.5. Same summary quality, 8× cheaper. Median enrich latency 1.4s.</p>
-    </div>
-  `;
+  const entries = DATA.changelog || [];
+  const repoUrl = 'https://github.com/tragabytes/vigia-enfermeria';
+  const entriesHTML = entries.length
+    ? entries.map(e => {
+        const scope = e.scope ? `<span class="muted">[${escapeHTML(e.scope)}]</span> ` : '';
+        const link = `<a href="${repoUrl}/commit/${encodeURIComponent(e.commit)}" target="_blank" rel="noopener">${escapeHTML(e.commit)}</a>`;
+        const body = e.body ? `<p>${escapeHTML(e.body)}</p>` : '';
+        return `
+          <div class="entry">
+            <span class="stamp">${escapeHTML(e.date)} · ${link}</span>
+            <div class="title">${scope}${escapeHTML(e.title)}</div>
+            ${body}
+          </div>`;
+      }).join('')
+    : '<p class="muted">No commits to show — fetch-depth limited or git unavailable in this run.</p>';
+
+  $('#changelog').innerHTML = `<h4>// FIELD NOTES</h4>${entriesHTML}`;
 }
 
 /* ---- 9. Footer ------------------------------------------------------- */

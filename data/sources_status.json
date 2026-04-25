@@ -5,7 +5,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -14,7 +14,7 @@
     "status": "error",
     "code": 403,
     "detail": "Forbidden",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "error",
     "code": 403,
     "detail": "Forbidden",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -41,7 +41,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -50,7 +50,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -59,7 +59,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   },
   {
@@ -68,7 +68,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 11
   },
   {
@@ -77,7 +77,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 1
   },
   {
@@ -86,7 +86,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-04-25T21:12:23.480990+00:00",
+    "last_probe_at": "2026-04-25T21:22:47.879380+00:00",
     "total_hits": 0
   }
 ]
