@@ -834,21 +834,38 @@ footer.foot .commit { color: var(--amber); }
   .subscribe-wrap { grid-template-columns: 1fr; }
   .howitworks { grid-template-columns: 1fr; }
   .card .head {
-    grid-template-columns: 1fr 1fr 24px;
+    grid-template-columns: 1fr auto;
     grid-template-areas:
-      "ts ts chev"
-      "src cat chev"
-      "title title title";
-    gap: 8px;
+      "ts chev"
+      "src src"
+      "cat cat"
+      "title title";
+    gap: 6px;
   }
   .card .head .ts { grid-area: ts; }
-  .card .head .badge.src { grid-area: src; }
-  .card .head .badge.cat { grid-area: cat; }
+  .card .head .badge.src { grid-area: src; justify-self: start; }
+  .card .head .badge.cat { grid-area: cat; justify-self: start; }
   .card .head .title { grid-area: title; -webkit-line-clamp: 3; }
   .card .head .chev { grid-area: chev; }
+  /* En pantallas estrechas, "AYUNTAMIENTO MADRID" o "COMUNIDAD" se cortaban
+     por el letter-spacing y los 110px reservados. Aflojamos el badge para
+     que entre cualquier label sin truncado. */
+  .card .head .badge {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+  }
+
   table.term td.col-cat { display: none; }
+
+  /* Cmdbar: cada filtro en su propia línea (ancho completo). El filtro
+     date: tenía dos inputs de 130px hardcoded en el JS que sumaban 260px
+     y desbordaban; los reducimos vía !important sin tocar el inline. */
   .cmdbar { gap: 6px; }
-  .cmdbar .seg input.q { width: 140px; }
+  .cmdbar .seg { width: 100%; flex-wrap: wrap; }
+  .cmdbar .seg input.q { flex: 1 1 auto; min-width: 0; width: auto; }
+  .cmdbar .seg input[type="date"] { width: 110px !important; min-width: 0; }
+  .cmdbar .clear { margin-left: 0; }
 }
 
 /* High-density (toggle) */

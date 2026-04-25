@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-25",
+    "commit": "1300d13",
+    "kind": "fix",
+    "scope": "web",
+    "title": "badges del feed y filtros de fecha no se desbordan en móvil",
+    "body": "Dos arreglos al media query (max-width: 900px):"
+  },
+  {
+    "date": "2026-04-25",
     "commit": "e26c3da",
     "kind": "fix",
     "scope": "web",
@@ -22,13 +30,5 @@
     "scope": "dashboard",
     "title": "FIELD NOTES dinámico desde git log",
     "body": "vigia/dashboard.py:"
-  },
-  {
-    "date": "2026-04-25",
-    "commit": "746d681",
-    "kind": "fix",
-    "scope": "web",
-    "title": "sección 07 honesta — bot real, sin promesas vacías",
-    "body": "La sección \"Subscribe · Telegram Enrollment\" prometía funcionalidad que"
   }
 ]
