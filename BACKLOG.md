@@ -10,28 +10,22 @@ Pendientes para retomar más adelante. Última actualización: 2026-04-25.
 
 Implementado con la opción A del plan: atributo `self.last_errors` en la clase base `Source`, las 7 fuentes lo rellenan junto a su `logger.warning(...)`, `_run_source()` lo devuelve como tercer elemento de la tupla y `main.py` lo extiende a la lista global `errors`. 9 tests nuevos en `test_main_errors.py` cubren el comportamiento. Validado end-to-end con un run real: BOAM y Comunidad Madrid caídos generaron mensaje en Telegram.
 
-### 2. BOAM devuelve 403 desde GitHub Actions
+### 2. BOAM y Ayuntamiento Madrid bloqueados por geolocalización (parcial)
 
-`https://www.madrid.es/boam` redirige internamente a `https://sede.madrid.es/portal/site/tramites/menuitem...` y este devuelve 403 al runner de Actions. En local (España) funcionaba.
+**Investigado el 2026-04-25, commit `b4e8c36`.** El primer 403 que veíamos era por User-Agent (`vigia-enfermeria/1.0...` filtrado): cambiando el UA global a uno de Firefox, **en local desde España BOAM funciona** (descarga PDF del sumario y parsea). Pero desde **GitHub Actions sigue dando 403**, y ahora la URL que falla es `https://www.madrid.es/boam` directamente, antes del redirect a `sede.madrid.es`.
 
-**Hipótesis:**
-- Geo-bloqueo (los runners de Azure están en US/EU, posiblemente bloquean IPs no-españolas).
-- WAF que bloquea por User-Agent (probar UAs más estándar tipo Firefox).
-- Cookies/session que se piden tras el primer GET.
+Conclusión: `madrid.es` filtra por **IP + UA combinados**. Solo desde IP española con UA de navegador real deja pasar. El runner de GHA (Azure US/EU) está fuera del rango admitido. La fuente `ayuntamiento_madrid` (que también pega a `madrid.es/portales/...`) tiene exactamente el mismo síntoma.
 
-**Plan de investigación:**
-1. Ejecutar `curl -v` con varios UAs desde un VPS europeo.
-2. Si es geo-bloqueo: usar la URL XML directa del BOAM si existe (igual que hace `bocm.py` que tiene `BOCM_XML_PATTERN`).
-3. Si es UA: cambiar el `_default_headers()` solo de esta fuente.
+**Impacto real:** bajo. BOAM publica las convocatorias del Ayuntamiento de Madrid, que en su mayoría también aparecen en BOE sección 2B (Administración Local). La cobertura primaria sigue siendo BOE + BOCM + Comunidad Madrid.
 
-### 3. Comunidad de Madrid `/buscador` da 404
+**Opciones de futuro (ordenadas por viabilidad):**
+1. **Self-host del cron en VPS español** (Hetzner Helsinki ~€4/mes, Contabo ES, OVH FR; o Raspberry Pi en casa). Requiere migrar el workflow a un cron de sistema + decidir cómo persistir la BD (igual que ahora pero local).
+2. **Investigar URL alternativa pública del BOAM** (¿RSS, JSON, endpoint XML como BOCM?). Sin garantía de que exista. **Vale la pena explorar antes de la opción 1.**
+3. **Proxy europeo gratis** — descartado: poco fiable, infringe TOS de muchos servicios.
 
-URL que probamos durante la investigación: `https://sede.comunidad.madrid/buscador?tipo=7&...`. En el run del 2026-04-25 devuelve 404.
+### ~~3. Comunidad de Madrid `/buscador` da 404~~ ✅ Resuelto colateralmente (2026-04-25, commit `b4e8c36`)
 
-**Plan:**
-1. Visitar `https://sede.comunidad.madrid/empleo-publico` y ver a qué buscador enlaza ahora.
-2. Probar si el portal Drupal ha cambiado a `/empleo` o a un dominio nuevo (Comunidad de Madrid migra portales con frecuencia).
-3. Replantear el parser con la URL actualizada.
+Era el mismo problema que el bug #2: el portal `sede.comunidad.madrid` también filtraba el UA `vigia-enfermeria/1.0`. Al cambiar al UA de Firefox, el 404 desapareció. En el run de validación pasó de `0 raw items, 2 errores` a `93 raw items, 0 errores` y disparó **11 hallazgos reales** (primer "find" del sistema).
 
 ---
 
