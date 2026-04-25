@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-25",
+    "commit": "e26c3da",
+    "kind": "fix",
+    "scope": "web",
+    "title": "footer muestra año actual en lugar de '2022—2026' inventado",
+    "body": ""
+  },
+  {
+    "date": "2026-04-25",
     "commit": "8da07cf",
     "kind": "feat",
     "scope": "web",
@@ -22,13 +30,5 @@
     "scope": "web",
     "title": "sección 07 honesta — bot real, sin promesas vacías",
     "body": "La sección \"Subscribe · Telegram Enrollment\" prometía funcionalidad que"
-  },
-  {
-    "date": "2026-04-25",
-    "commit": "1886944",
-    "kind": "feat",
-    "scope": "web",
-    "title": "consumir targets.json en lugar de WATCHLIST hardcoded",
-    "body": "Adaptaciones del frontend para usar la nueva fuente de verdad backend:"
   }
 ]
