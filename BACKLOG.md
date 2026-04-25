@@ -66,41 +66,22 @@ Pendiente como mejora futura: parsers dedicados de portales propios con feed/API
 
 ---
 
-## 🤖 Capa de enriquecimiento con IA (Sección 10 del PLAN.md)
+## ~~🤖 Capa de enriquecimiento con IA~~ ✅ Resuelto (2026-04-25, commit `81b0b6d`)
 
-Punto de extensión ya preparado en `vigia/main.py`:
+Implementado `vigia/enricher.py` con Claude **Haiku 4.5** vía SDK oficial Anthropic. El enricher se invoca tras `filter_new` (solo enriquece items realmente nuevos para no pagar tokens en duplicados) y rellena `Item.summary`, que `notifier.py` ya mostraba si existía.
 
-```python
-# Punto de extensión: para añadir enricher.py insertar aquí:
-#   matched = enricher.enrich(matched)
-matched = []
-for raw in raw_items_all:
-    item = extract(raw)
-    ...
-```
+**Diseño:**
+- Graceful degradation: si `ANTHROPIC_API_KEY` no está configurada, `enrich()` devuelve la lista intacta.
+- Tolerancia a fallos: si una llamada concreta falla, ese item queda sin summary y los demás siguen.
+- Sin streaming, sin thinking, sin caching (tarea acotada de ~250 tokens output).
+- El extractor ahora copia `raw.text` (truncado a 2KB) al `Item.extra["raw_text"]` para que el enricher tenga contexto sin re-descargar nada.
+- 7 tests con mocks del SDK Anthropic en `test_enricher.py`.
 
-Y en `vigia/storage.py`:
+**Validado localmente** con la key real sobre 2 items reales (OEP 2025 Ayto Madrid + concurso traslados Comunidad Madrid). Resúmenes generados son concisos, factuales (no inventan datos), y cubren plazas/categoría/organismo/turno cuando aparecen en el contenido.
 
-```python
-@dataclass
-class Item:
-    ...
-    summary: Optional[str] = None      # relleno por enricher.py (futuro)
-    extra: dict = None                 # metadatos enriquecidos (futuro)
-```
+**Coste estimado:** ~$5/año al volumen actual (12 hallazgos/día × 600 tokens × 365 días con Haiku 4.5). Anthropic da $5 de crédito gratis a usuarios nuevos.
 
-`vigia/notifier.py` ya muestra el `summary` si existe (`if item.summary: lines.append(...)`), así que basta con añadir `enricher.py` y una línea en `main.py` para activarlo.
-
-**Funcionalidad propuesta:**
-- Para cada `Item` con match, enviar al LLM (Claude Haiku, Sonnet o GPT-4o-mini) el título + URL + extracto del PDF/HTML.
-- LLM extrae: número de plazas, requisitos clave (titulación), fecha límite de inscripción, organismo.
-- Devuelve un resumen de 2-3 líneas en español que se inyecta en `Item.summary`.
-
-**Decisiones a tomar:**
-- ¿Qué proveedor (Anthropic, OpenAI, OpenRouter)? Coste estimado: <$0.01/día con Haiku.
-- ¿API key como nuevo Secret de GitHub Actions?
-- ¿Filtros de calidad? (No enriquecer si el extracto < N caracteres, etc.)
-- ¿Caché del enriquecimiento por `id_hash` para no re-procesar al re-ejecutar?
+**Validación end-to-end por Telegram:** pendiente de la próxima novedad real (la BD ya tenía los 12 hallazgos previos).
 
 ---
 
