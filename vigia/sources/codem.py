@@ -43,12 +43,14 @@ class CODEMSource(Source):
             resp.raise_for_status()
         except Exception as exc:
             logger.warning("CODEM RSS error: %s", exc)
+            self.last_errors.append(str(exc))
             return []
 
         try:
             root = ET.fromstring(resp.content)
         except ET.ParseError as exc:
             logger.error("CODEM: error parseando RSS: %s", exc)
+            self.last_errors.append(f"parse error: {exc}")
             return []
 
         items: list[RawItem] = []

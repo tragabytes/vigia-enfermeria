@@ -46,6 +46,7 @@ class AyuntamientoMadridSource(Source):
             resp.raise_for_status()
         except Exception as exc:
             logger.warning("Ayuntamiento Madrid error: %s", exc)
+            self.last_errors.append(str(exc))
             return []
 
         soup = BeautifulSoup(resp.text, "lxml")

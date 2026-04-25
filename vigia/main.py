@@ -59,9 +59,18 @@ def _default_since() -> date:
     return today - timedelta(days=1)
 
 
-def _run_source(source_cls, since_date: date) -> tuple[str, list]:
+def _run_source(source_cls, since_date: date) -> tuple[str, list, list[str]]:
+    """
+    Ejecuta una fuente en un thread y devuelve (nombre, items, errores).
+
+    Los errores son los acumulados en `source.last_errors` durante `fetch()`:
+    fallos parciales (HTTP 4xx/5xx, parsing) que la fuente captura sin
+    abortar pero que main.py debe reportar al notifier para que sean
+    visibles en Telegram sin tener que mirar los logs de Actions.
+    """
     source = source_cls()
-    return source.name, source.fetch(since_date)
+    items = source.fetch(since_date)
+    return source.name, items, list(source.last_errors)
 
 
 def main() -> None:
@@ -108,10 +117,18 @@ def main() -> None:
         for future in as_completed(futures):
             source_name = futures[future]
             try:
-                name, items = future.result()
-                logger.info("%-22s %d raw items", name, len(items))
+                name, items, src_errors = future.result()
+                logger.info(
+                    "%-22s %d raw items, %d errores",
+                    name, len(items), len(src_errors),
+                )
                 raw_items_all.extend(items)
+                # Los errores no bloqueantes capturados dentro de la fuente
+                # (HTTP 4xx/5xx puntuales, parsing) suben al notifier.
+                for err in src_errors:
+                    errors.append((name, err))
             except Exception as exc:
+                # Excepción inesperada que rompió por completo la fuente.
                 logger.error("Fuente %s falló: %s", source_name, exc)
                 errors.append((source_name, str(exc)))
 

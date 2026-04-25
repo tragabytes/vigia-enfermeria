@@ -45,14 +45,21 @@ class Source(ABC):
 
     def __init__(self) -> None:
         self.logger = logging.getLogger(f"vigia.sources.{self.name}")
+        # Errores no bloqueantes detectados durante fetch() (HTTP 4xx/5xx,
+        # parsing fallido, etc.). main.py los recoge tras la ejecución y los
+        # incluye en la notificación de Telegram para que las caídas de
+        # fuentes sean visibles sin tener que mirar los logs de Actions.
+        self.last_errors: list[str] = []
 
     @abstractmethod
     def fetch(self, since_date: date) -> list[RawItem]:
         """
         Obtiene ítems publicados a partir de `since_date`.
 
-        Debe ser tolerante a fallos: si la fuente no responde, lanzar una
-        excepción (no silenciarla) para que main.py la capture y reporte.
+        Debe ser tolerante a fallos: si una operación parcial falla, capturarla
+        con `try/except`, hacer `logger.warning(...)` Y añadir un mensaje a
+        `self.last_errors` para que sea reportado en la notificación. Solo
+        levantar la excepción si el fallo impide cualquier extracción útil.
         """
 
     def _default_headers(self) -> dict[str, str]:

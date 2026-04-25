@@ -40,6 +40,7 @@ class CanalIsabelIISource(Source):
             resp.raise_for_status()
         except Exception as exc:
             logger.warning("Canal Isabel II error: %s", exc)
+            self.last_errors.append(str(exc))
             return []
 
         soup = BeautifulSoup(resp.text, "lxml")

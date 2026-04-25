@@ -72,6 +72,7 @@ class BOCMSource(Source):
                 items.extend(self._fetch_day(target))
             except Exception as exc:
                 logger.warning("BOCM %s error: %s", target, exc)
+                self.last_errors.append(f"{target}: {exc}")
         return items
 
     def _fetch_day(self, target: date) -> list[RawItem]:

@@ -71,6 +71,7 @@ class ComunidadMadridSource(Source):
                 resp.raise_for_status()
             except Exception as exc:
                 logger.warning("Comunidad Madrid error (term=%s page=%d): %s", term, page, exc)
+                self.last_errors.append(f"term={term} page={page}: {exc}")
                 break
 
             soup = BeautifulSoup(resp.text, "lxml")
