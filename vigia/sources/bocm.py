@@ -35,16 +35,37 @@ BOCM_XML_PATTERN = (
     "BOCM-{year}{month:02d}{day:02d}{num:03d}.xml"
 )
 
-# Organismos sanitarios relevantes (minúsculas sin tildes)
+# Organismos relevantes que justifican descargar el PDF de la disposición
+# para buscar la especialidad en el cuerpo del documento (minúsculas sin tildes).
+# Ampliado para cubrir empresas públicas con servicio de prevención propio
+# (FNMT, EMT, Canal de Isabel II, Metro Madrid) y ayuntamientos grandes de
+# la Comunidad de Madrid donde puede haber Enfermería del Trabajo.
 HEALTH_ORGS = [
+    # Sanidad / SERMAS
     "consejeria de sanidad",
     "sermas",
     "servicio madrileno de salud",
     "hospital",
     "gerencia",
     "agencia sanitaria",
+    # Empresas públicas con servicio de prevención propio
     "canal de isabel",
     "metro de madrid",
+    "casa de la moneda",
+    "fabrica nacional de moneda",
+    "fnmt",
+    "empresa municipal de transportes",
+    "emt",
+    # Grandes ayuntamientos de la Comunidad de Madrid (>100k hab.)
+    "ayuntamiento de mostoles",
+    "ayuntamiento de alcala de henares",
+    "ayuntamiento de fuenlabrada",
+    "ayuntamiento de leganes",
+    "ayuntamiento de getafe",
+    "ayuntamiento de alcorcon",
+    "ayuntamiento de torrejon",
+    "ayuntamiento de parla",
+    "ayuntamiento de alcobendas",
 ]
 
 # Palabras en el título que justifican descargar el PDF

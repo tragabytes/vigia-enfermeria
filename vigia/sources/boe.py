@@ -29,7 +29,11 @@ BOE_SUMARIO_URL = "https://boe.es/datosabiertos/api/boe/sumario/{fecha}"
 # Secciones que pueden contener convocatorias de oposiciones/concursos
 SECTIONS_TO_FETCH_BODY = {"2B", "2A", "3"}
 
-# Departamentos de administración local o sanitaria (en minúsculas, sin tildes)
+# Departamentos relevantes (minúsculas, sin tildes) que justifican descargar
+# el HTML del cuerpo para buscar la especialidad. La cobertura de
+# "administracion local" ya engloba los ayuntamientos grandes de Madrid
+# (Móstoles, Alcalá, Fuenlabrada…). Se añaden empresas públicas con servicio
+# de prevención propio que pueden no caer bajo esa etiqueta.
 DEPT_KEYWORDS_FOR_BODY = [
     "administracion local",
     "comunidades autonomas",
@@ -42,6 +46,12 @@ DEPT_KEYWORDS_FOR_BODY = [
     "agencia sanitaria",
     "mutua",
     "prevencion",
+    # Empresas públicas con servicio de prevención propio
+    "fnmt",
+    "casa de la moneda",
+    "fabrica nacional de moneda",
+    "emt",
+    "empresa municipal de transportes",
 ]
 
 # Para el match rápido en título antes de descargar body
