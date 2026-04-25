@@ -195,6 +195,70 @@ class TestMetaJson:
         assert meta["days_watching"] == 0
         assert meta["first_seen_at"] is None
 
+    def test_meta_incluye_build_info(self, tmp_path, monkeypatch):
+        """version y commit deben estar siempre presentes en meta.json."""
+        monkeypatch.setenv("GITHUB_SHA", "abcdef1234567890abcdef")
+        storage = Storage(db_path=tmp_path / "seen.db")
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        meta = json.loads((tmp_path / "out" / "meta.json").read_text(encoding="utf-8"))
+        assert meta["version"]  # __version__ no debe estar vacío
+        assert meta["commit"] == "abcdef1"  # primeros 7 chars
+
+    def test_commit_es_local_si_no_hay_github_sha(self, tmp_path, monkeypatch):
+        monkeypatch.delenv("GITHUB_SHA", raising=False)
+        storage = Storage(db_path=tmp_path / "seen.db")
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        meta = json.loads((tmp_path / "out" / "meta.json").read_text(encoding="utf-8"))
+        assert meta["commit"] == "local"
+
+    def test_meta_incluye_sources_online_y_total(self, tmp_path):
+        storage = Storage(db_path=tmp_path / "seen.db")
+        _seed(storage, [_item("a", source="boe")])
+        probe = [
+            {"name": "boe", "url": "x", "status": "ok", "code": 200, "detail": ""},
+            {"name": "bocm", "url": "x", "status": "ok", "code": 200, "detail": ""},
+            {"name": "boam", "url": "x", "status": "error", "code": 403, "detail": "geo"},
+        ]
+        dashboard.export_all(storage, tmp_path / "out", probe_results=probe)
+        storage.close()
+
+        meta = json.loads((tmp_path / "out" / "meta.json").read_text(encoding="utf-8"))
+        assert meta["sources_online"] == 2  # boe + bocm
+        assert meta["sources_total"] >= 3  # al menos las 3 del probe
+
+    def test_next_run_at_es_dia_laborable_a_las_8utc(self, tmp_path):
+        from datetime import datetime, timezone
+        # Lunes 2026-04-27 a las 12:00 UTC: próximo run es martes 28 a las 08:00.
+        now = datetime(2026, 4, 27, 12, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        meta = json.loads((tmp_path / "out" / "meta.json").read_text(encoding="utf-8"))
+        next_run = datetime.fromisoformat(meta["next_run_at"])
+        assert next_run.hour == 8
+        assert next_run.minute == 0
+        assert next_run.weekday() <= 4  # L-V
+
+    def test_next_run_at_salta_finde(self, tmp_path):
+        """Viernes 14:00 UTC → siguiente run es lunes 08:00 UTC."""
+        from datetime import datetime, timezone
+        # 2026-04-24 es viernes
+        now = datetime(2026, 4, 24, 14, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        meta = json.loads((tmp_path / "out" / "meta.json").read_text(encoding="utf-8"))
+        next_run = datetime.fromisoformat(meta["next_run_at"])
+        # Debe ser lunes 27
+        assert next_run.day == 27
+        assert next_run.weekday() == 0
+
 
 class TestExportAll:
     def test_genera_los_tres_ficheros(self, tmp_path):

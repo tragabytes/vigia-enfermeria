@@ -18,10 +18,13 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import date, datetime, timezone
+import os
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
+from vigia import __version__
+from vigia.config import SOURCES_ENABLED
 from vigia.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -54,7 +57,7 @@ def export_all(
 
     items_payload = _items_payload(storage)
     sources_payload = _sources_payload(storage, probe_results, now)
-    meta_payload = _meta_payload(storage, now)
+    meta_payload = _meta_payload(storage, sources_payload, now)
 
     _write_json(items_path, items_payload)
     _write_json(sources_path, sources_payload)
@@ -158,8 +161,12 @@ def _sources_payload(
     return rows
 
 
-def _meta_payload(storage: Storage, now: datetime) -> dict:
-    """Métricas globales: total, hoy, días vigilando, último run."""
+def _meta_payload(
+    storage: Storage,
+    sources_payload: list[dict],
+    now: datetime,
+) -> dict:
+    """Métricas globales: contadores, ventana temporal, build info."""
     total = storage._conn.execute(
         "SELECT COUNT(*) FROM items"
     ).fetchone()[0]
@@ -184,13 +191,19 @@ def _meta_payload(storage: Storage, now: datetime) -> dict:
     if first_seen_min:
         try:
             first_dt = datetime.fromisoformat(first_seen_min)
-            # Si el datetime guardado no tiene tz, asumimos UTC para que el
-            # delta sea consistente con `now`.
             if first_dt.tzinfo is None:
                 first_dt = first_dt.replace(tzinfo=timezone.utc)
             days_watching = max(0, (now - first_dt).days)
         except ValueError:
             days_watching = 0
+
+    # Salud de fuentes: solo cuentan las que tienen estado conocido (las
+    # "unknown" son fuentes con hits en BD pero sin probe en este run, y
+    # por tanto no aportan señal de vivacidad).
+    sources_total = max(len(SOURCES_ENABLED), len(sources_payload))
+    sources_online = sum(
+        1 for s in sources_payload if s.get("status") in ("ok", "skipped")
+    )
 
     return {
         "total_items": total,
@@ -199,7 +212,38 @@ def _meta_payload(storage: Storage, now: datetime) -> dict:
         "days_watching": days_watching,
         "first_seen_at": first_seen_min,
         "last_run_at": now.isoformat(),
+        "next_run_at": _next_cron_run(now).isoformat(),
+        "sources_online": sources_online,
+        "sources_total": sources_total,
+        "version": __version__,
+        "commit": _commit_short(),
     }
+
+
+def _next_cron_run(now: datetime) -> datetime:
+    """Próxima ejecución del cron (lunes-viernes 08:00 UTC).
+
+    El schedule está hardcodeado en .github/workflows/daily.yml; aquí lo
+    replicamos para que el dashboard pueda mostrar el próximo run sin
+    parsear el YAML.
+    """
+    candidate = now.astimezone(timezone.utc).replace(
+        hour=8, minute=0, second=0, microsecond=0,
+    )
+    if candidate <= now:
+        candidate += timedelta(days=1)
+    while candidate.weekday() > 4:  # 5=sat, 6=sun
+        candidate += timedelta(days=1)
+    return candidate
+
+
+def _commit_short() -> str:
+    """SHA corto del commit actual.
+
+    En GitHub Actions viene en `GITHUB_SHA`; en local devuelve "local".
+    """
+    sha = os.environ.get("GITHUB_SHA", "")
+    return sha[:7] if sha else "local"
 
 
 # ---------------------------------------------------------------------------
