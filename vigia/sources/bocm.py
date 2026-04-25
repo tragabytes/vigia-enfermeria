@@ -66,6 +66,23 @@ HEALTH_ORGS = [
     "ayuntamiento de torrejon",
     "ayuntamiento de parla",
     "ayuntamiento de alcobendas",
+    # Corredor A-6 (noroeste): municipios medianos sin boletín propio
+    "ayuntamiento de las rozas",
+    "ayuntamiento de pozuelo",
+    "ayuntamiento de majadahonda",
+    "ayuntamiento de boadilla",
+    "ayuntamiento de collado villalba",
+    "ayuntamiento de villanueva de la canada",
+    "ayuntamiento de villanueva del pardillo",
+    "ayuntamiento de galapagar",
+    "ayuntamiento de torrelodones",
+    "ayuntamiento de san lorenzo",
+    "ayuntamiento de el escorial",
+    "ayuntamiento de guadarrama",
+    # Corredor A-5 (suroeste): los grandes ya están arriba (Móstoles, Alcorcón)
+    "ayuntamiento de arroyomolinos",
+    "ayuntamiento de navalcarnero",
+    "ayuntamiento de villaviciosa de odon",
 ]
 
 # Palabras en el título que justifican descargar el PDF

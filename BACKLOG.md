@@ -50,19 +50,11 @@ Añadido `"emt"` y `"empresa municipal de transportes"` a `HEALTH_ORGS` (BOCM) y
 
 ✅ **Cobertura indirecta vía BOCM** (2026-04-25, commit `b67ec63`): añadidos los 9 grandes ayuntamientos (>100k hab.) a `HEALTH_ORGS` de `bocm.py` para forzar la descarga de PDF cuando sus convocatorias aparezcan en el BOCM. La cobertura BOE viene gratis vía `"administracion local"`.
 
-Pendiente como mejora futura: parsers dedicados de portales propios con feed/API estructurado para los que los tengan. Top 5 a investigar (por población): Móstoles, Alcalá, Fuenlabrada, Leganés, Getafe.
+✅ **Ampliación corredores A-6 y A-5** (2026-04-25): añadidos a `HEALTH_ORGS` los municipios medianos del noroeste (Las Rozas, Pozuelo, Majadahonda, Boadilla, Collado Villalba, Villanueva de la Cañada, Villanueva del Pardillo, Galapagar, Torrelodones, San Lorenzo de El Escorial, El Escorial, Guadarrama) y la extensión A-5 más allá de Móstoles/Alcorcón (Arroyomolinos, Navalcarnero, Villaviciosa de Odón). Verificado por `test_organism_coverage.py` (50/50). Investigación previa confirmó que ninguno tiene boletín municipal propio: todos publican en BOCM.
 
-| Municipio | Población | A investigar |
-|-----------|-----------|--------------|
-| Móstoles | 209k | URL portal empleo |
-| Alcalá de Henares | 195k | Sede electrónica |
-| Fuenlabrada | 192k | URL convocatorias |
-| Leganés | 187k | URL convocatorias |
-| Getafe | 187k | URL convocatorias |
-| Alcorcón | 173k | URL convocatorias |
-| Torrejón de Ardoz | 134k | URL convocatorias |
-| Parla | 130k | URL convocatorias |
-| Alcobendas | 117k | URL convocatorias |
+Pendiente como mejora futura: parsers dedicados de portales propios con feed/API estructurado para los que los tengan. Casos interesantes detectados:
+- Majadahonda: `majadahonda.convoca.online` (plataforma específica de convocatorias)
+- Varios usan PORTALEMP: `lasrozas.portalemp.com`, `majadahonda.portalemp.com`, `colladovillalba.portalemp.com`
 
 ---
 

@@ -41,6 +41,23 @@ from vigia.sources.boe import DEPT_KEYWORDS_FOR_BODY
         "Ayuntamiento de Torrejón de Ardoz",
         "Ayuntamiento de Parla",
         "Ayuntamiento de Alcobendas",
+        # Corredor A-6 (noroeste)
+        "Ayuntamiento de Las Rozas de Madrid",
+        "Ayuntamiento de Pozuelo de Alarcón",
+        "Ayuntamiento de Majadahonda",
+        "Ayuntamiento de Boadilla del Monte",
+        "Ayuntamiento de Collado Villalba",
+        "Ayuntamiento de Villanueva de la Cañada",
+        "Ayuntamiento de Villanueva del Pardillo",
+        "Ayuntamiento de Galapagar",
+        "Ayuntamiento de Torrelodones",
+        "Ayuntamiento de San Lorenzo de El Escorial",
+        "Ayuntamiento de El Escorial",
+        "Ayuntamiento de Guadarrama",
+        # Corredor A-5 (suroeste, extensión más allá de Móstoles/Alcorcón)
+        "Ayuntamiento de Arroyomolinos",
+        "Ayuntamiento de Navalcarnero",
+        "Ayuntamiento de Villaviciosa de Odón",
     ],
 )
 def test_organismo_dispara_descarga_bocm(organismo_real: str) -> None:
