@@ -20,8 +20,9 @@ import logging
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
+from pathlib import Path
 
-from vigia import enricher
+from vigia import dashboard, enricher
 from vigia.config import SOURCES_ENABLED
 from vigia.extractor import extract
 from vigia.notifier import send
@@ -38,6 +39,10 @@ from vigia.sources.metro_madrid import MetroMadridSource
 from vigia.storage import Storage
 
 logger = logging.getLogger(__name__)
+
+# Directorio donde se vuelcan los JSON que consume el dashboard web.
+# El workflow lo pushea a la rama gh-pages tras cada run.
+DASHBOARD_OUT_DIR = "docs/data"
 
 SOURCE_REGISTRY = {
     "boe": BOESource,
@@ -62,15 +67,8 @@ def _default_since() -> date:
     return today - timedelta(days=1)
 
 
-def _run_probe(enabled_classes: list) -> int:
-    """
-    Ejecuta probe() en cada fuente y muestra una tabla de salud.
-    Devuelve exit code 0 si todas las fuentes están "ok" o "skipped",
-    1 si alguna está "error" (URL caída o cambiada).
-    """
-    print(f"\n{'FUENTE':<22} {'ESTADO':<10} {'CODE':<6} URL")
-    print("-" * 100)
-    any_error = False
+def _collect_probe_results(enabled_classes: list) -> list[dict]:
+    """Ejecuta probe() en paralelo sobre cada fuente y devuelve los resultados."""
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {pool.submit(cls().probe): cls.name for cls in enabled_classes}
         results = []
@@ -85,7 +83,20 @@ def _run_probe(enabled_classes: list) -> int:
                     "url": "?",
                     "detail": f"unexpected: {exc}",
                 })
-    # Imprimir ordenado por nombre para que sea fácil de leer
+    return results
+
+
+def _run_probe(enabled_classes: list) -> int:
+    """
+    Ejecuta probe() en cada fuente, muestra una tabla de salud y refresca
+    el dashboard con el estado vivo. Devuelve exit code 0 si todas las
+    fuentes están "ok" o "skipped", 1 si alguna está "error".
+    """
+    results = _collect_probe_results(enabled_classes)
+
+    print(f"\n{'FUENTE':<22} {'ESTADO':<10} {'CODE':<6} URL")
+    print("-" * 100)
+    any_error = False
     for r in sorted(results, key=lambda x: x["name"]):
         if r["status"] == "error":
             any_error = True
@@ -95,6 +106,17 @@ def _run_probe(enabled_classes: list) -> int:
         if r["status"] == "error" and r["detail"]:
             print(f"{'':>22} {'':<10} {'':<6} → {r['detail'][:200]}")
     print()
+
+    # Refrescamos el dashboard con el estado actualizado de las fuentes.
+    # Como --probe corre con `if: always()` en el workflow, el dashboard se
+    # actualiza incluso cuando el pipeline principal ha fallado.
+    try:
+        storage = Storage()
+        dashboard.export_all(storage, Path(DASHBOARD_OUT_DIR), probe_results=results)
+        storage.close()
+    except Exception as exc:
+        logger.warning("No se pudo exportar el dashboard tras --probe: %s", exc)
+
     return 1 if any_error else 0
 
 
@@ -202,7 +224,6 @@ def main() -> None:
     # --- Fase 3: Deduplicación y persistencia ---
     storage = Storage()
     new_items = storage.filter_new(matched)
-    storage.close()
 
     logger.info("Nuevos (no vistos antes): %d", len(new_items))
 
@@ -210,6 +231,23 @@ def main() -> None:
     # Si ANTHROPIC_API_KEY no está configurada, enricher.enrich() devuelve la
     # lista intacta y el cron sigue funcionando como antes.
     new_items = enricher.enrich(new_items)
+
+    # Persistimos el summary recién generado para que el dashboard pueda
+    # mostrarlo sin re-llamar al LLM. Si el enricher se saltó (sin API key)
+    # o falló para un item, update_summary() es no-op para ese item.
+    for item in new_items:
+        storage.update_summary(item)
+
+    # --- Fase 3.6: Export del dashboard ---
+    # Se vuelca la BD a JSON antes de notificar. Sin probe_results: el step
+    # `--probe` posterior del workflow refrescará sources_status.json con el
+    # estado vivo de las fuentes.
+    try:
+        dashboard.export_all(storage, Path(DASHBOARD_OUT_DIR))
+    except Exception as exc:
+        logger.warning("No se pudo exportar el dashboard: %s", exc)
+
+    storage.close()
 
     # --- Fase 4: Notificación ---
     if new_items or errors:

@@ -133,6 +133,10 @@ class TestMainPropagaErrores:
         # BD temporal para no contaminar state/seen.db real
         from vigia import storage
         monkeypatch.setattr(storage, "DB_PATH", tmp_path / "seen.db")
+        # Dashboard temporal para no escribir en docs/data/ del repo
+        monkeypatch.setattr(
+            main_module, "DASHBOARD_OUT_DIR", str(tmp_path / "dashboard"),
+        )
 
         # Capturamos lo que llega al notifier
         capturado = {}
@@ -174,6 +178,9 @@ class TestMainPropagaErrores:
 
         from vigia import storage
         monkeypatch.setattr(storage, "DB_PATH", tmp_path / "seen.db")
+        monkeypatch.setattr(
+            main_module, "DASHBOARD_OUT_DIR", str(tmp_path / "dashboard"),
+        )
 
         llamadas = []
 

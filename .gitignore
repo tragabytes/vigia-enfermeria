@@ -6,6 +6,7 @@ __pycache__/
 venv/
 state/seen.db
 *.db
+docs/data/
 .DS_Store
 .pytest_cache/
 investigate_sites.py
