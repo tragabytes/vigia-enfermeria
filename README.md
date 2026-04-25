@@ -1,6 +1,8 @@
 # vigia-enfermeria
 
-Monitor automatizado de convocatorias de **Enfermería del Trabajo** en la administración pública de Madrid. Ejecuta cada día laborable, busca en BOE, BOCM, BOAM, Comunidad de Madrid, Canal de Isabel II y CODEM, y envía alertas por Telegram cuando aparece algo nuevo.
+Monitor automatizado de convocatorias de **Enfermería del Trabajo** en la administración pública de Madrid. Ejecuta cada día laborable, busca en BOE, BOCM, BOAM, Comunidad de Madrid, Ayuntamiento de Madrid, datos.madrid.es, Canal de Isabel II y CODEM, enriquece los hallazgos con un resumen generado por Claude Haiku, y envía alertas por Telegram cuando aparece algo nuevo.
+
+El estado se persiste en una BD SQLite en la rama `state` y se publica como JSON en la rama `gh-pages` para alimentar un dashboard web público.
 
 ---
 
@@ -86,6 +88,17 @@ Tras la primera ejecución exitosa:
 1. En tu repositorio GitHub, en la lista de ramas, aparecerá una rama **`state`**.
 2. Dentro de esa rama hay un fichero `state/seen.db` — es la base de datos SQLite que guarda las convocatorias ya vistas.
 3. En ejecuciones posteriores, solo se notificarán convocatorias **nuevas** (no duplicadas).
+4. También aparecerá una rama **`gh-pages`** con `data/{items,sources_status,meta}.json` — el snapshot público que consume el dashboard web.
+
+### 8. Habilitar el dashboard web (opcional)
+
+1. **Settings → Pages → Source**: selecciona la rama `gh-pages` (raíz `/`).
+2. La URL pública será `https://<usuario>.github.io/<repo>/` y servirá los JSON desde `/data/`.
+3. El frontend estático (HTML/CSS/JS) se publica también en `gh-pages` y hace `fetch('data/items.json')` para renderizar el dashboard. La actualización ocurre automáticamente tras cada run del cron.
+
+### 9. Habilitar la capa de IA (opcional)
+
+Si configuras el secret `ANTHROPIC_API_KEY`, el enricher añade un resumen breve a cada hallazgo nuevo usando Claude Haiku 4.5 (~$0.001 por item). Sin la key, el pipeline funciona igual pero sin resumen. El campo `summary` se persiste en la BD para que el dashboard pueda mostrarlo sin re-llamar al modelo.
 
 ---
 
@@ -119,11 +132,12 @@ python -m pytest tests/ -v
 |--------|--------|-----------|
 | BOE | API JSON oficial | Nacional — convocatorias secciones 2A/2B/3 |
 | BOCM | XML sumario + descarga PDF | Comunidad de Madrid |
-| BOAM | PDF sumario (primeras 10 pág.) | Ayuntamiento de Madrid |
+| BOAM | PDF sumario (primeras 10 pág.) | Ayuntamiento de Madrid (geo-bloqueado desde IP no española) |
 | Comunidad de Madrid | Web sede.comunidad.madrid | Portal propio de empleo |
 | Canal de Isabel II | Tabla web /puestos | Canal Isabel II directamente |
-| CODEM | RSS feed | Colegio de Enfermería de Madrid |
+| CODEM | RSS feed (Empleo + Actualidad) | Colegio de Enfermería de Madrid |
 | Ayuntamiento de Madrid | Web estática oposiciones | Complemento a BOAM |
+| datos.madrid.es | API CKAN | OEPs y procesos selectivos del Ayto. (no geo-bloqueado) |
 | Metro de Madrid | Stub (WAF) | Cubierto por BOE/BOCM |
 | administracion.gob.es | Stub (JS-only) | Cubierto por BOE/BOCM |
 
@@ -140,8 +154,10 @@ vigia/
   config.py          # keywords, sources, normalización
   main.py            # pipeline principal
   extractor.py       # motor de matching
+  enricher.py        # capa IA (Claude Haiku) — opcional
   notifier.py        # envío Telegram
-  storage.py         # SQLite deduplicación
+  storage.py         # SQLite deduplicación + summary
+  dashboard.py       # exportador JSON para gh-pages
   sources/
     boe.py           # API BOE
     bocm.py          # XML BOCM
@@ -150,12 +166,35 @@ vigia/
     canal_isabel_ii.py
     codem.py
     ayuntamiento_madrid.py
+    datos_madrid.py  # API CKAN del Ayto. Madrid
     metro_madrid.py
     administracion_gob.py
 tests/
   test_extractor.py
+  test_main_errors.py
+  test_probe.py
+  test_storage.py
+  test_dashboard.py
+  test_enricher.py
+  test_codem_feeds.py
+  test_datos_madrid.py
+  test_organism_coverage.py
 utils/
   test_telegram.py
 .github/workflows/
   daily.yml
 ```
+
+## Pipeline
+
+```
+sources/*.py  →  extractor.py  →  storage (filter_new)  →  enricher.py  →  storage (update_summary)  →  dashboard.export_all  →  notifier.py
+```
+
+1. Cada fuente devuelve `RawItem`.
+2. El extractor aplica reglas (match fuerte/débil, falsos positivos) y devuelve `Item` o `None`.
+3. La BD deduplica y guarda los items nuevos.
+4. El enricher (si hay `ANTHROPIC_API_KEY`) añade `summary` y se persiste con `update_summary`.
+5. El dashboard exporta `items.json`, `sources_status.json` y `meta.json` a `docs/data/`.
+6. El notifier manda el resumen del día a Telegram.
+7. El workflow pushea la BD a la rama `state` y los JSON a la rama `gh-pages`.

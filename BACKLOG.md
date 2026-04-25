@@ -4,6 +4,44 @@ Pendientes para retomar más adelante. Última actualización: 2026-04-25.
 
 ---
 
+## 🌐 Dashboard web público
+
+### ~~Capa de datos: export JSON desde la BD~~ ✅ Resuelto (2026-04-25)
+
+Creado `vigia/dashboard.py` con `export_all(storage, out_dir, probe_results, last_run_at)` que vuelca tres JSON a `docs/data/`:
+
+- **`items.json`** — array completo de hallazgos (orden `first_seen_at desc`) con `id_hash`, `source`, `url`, `titulo`, `fecha`, `categoria`, `first_seen_at`, `summary`.
+- **`sources_status.json`** — estado vivo del último probe + `total_hits` agregado por fuente (incluye fuentes con hits pero sin probe en el run, marcadas como `unknown`).
+- **`meta.json`** — métricas globales: `total_items`, `total_today`, `by_category`, `days_watching`, `first_seen_at`, `last_run_at`.
+
+Para que el `summary` del enricher sea visible en la web, se migró el esquema SQLite añadiendo la columna `summary TEXT` (idempotente: las BDs viejas de la rama `state` se actualizan solas en el primer run sin perder datos). El flujo de `main.py` ahora llama a `storage.update_summary(item)` tras `enricher.enrich(...)`.
+
+El workflow `daily.yml` tiene un step nuevo "Publicar JSON del dashboard en gh-pages" que pushea `docs/data/` a la rama `gh-pages` siguiendo el mismo patrón que la rama `state`. El step solo toca `data/`, sin pisar el HTML del dashboard cuando esté.
+
+20 tests nuevos (`test_storage.py`, `test_dashboard.py`) cubren migración, persistencia del summary y los tres exports. Todos los runs de pytest son herméticos (no escriben en `docs/` ni `state/` reales).
+
+### Pendiente: HTML del dashboard
+
+Claude Design está iterando el visual estilo "hacker terminal / retro CRT" (especificado en el prompt enviado el 2026-04-25). Cuando llegue el HTML/CSS/JS:
+
+1. Push a la raíz de la rama `gh-pages` (no toca el directorio `data/`, ya gestionado por el workflow).
+2. Habilitar GitHub Pages: **Settings → Pages → Source = `gh-pages` / root**.
+3. El frontend hace `fetch('data/items.json')` y similares para renderizar.
+
+Decidir: ¿commitea el HTML directamente a `gh-pages` o lo metemos en una carpeta `web/` de `main` y el workflow lo copia? Lo segundo es más editable.
+
+### Pendiente: backend de suscripción Telegram
+
+Sigue siendo un sprint aparte. El formulario `/subscribe` del dashboard necesita un Cloudflare Worker que:
+- Reciba el code de pairing del usuario
+- Lo valide contra el bot (que generó el code al recibir `/start`)
+- Persista el `chat_id` en KV (o en la rama `state` del repo)
+- Exponga `GET /api/subscribers` para que el cron lea la lista actualizada en lugar del Secret `TELEGRAM_CHAT_ID`
+
+Coste: 0 € en free tier de Cloudflare. Latencia: despreciable.
+
+---
+
 ## 🐛 Bugs / fixes a corregir
 
 ### ~~1. Notificación Telegram silenciosa cuando fallan fuentes~~ ✅ Resuelto (2026-04-25, commit `881da0b`)
@@ -131,5 +169,5 @@ Si solo quieres compartirlo con un puñado de gente y no te molesta intervenir m
 ## Otras ideas sueltas (para no olvidarme)
 
 - **Logs persistidos:** además de la BD `seen.db` en la rama `state`, considerar volcar un CSV histórico de todos los hallazgos (no solo nuevos) para análisis posterior.
-- **Dashboard mínimo:** página estática en GitHub Pages con la lista de convocatorias detectadas, ordenadas por fecha. El JSON podría generarse desde la BD en cada run y commitearse a la rama `gh-pages`.
+- ~~**Dashboard mínimo:**~~ ✅ Capa de datos resuelta (2026-04-25); ver sección "Dashboard web público" arriba. Falta el HTML, en manos de Claude Design.
 - ~~**Test de fuentes "vivas":**~~ ✅ Resuelto (2026-04-25, commit `44f7240`). Añadido `python -m vigia.main --probe` que hace HEAD/GET ligero a la URL principal de cada fuente y muestra una tabla de salud. Integrado en `daily.yml` con `if: always() + continue-on-error: true` para que cada run del cron deje el estado de las fuentes en los logs sin afectar la conclusion del job.
