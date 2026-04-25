@@ -50,6 +50,8 @@ Si el mensaje llega a tu Telegram, las credenciales son correctas.
    - Nombre: `TELEGRAM_BOT_TOKEN` — Valor: el token del paso 1
    - Nombre: `TELEGRAM_CHAT_ID` — Valor: el chat ID del paso 1
 
+> **Múltiples destinatarios:** `TELEGRAM_CHAT_ID` admite varios IDs separados por comas (p. ej. `123456789,987654321`). Cada persona debe enviar primero un mensaje al bot para que su chat ID sea descubrible vía `getUpdates`. Si un destinatario falla, el resto sigue recibiendo la notificación.
+
 ### 5. Subir el código al repositorio
 
 Desde la raíz del proyecto (carpeta `alerta-empleo`):

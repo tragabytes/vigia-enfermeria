@@ -105,19 +105,30 @@ def _split(text: str) -> list[str]:
     return chunks
 
 
+def _chat_ids() -> list[str]:
+    """Lista de chat IDs destinatarios. Acepta TELEGRAM_CHAT_ID con un solo
+    ID o varios separados por comas (p. ej. "123,456,-1001234")."""
+    return [c.strip() for c in TELEGRAM_CHAT_ID.split(",") if c.strip()]
+
+
 def _send_chunk(text: str) -> None:
     url = TELEGRAM_API.format(token=TELEGRAM_BOT_TOKEN)
-    resp = requests.post(
-        url,
-        json={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": text,
-            "parse_mode": "Markdown",
-            "disable_web_page_preview": True,
-        },
-        headers={"User-Agent": USER_AGENT},
-        timeout=15,
-    )
-    if not resp.ok:
-        logger.error("Telegram error %s: %s", resp.status_code, resp.text[:200])
-        resp.raise_for_status()
+    for chat_id in _chat_ids():
+        resp = requests.post(
+            url,
+            json={
+                "chat_id": chat_id,
+                "text": text,
+                "parse_mode": "Markdown",
+                "disable_web_page_preview": True,
+            },
+            headers={"User-Agent": USER_AGENT},
+            timeout=15,
+        )
+        if not resp.ok:
+            logger.error(
+                "Telegram error chat_id=%s status=%s body=%s",
+                chat_id, resp.status_code, resp.text[:200],
+            )
+            # No lanzamos la excepción para que un destinatario fallido
+            # no impida la entrega al resto.

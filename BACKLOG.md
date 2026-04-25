@@ -151,9 +151,59 @@ class Item:
 
 ---
 
+## 👥 Auto-suscripción de terceros (sin tu intervención)
+
+A día de hoy, añadir un nuevo destinatario al bot requiere:
+1. Que la persona envíe un mensaje al bot.
+2. Que tú llames manualmente a `getUpdates` para sacar su chat ID.
+3. Que actualices a mano el Secret `TELEGRAM_CHAT_ID` en GitHub.
+
+Eso no escala si quieres compartirlo con compañeros del gremio. Para que cualquiera pueda suscribirse autónomamente con un `/subscribe` al bot, hace falta:
+
+### Arquitectura básica
+
+- **El bot tiene que escuchar mensajes** (no solo enviar). Dos formas:
+  - **Polling**: un proceso que llama `getUpdates` cada N segundos. Requiere un servicio siempre vivo → no encaja con GitHub Actions (que es batch).
+  - **Webhook**: Telegram hace POST a una URL cuando llega un mensaje. Requiere un endpoint HTTPS público → encaja con un Cloudflare Worker, AWS Lambda, Vercel Function o similar (gratis o casi).
+
+- **Persistencia de la lista de suscriptores** fuera de un Secret de GitHub:
+  - Opción 1: rama `state` del repo (igual que `seen.db`), guardando `subscribers.json`. Lee/escribe el workflow + el endpoint webhook.
+  - Opción 2: KV store del proveedor del webhook (Cloudflare KV, Upstash Redis…). Más robusto pero introduce dependencia.
+
+- **Comandos del bot**:
+  - `/start` → mensaje de bienvenida + explicación.
+  - `/subscribe` → añade el `chat_id` a la lista.
+  - `/unsubscribe` → lo elimina.
+  - `/status` → comprueba si está suscrito.
+
+### Control de abuso
+
+Si lo abres a cualquiera:
+- **Aprobación manual** (más seguro): el bot solo guarda solicitudes pendientes y tú las apruebas con `/approve <chat_id>` desde tu chat (que es admin).
+- **Lista blanca por código de invitación**: `/subscribe ABC123` solo funciona si el código es válido.
+- **Apertura total**: cualquiera con el username del bot puede suscribirse. Riesgo bajo si el bot es público y solo recibe alertas (no envías información sensible).
+
+### Plan mínimo viable
+
+1. **Cloudflare Worker** (free tier de sobra para esto) que actúa como webhook de Telegram.
+2. KV namespace para la lista de chat IDs.
+3. El Worker procesa `/subscribe` y `/unsubscribe`, escribiendo en KV.
+4. El cron de GitHub Actions, en lugar de leer `TELEGRAM_CHAT_ID` de los Secrets, llama a un endpoint del Worker (`GET /subscribers`) protegido por un token compartido para obtener la lista actualizada.
+5. `notifier.py` cambia mínimamente: en vez de leer `TELEGRAM_CHAT_ID` lee la lista del Worker.
+
+Coste: 0 € si nos quedamos dentro del free tier de Cloudflare. Latencia añadida: ~50ms al inicio de cada run del cron, despreciable.
+
+### Alternativa más sencilla (sin webhook)
+
+Si solo quieres compartirlo con un puñado de gente y no te molesta intervenir manualmente:
+- Mantener `TELEGRAM_CHAT_ID` como lista en el Secret (lo que tenemos ahora).
+- Crear una pequeña página estática en GitHub Pages con un formulario que recoja el chat ID y te lo mande por email.
+- Tú añades el ID al Secret a mano cuando recibas la solicitud. Tarda 30 segundos por solicitud.
+
+---
+
 ## Otras ideas sueltas (para no olvidarme)
 
 - **Logs persistidos:** además de la BD `seen.db` en la rama `state`, considerar volcar un CSV histórico de todos los hallazgos (no solo nuevos) para análisis posterior.
 - **Dashboard mínimo:** página estática en GitHub Pages con la lista de convocatorias detectadas, ordenadas por fecha. El JSON podría generarse desde la BD en cada run y commitearse a la rama `gh-pages`.
-- **Múltiples destinatarios Telegram:** que `TELEGRAM_CHAT_ID` admita lista separada por comas (familia, colegas) sin tocar el resto del código.
 - **Test de fuentes "vivas":** un workflow opcional, manual, que ejecute solo el `fetch()` de cada fuente con un `--probe` y reporte cuáles devuelven HTTP 200 con contenido parseable. Útil para detectar URLs que han cambiado **antes** de que empiecen a fallar en el cron diario.
