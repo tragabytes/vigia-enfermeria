@@ -87,6 +87,21 @@ const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
   {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
 ));
 
+/* Mini-renderer de Markdown inline para el summary del enricher. Cubre los
+   estilos que produce Claude Haiku en respuestas cortas: **bold**, *italic*,
+   `code` y saltos de línea. Anti-XSS: escapamos HTML antes de aplicar las
+   reglas, así cualquier marcado del LLM queda reducido a texto. */
+function renderInlineMarkdown(s) {
+  let out = escapeHTML(s);
+  // Bold antes que italic para que **foo** no sea comido por *foo*.
+  out = out.replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+  out = out.replace(/__([^_\n]+?)__/g,     '<strong>$1</strong>');
+  out = out.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  out = out.replace(/`([^`\n]+?)`/g, '<code>$1</code>');
+  out = out.replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
+  return out;
+}
+
 /* ---- count-up animation --------------------------------------------- */
 function countUp(el, target, dur=1400) {
   const start = performance.now();
@@ -229,7 +244,7 @@ function cardHTML(it, i) {
         </div>
         <div class="summary-block">
           <span class="lbl">› AI SUMMARY (claude-haiku-4.5)</span>
-          ${escapeHTML(it.summary)}
+          ${renderInlineMarkdown(it.summary)}
         </div>
         <div class="actions">
           <a href="${it.url}" target="_blank" rel="noopener" class="btn-term">OPEN SOURCE →</a>
@@ -393,7 +408,7 @@ function injectExpanded(id) {
   e.innerHTML = `
     <td colspan="6">
       <div class="e-title">› ${escapeHTML(it.titulo)}</div>
-      <div class="e-summary"><b style="color:var(--phos-dim);font-weight:500;">AI SUMMARY:</b> ${escapeHTML(it.summary)}</div>
+      <div class="e-summary"><b style="color:var(--phos-dim);font-weight:500;">AI SUMMARY:</b> ${renderInlineMarkdown(it.summary)}</div>
       <div class="e-actions">
         <a href="${it.url}" target="_blank" rel="noopener" class="btn-term">OPEN SOURCE →</a>
         <button class="btn-term ghost" data-copy="${it.url}">COPY PERMALINK</button>
