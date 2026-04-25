@@ -209,6 +209,7 @@ class TestMainProbe:
         sources = json.loads(
             (tmp_path / "dashboard" / "sources_status.json").read_text(encoding="utf-8")
         )
-        assert sources[0]["name"] == "ok_source"
-        assert sources[0]["status"] == "ok"
-        assert sources[0]["code"] == 200
+        by_name = {s["name"]: s for s in sources}
+        assert "ok_source" in by_name
+        assert by_name["ok_source"]["status"] == "ok"
+        assert by_name["ok_source"]["code"] == 200

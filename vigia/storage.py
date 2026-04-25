@@ -50,8 +50,12 @@ def _make_hash(source: str, url: str, titulo: str) -> str:
 
 
 class Storage:
-    def __init__(self, db_path: Path = DB_PATH) -> None:
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[Path] = None) -> None:
+        # Resolución diferida de DB_PATH: si la usáramos como default del
+        # parámetro, Python la captura al definir la clase y monkeypatching
+        # `storage.DB_PATH` desde un test no surtiría efecto. Leerla aquí
+        # garantiza que cualquier monkeypatch posterior sea respetado.
+        self.db_path = db_path if db_path is not None else DB_PATH
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(str(self.db_path))
         self._migrate()
