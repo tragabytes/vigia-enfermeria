@@ -19,6 +19,8 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
+import subprocess
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 from typing import Optional
@@ -60,6 +62,7 @@ def export_all(
     sources_path = out_dir / "sources_status.json"
     meta_path = out_dir / "meta.json"
     targets_path = out_dir / "targets.json"
+    changelog_path = out_dir / "changelog.json"
 
     items_payload = _items_payload(storage)
 
@@ -80,10 +83,12 @@ def export_all(
         _write_json(sources_path, sources_payload)
 
     targets_payload = _targets_payload(storage, now)
+    changelog_payload = _changelog_payload()
     meta_payload = _meta_payload(storage, sources_payload, targets_payload, now)
 
     _write_json(items_path, items_payload)
     _write_json(targets_path, targets_payload)
+    _write_json(changelog_path, changelog_payload)
     _write_json(meta_path, meta_payload)
 
     logger.info(
@@ -95,6 +100,7 @@ def export_all(
         "sources": sources_path,
         "meta": meta_path,
         "targets": targets_path,
+        "changelog": changelog_path,
     }
 
 
@@ -325,6 +331,93 @@ def _commit_short() -> str:
     """
     sha = os.environ.get("GITHUB_SHA", "")
     return sha[:7] if sha else "local"
+
+
+# Prefijos conventional-commits que consideramos "newsworthy" para mostrar
+# en la sección "FIELD NOTES" del dashboard. Otros prefijos (chore, test,
+# style…) y los commits sin scope se filtran porque rara vez aportan
+# información útil al lector externo.
+_CHANGELOG_PREFIXES = ("feat", "fix", "ci", "refactor", "perf")
+_CONVENTIONAL_RE = re.compile(
+    r"^(?P<kind>" + "|".join(_CHANGELOG_PREFIXES) + r")"
+    r"(?:\((?P<scope>[^)]+)\))?:\s*(?P<title>.+)$"
+)
+
+
+def _changelog_payload(
+    repo_dir: Optional[Path] = None,
+    max_entries: int = 8,
+) -> list[dict]:
+    """Genera la lista FIELD NOTES desde el `git log` real del repo.
+
+    Filtra commits con prefijo conventional-commits (`feat:`, `fix:`,
+    `ci:`, `refactor:`, `perf:`). Para cada commit devuelve un dict con
+    `date`, `commit` (SHA corto), `kind`, `scope`, `title` y `body`
+    (primera línea no-vacía y no-Co-Authored del cuerpo, truncada).
+
+    En entornos donde `git` no está disponible (entornos sandbox de tests,
+    runners exóticos…) o el directorio no es un repo, devuelve [] y el
+    frontend simplemente esconde la sección.
+    """
+    repo_dir = repo_dir or Path.cwd()
+    sep_field = "\x1f"   # entre campos de un commit
+    sep_record = "\x1e"  # entre commits
+
+    fmt = sep_field.join(["%h", "%ad", "%s", "%b"]) + sep_record
+    try:
+        out = subprocess.check_output(
+            [
+                "git", "log", "--no-merges",
+                # Pedimos varias veces el max porque muchos commits caen
+                # fuera del filtro conventional (chore, docs sin scope, etc.).
+                "-n", str(max_entries * 6),
+                "--date=short",
+                f"--pretty=format:{fmt}",
+            ],
+            cwd=str(repo_dir),
+            stderr=subprocess.DEVNULL,
+            text=True,
+            encoding="utf-8",
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError) as exc:
+        logger.info("changelog: git no disponible (%s) — devolviendo []", exc)
+        return []
+
+    entries: list[dict] = []
+    for raw in out.split(sep_record):
+        raw = raw.strip("\n")
+        if not raw:
+            continue
+        parts = raw.split(sep_field)
+        if len(parts) < 4:
+            continue
+        sha, dt, subject, body = parts[0], parts[1], parts[2], parts[3]
+        match = _CONVENTIONAL_RE.match(subject)
+        if not match:
+            continue
+
+        body_clean = ""
+        for line in body.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            if line.lower().startswith("co-authored-by"):
+                continue
+            body_clean = line
+            break
+
+        entries.append({
+            "date": dt,
+            "commit": sha,
+            "kind": match.group("kind"),
+            "scope": match.group("scope") or "",
+            "title": match.group("title").strip(),
+            "body": body_clean[:240],
+        })
+        if len(entries) >= max_entries:
+            break
+
+    return entries
 
 
 # ---------------------------------------------------------------------------

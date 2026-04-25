@@ -24,6 +24,10 @@ jobs:
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
+        with:
+          # Histórico necesario para que dashboard._changelog_payload pueda
+          # leer los últimos commits y publicar las FIELD NOTES en gh-pages.
+          fetch-depth: 50
 
       - name: Restaurar BD de estado
         run: |

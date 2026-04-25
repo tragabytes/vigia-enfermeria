@@ -424,6 +424,119 @@ class TestTargetsPayload:
         assert meta["targets_active"] == 1
 
 
+class TestChangelog:
+    """Tests del extractor de FIELD NOTES desde `git log`.
+
+    Creamos un repo git efímero en tmp_path con commits sintéticos de
+    distintas formas (conventional + scope, sin scope, prefijos a filtrar)
+    y verificamos qué se queda en el payload.
+    """
+
+    @staticmethod
+    def _init_repo(tmp_path):
+        import subprocess
+        subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+        subprocess.run(["git", "config", "user.email", "t@t.test"], cwd=tmp_path, check=True)
+        subprocess.run(["git", "config", "user.name", "Test"], cwd=tmp_path, check=True)
+        subprocess.run(["git", "config", "commit.gpgsign", "false"], cwd=tmp_path, check=True)
+        return tmp_path
+
+    _commit_counter = 0
+
+    @classmethod
+    def _commit(cls, repo, subject, body=""):
+        import subprocess
+        # Contador monotónico para evitar colisiones de nombre de fichero.
+        cls._commit_counter += 1
+        f = repo / f"file_{cls._commit_counter}.txt"
+        f.write_text(f"content {cls._commit_counter}", encoding="utf-8")
+        subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
+        msg = subject + ("\n\n" + body if body else "")
+        subprocess.run(["git", "commit", "-q", "-m", msg], cwd=repo, check=True)
+
+    def test_filtra_solo_conventional_commits_relevantes(self, tmp_path):
+        repo = self._init_repo(tmp_path)
+        self._commit(repo, "feat(api): nuevo endpoint", "Body con detalles")
+        self._commit(repo, "fix(parser): corrige edge case")
+        self._commit(repo, "chore: bump deps")           # filtrado
+        self._commit(repo, "Update README")              # filtrado (sin prefijo)
+        self._commit(repo, "ci(gh-pages): publica")
+        self._commit(repo, "refactor(core): extrae módulo")
+        self._commit(repo, "test: añade fixture")        # filtrado
+
+        entries = dashboard._changelog_payload(repo_dir=repo, max_entries=10)
+        kinds = [e["kind"] for e in entries]
+        # 4 deberían pasar: feat, fix, ci, refactor
+        assert sorted(kinds) == ["ci", "feat", "fix", "refactor"]
+
+    def test_extrae_scope_y_titulo(self, tmp_path):
+        repo = self._init_repo(tmp_path)
+        self._commit(repo, "feat(dashboard): export JSON")
+
+        entries = dashboard._changelog_payload(repo_dir=repo)
+        assert len(entries) == 1
+        e = entries[0]
+        assert e["kind"] == "feat"
+        assert e["scope"] == "dashboard"
+        assert e["title"] == "export JSON"
+        assert len(e["commit"]) == 7  # SHA corto
+
+    def test_body_descarta_co_authored_y_lineas_vacias(self, tmp_path):
+        repo = self._init_repo(tmp_path)
+        body = "\n\nLínea útil que describe el cambio.\n\nCo-Authored-By: Claude <x@x.com>\n"
+        self._commit(repo, "feat(x): foo", body)
+
+        entries = dashboard._changelog_payload(repo_dir=repo)
+        assert entries[0]["body"] == "Línea útil que describe el cambio."
+
+    def test_max_entries_respetado(self, tmp_path):
+        repo = self._init_repo(tmp_path)
+        for i in range(6):
+            self._commit(repo, f"feat(x): cambio {i}")
+
+        entries = dashboard._changelog_payload(repo_dir=repo, max_entries=3)
+        assert len(entries) == 3
+
+    def test_orden_descendente_por_fecha(self, tmp_path):
+        repo = self._init_repo(tmp_path)
+        self._commit(repo, "feat(x): primero")
+        self._commit(repo, "feat(x): segundo")
+        self._commit(repo, "feat(x): tercero")
+
+        entries = dashboard._changelog_payload(repo_dir=repo)
+        # `git log` devuelve más reciente primero por defecto.
+        assert entries[0]["title"] == "tercero"
+        assert entries[-1]["title"] == "primero"
+
+    def test_directorio_sin_git_devuelve_lista_vacia(self, tmp_path):
+        # tmp_path está vacío, no es un repo git
+        empty = tmp_path / "empty"
+        empty.mkdir()
+        entries = dashboard._changelog_payload(repo_dir=empty)
+        assert entries == []
+
+    def test_export_all_genera_changelog_json(self, tmp_path):
+        """Smoke test del integrador: export_all escribe data/changelog.json
+        aunque sea con array vacío en un dir sin git."""
+        empty = tmp_path / "empty"
+        empty.mkdir()
+        storage = Storage(db_path=tmp_path / "seen.db")
+        # Cambiamos cwd a un dir sin git para forzar payload vacío
+        import os
+        cwd = os.getcwd()
+        try:
+            os.chdir(empty)
+            dashboard.export_all(storage, tmp_path / "out")
+        finally:
+            os.chdir(cwd)
+        storage.close()
+
+        path = tmp_path / "out" / "changelog.json"
+        assert path.exists()
+        data = json.loads(path.read_text(encoding="utf-8"))
+        assert data == []
+
+
 class TestExportAllExtras:
     def test_json_es_utf8_con_acentos(self, tmp_path):
         """Los títulos llevan acentos; el JSON debe preservarlos legibles."""

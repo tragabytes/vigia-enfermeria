@@ -21,6 +21,9 @@ jobs:
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
+        with:
+          # Igual que daily.yml: el changelog del dashboard depende del git log.
+          fetch-depth: 50
 
       - name: Restaurar BD de estado
         run: |
