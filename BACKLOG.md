@@ -50,6 +50,22 @@ Sketch técnico (frontend puro, no toca backend):
 
 Coste: ~30 líneas de JS, sin dependencias. Encaja con el "FIELD MEMO" que ya promete la cabecera de la sección.
 
+### Pendiente: extracción estructurada de deadline (mejora del ACTIVE/COLD)
+
+Hoy la sección 06 (Watchlist) marca un organismo como `ACTIVE` si tiene al menos un hit con `fecha` (publicación oficial) en los últimos 90 días. Es una heurística pragmática — funciona porque las convocatorias suelen tener plazo 20-30 días desde publicación, así que pasados 90 lo razonable es asumir el plazo cerrado. Pero hay falsos positivos (procesos que cerraron antes) y falsos negativos (bolsas permanentes).
+
+**Mejora ideal:** que el enricher (Claude Haiku) devuelva JSON estructurado con `summary + deadline + plazas` cuando los detecte en el cuerpo del aviso. Persistir `deadline DATE` en `items`. Después `active = (deadline IS NULL OR deadline >= today)`.
+
+**Bloqueador conocido:** los items ya guardados no tienen `extra.raw_text` persistido (solo se usa en runtime para enriquecer en el momento). Para extraer deadline de items históricos habría que re-descargar el cuerpo, o aceptar que solo los items futuros tendrán deadline real.
+
+**Plan mínimo:**
+1. Persistir `raw_text TEXT` en BD (migración idempotente, otra columna).
+2. Cambiar el prompt del enricher para que devuelva `{"summary": "...", "deadline": "YYYY-MM-DD"|null}`.
+3. Storage: `update_enrichment(item)` que guarda summary + deadline.
+4. Dashboard: `_targets_payload` usa `deadline > today` cuando exista, fallback a la heurística 90d cuando sea NULL.
+
+Coste IA: ~mismo que ahora ($0.001/item). Coste BD: ~2KB extra por item.
+
 ### Pendiente: backend de suscripción Telegram
 
 Sigue siendo un sprint aparte. El formulario `/subscribe` del dashboard necesita un Cloudflare Worker que:
