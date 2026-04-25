@@ -27,6 +27,7 @@ FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 class CanalIsabelIISource(Source):
     name = "canal_isabel_ii"
+    probe_url = CANAL_PUESTOS_URL
 
     def fetch(self, since_date: date) -> list[RawItem]:
         from bs4 import BeautifulSoup

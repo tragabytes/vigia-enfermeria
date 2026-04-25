@@ -42,6 +42,7 @@ SEARCH_TERMS = ["enfermeria", "salud laboral"]
 
 class ComunidadMadridSource(Source):
     name = "comunidad_madrid"
+    probe_url = SEDE_BASE  # https://sede.comunidad.madrid
 
     def fetch(self, since_date: date) -> list[RawItem]:
         all_items: list[RawItem] = []

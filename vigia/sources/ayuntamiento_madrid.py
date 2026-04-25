@@ -32,6 +32,7 @@ FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 class AyuntamientoMadridSource(Source):
     name = "ayuntamiento_madrid"
+    probe_url = AYTO_HUB_URL  # geo-bloqueado desde GHA, igual que BOAM
 
     def fetch(self, since_date: date) -> list[RawItem]:
         from bs4 import BeautifulSoup

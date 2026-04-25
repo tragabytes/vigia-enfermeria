@@ -59,6 +59,9 @@ HTTP_TIMEOUT = 60
 
 class CODEMSource(Source):
     name = "codem"
+    # Probe: el primer feed configurado (empleo). Si éste responde, el otro
+    # casi seguro también (mismo servidor).
+    probe_url = CODEM_RSS_FEEDS[0][1]
 
     def fetch(self, since_date: date) -> list[RawItem]:
         all_items: list[RawItem] = []

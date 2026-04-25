@@ -60,6 +60,8 @@ TITLE_FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 class BOESource(Source):
     name = "boe"
+    # Probe: la home del API de datos abiertos. No depende de fecha.
+    probe_url = "https://boe.es/datosabiertos/"
 
     def fetch(self, since_date: date) -> list[RawItem]:
         items: list[RawItem] = []

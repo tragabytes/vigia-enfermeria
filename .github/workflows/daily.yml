@@ -59,6 +59,13 @@ jobs:
           fi
           python -m vigia.main $ARGS
 
+      - name: Probe de salud de fuentes
+        # Se ejecuta siempre (incluso si el pipeline falla) para diagnóstico.
+        # No corta el workflow aunque alguna fuente esté "error" — solo informa.
+        if: always()
+        continue-on-error: true
+        run: python -m vigia.main --probe
+
       - name: Guardar BD de estado
         if: always()
         run: |

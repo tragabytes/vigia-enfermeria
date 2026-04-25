@@ -82,6 +82,7 @@ TITLE_FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 class BOCMSource(Source):
     name = "bocm"
+    probe_url = BOCM_ULTIMO  # /ultimo-bocm: la portada del último boletín
 
     def fetch(self, since_date: date) -> list[RawItem]:
         items: list[RawItem] = []

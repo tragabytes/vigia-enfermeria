@@ -59,6 +59,42 @@ def _default_since() -> date:
     return today - timedelta(days=1)
 
 
+def _run_probe(enabled_classes: list) -> int:
+    """
+    Ejecuta probe() en cada fuente y muestra una tabla de salud.
+    Devuelve exit code 0 si todas las fuentes están "ok" o "skipped",
+    1 si alguna está "error" (URL caída o cambiada).
+    """
+    print(f"\n{'FUENTE':<22} {'ESTADO':<10} {'CODE':<6} URL")
+    print("-" * 100)
+    any_error = False
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = {pool.submit(cls().probe): cls.name for cls in enabled_classes}
+        results = []
+        for future in as_completed(futures):
+            try:
+                results.append(future.result())
+            except Exception as exc:
+                results.append({
+                    "name": futures[future],
+                    "status": "error",
+                    "code": None,
+                    "url": "?",
+                    "detail": f"unexpected: {exc}",
+                })
+    # Imprimir ordenado por nombre para que sea fácil de leer
+    for r in sorted(results, key=lambda x: x["name"]):
+        if r["status"] == "error":
+            any_error = True
+        code = str(r["code"] or "-")
+        url = (r["url"] or "")[:60]
+        print(f"{r['name']:<22} {r['status']:<10} {code:<6} {url}")
+        if r["status"] == "error" and r["detail"]:
+            print(f"{'':>22} {'':<10} {'':<6} → {r['detail'][:200]}")
+    print()
+    return 1 if any_error else 0
+
+
 def _run_source(source_cls, since_date: date) -> tuple[str, list, list[str]]:
     """
     Ejecuta una fuente en un thread y devuelve (nombre, items, errores).
@@ -86,6 +122,11 @@ def main() -> None:
         action="store_true",
         help="Imprime hallazgos sin guardar en BD ni notificar",
     )
+    parser.add_argument(
+        "--probe",
+        action="store_true",
+        help="Solo comprueba la salud de cada fuente (HEAD/GET ligero) y termina",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -94,16 +135,19 @@ def main() -> None:
         stream=sys.stdout,
     )
 
-    since_date = date.fromisoformat(args.since) if args.since else _default_since()
-    logger.info(
-        "Pipeline iniciado — since_date=%s dry_run=%s", since_date, args.dry_run
-    )
-
     enabled_classes = [
         SOURCE_REGISTRY[name]
         for name in SOURCES_ENABLED
         if name in SOURCE_REGISTRY
     ]
+
+    if args.probe:
+        sys.exit(_run_probe(enabled_classes))
+
+    since_date = date.fromisoformat(args.since) if args.since else _default_since()
+    logger.info(
+        "Pipeline iniciado — since_date=%s dry_run=%s", since_date, args.dry_run
+    )
 
     # --- Fase 1: Fetch en paralelo ---
     raw_items_all = []

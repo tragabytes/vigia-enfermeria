@@ -36,6 +36,7 @@ SUMARIO_PAGES = 10  # páginas iniciales donde está el sumario
 
 class BOAMSource(Source):
     name = "boam"
+    probe_url = BOAM_HOME  # https://www.madrid.es/boam (geo-bloqueado desde GHA)
 
     def fetch(self, since_date: date) -> list[RawItem]:
         items: list[RawItem] = []
