@@ -50,21 +50,46 @@ Sketch técnico (frontend puro, no toca backend):
 
 Coste: ~30 líneas de JS, sin dependencias. Encaja con el "FIELD MEMO" que ya promete la cabecera de la sección.
 
-### Pendiente: extracción estructurada de deadline (mejora del ACTIVE/COLD)
+### Pendiente: enricher Nivel 2 — tool use + output JSON estructurado
 
-Hoy la sección 06 (Watchlist) marca un organismo como `ACTIVE` si tiene al menos un hit con `fecha` (publicación oficial) en los últimos 90 días. Es una heurística pragmática — funciona porque las convocatorias suelen tener plazo 20-30 días desde publicación, así que pasados 90 lo razonable es asumir el plazo cerrado. Pero hay falsos positivos (procesos que cerraron antes) y falsos negativos (bolsas permanentes).
+Evolucionar el enricher actual (single-shot Haiku que devuelve un string de ~200 chars) hacia una llamada con **tool use** y **respuesta JSON estructurada**. No es un agente loop completo (Nivel 3); seguimos en `client.messages.create()`, pero con dos herramientas registradas y un schema de salida fijo. El objetivo: confirmar links, extraer fechas reales y rellenar el watchlist con datos duros en vez de heurística de 90 días.
 
-**Mejora ideal:** que el enricher (Claude Haiku) devuelva JSON estructurado con `summary + deadline + plazas` cuando los detecte en el cuerpo del aviso. Persistir `deadline DATE` en `items`. Después `active = (deadline IS NULL OR deadline >= today)`.
+**Por qué.** Hoy el `summary` solo reformula lo que ya viene en el título. No sabemos si el link sigue vivo, no extraemos plazo de inscripción, no contamos plazas. La sección 06 del dashboard (`ACTIVE/COLD`) es una heurística pragmática que falla en bolsas permanentes y en procesos que ya cerraron. El Nivel 3 (agente con loop) sería más potente pero introduce coste impredecible y complejidad operativa que no compensa al volumen actual.
 
-**Bloqueador conocido:** los items ya guardados no tienen `extra.raw_text` persistido (solo se usa en runtime para enriquecer en el momento). Para extraer deadline de items históricos habría que re-descargar el cuerpo, o aceptar que solo los items futuros tendrán deadline real.
+**Tools a registrar.**
+- `fetch_url(url)` — descarga el HTML/PDF del link de la convocatoria. Whitelist estricta de dominios oficiales (`boe.es`, `bocm.es`, `madrid.es`, `comunidad.madrid`, `convocatoriascanaldeisabelsegunda.es`, `codem.es`, `datos.madrid.es`) para evitar SSRF. Tamaño máximo 5MB.
+- `web_search(query)` *(opcional, fase 2)* — `web_search` nativo de la API de Anthropic para cruzar con BOE/BOCM cuando el link primario no dé fecha. Coste extra (~$10/1000 búsquedas); activable con flag.
 
-**Plan mínimo:**
-1. Persistir `raw_text TEXT` en BD (migración idempotente, otra columna).
-2. Cambiar el prompt del enricher para que devuelva `{"summary": "...", "deadline": "YYYY-MM-DD"|null}`.
-3. Storage: `update_enrichment(item)` que guarda summary + deadline.
-4. Dashboard: `_targets_payload` usa `deadline > today` cuando exista, fallback a la heurística 90d cuando sea NULL.
+**Schema de salida (JSON).**
+```json
+{
+  "summary":    "string corto, ~200 chars, estilo telegrama",
+  "deadline":   "YYYY-MM-DD" | null,
+  "plazas":     integer | null,
+  "organismo":  "string" | null,
+  "url_bases":  "string (URL al PDF de bases)" | null,
+  "link_alive": true | false,
+  "confidence": "high" | "medium" | "low"
+}
+```
 
-Coste IA: ~mismo que ahora ($0.001/item). Coste BD: ~2KB extra por item.
+**Plan de implementación.**
+1. Migración BD idempotente: añadir `deadline TEXT`, `plazas INTEGER`, `organismo TEXT`, `url_bases TEXT`, `link_alive INTEGER`, `enriched_at TEXT` a `items`. Mantener `summary`. Opcional: persistir `raw_text TEXT` para re-enriquecer históricos sin re-descargar.
+2. `vigia/enricher.py`: prompt nuevo a JSON, registro del tool `fetch_url`, parseo con `json.loads` y validación contra schema (`dataclass` con `__post_init__` o `pydantic` si entra como dep).
+3. `vigia/storage.py`: nuevo `update_enrichment(item, payload)` que persiste todos los campos de una vez. Sustituye al actual `update_summary`.
+4. `vigia/dashboard.py`: `_items_payload` expone los nuevos campos. `_targets_payload` usa `deadline >= today` cuando exista, fallback a la heurística 90d si es `NULL`.
+5. Frontend (`web/app.js`): la card del feed muestra `📅 Plazo: 15/06/2026 · 47 plazas` cuando estén disponibles. Badge `LINK DEAD` en rojo si `link_alive == false`. La tabla 03 (Historical) añade columna opcional "DEADLINE".
+6. Mantenimiento: extender `vigia/maintenance.py` con `enrich_pending_v2(storage)` para re-procesar los ~12 items históricos. El prompt-cache de Anthropic puede abaratar el reenriquecido.
+7. Tests con mocks del SDK + tool use: respuesta válida, JSON malformado, tool error, dominios fuera de whitelist, link 404.
+
+**Coste estimado.** ~$30-50/año al volumen actual (12 items/día × 2-3 iteraciones × ~1500 tokens output). Latencia: 10-20s/item (vs. 2s hoy). Aceptable: 12 × 15s ≈ 3 min extra de workflow.
+
+**Decisiones a tomar antes de empezar.**
+- Si el link está muerto pero el item es real → guardar `link_alive=false` y mostrar badge; no descartar el item.
+- ¿Re-fetchamos en cada run o solo una vez? → solo una vez (campo `enriched_at`); maintenance re-enriquece cuando se actualice el prompt.
+- ¿`web_search` de pago en MVP? → empezar sin, ver si `fetch_url` solo cubre suficientes casos.
+
+**Migración hacia Nivel 3 (futuro).** Si Nivel 2 funciona pero queremos detectar duplicados entre items o vincular resoluciones con sus correcciones, entonces Claude Agent SDK con loop. No bloqueante hoy.
 
 ### Pendiente: backend de suscripción Telegram
 
