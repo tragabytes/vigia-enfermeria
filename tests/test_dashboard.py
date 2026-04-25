@@ -279,6 +279,37 @@ class TestExportAll:
         assert out.exists()
         assert (out / "items.json").exists()
 
+    def test_sin_probe_no_pisa_sources_status_existente(self, tmp_path):
+        """Si llamamos export_all sin probe_results pero ya existía un
+        sources_status.json (escrito por un --probe anterior), debe
+        respetarse — esto evita que --maintenance degrade la pantalla
+        SOURCES del dashboard."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        out = tmp_path / "out"
+
+        # Primer export: con probe_results completos (simula --probe).
+        full_probe = [
+            {"name": "boe", "url": "https://boe.es", "status": "ok",
+             "code": 200, "detail": ""},
+            {"name": "bocm", "url": "https://bocm.es", "status": "ok",
+             "code": 200, "detail": ""},
+            {"name": "boam", "url": "https://madrid.es/boam", "status": "error",
+             "code": 403, "detail": "geo"},
+        ]
+        dashboard.export_all(storage, out, probe_results=full_probe)
+
+        # Segundo export: sin probe (simula --maintenance). Debe respetar
+        # el sources_status.json del primer export.
+        dashboard.export_all(storage, out)
+        storage.close()
+
+        data = json.loads((out / "sources_status.json").read_text(encoding="utf-8"))
+        names = {r["name"] for r in data}
+        assert names == {"boe", "bocm", "boam"}
+        # Y los códigos HTTP siguen siendo los del probe original
+        by_name = {r["name"]: r for r in data}
+        assert by_name["boam"]["code"] == 403
+
     def test_json_es_utf8_con_acentos(self, tmp_path):
         """Los títulos llevan acentos; el JSON debe preservarlos legibles."""
         storage = Storage(db_path=tmp_path / "seen.db")

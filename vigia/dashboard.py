@@ -56,11 +56,26 @@ def export_all(
     meta_path = out_dir / "meta.json"
 
     items_payload = _items_payload(storage)
-    sources_payload = _sources_payload(storage, probe_results, now)
+
+    # Política de sources_status:
+    # - Si tenemos `probe_results` (caller normal: --probe), regeneramos todo.
+    # - Si no (caller normal: pipeline diario sin probe, o --maintenance), no
+    #   sobrescribimos el JSON existente — el último probe sigue siendo el
+    #   más informativo. Reutilizamos su contenido para los contadores de
+    #   meta.json. Si tampoco existe el fichero, generamos uno mínimo a
+    #   partir de los hits agregados.
+    if probe_results is not None:
+        sources_payload = _sources_payload(storage, probe_results, now)
+        _write_json(sources_path, sources_payload)
+    elif sources_path.exists():
+        sources_payload = json.loads(sources_path.read_text(encoding="utf-8"))
+    else:
+        sources_payload = _sources_payload(storage, None, now)
+        _write_json(sources_path, sources_payload)
+
     meta_payload = _meta_payload(storage, sources_payload, now)
 
     _write_json(items_path, items_payload)
-    _write_json(sources_path, sources_payload)
     _write_json(meta_path, meta_payload)
 
     logger.info(
