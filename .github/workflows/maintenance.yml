@@ -25,10 +25,13 @@ jobs:
       - name: Restaurar BD de estado
         run: |
           mkdir -p state
-          git fetch origin state --depth=1 2>/dev/null && \
-            git checkout FETCH_HEAD -- state/seen.db 2>/dev/null && \
-            echo "BD de estado restaurada" || \
-            echo "Sin estado previo — abortando" && exit 1
+          if git fetch origin state --depth=1 2>/dev/null && \
+             git checkout FETCH_HEAD -- state/seen.db 2>/dev/null; then
+            echo "BD de estado restaurada"
+          else
+            echo "Sin estado previo — nada que mantener; abortando"
+            exit 1
+          fi
 
       - name: Configurar Python
         uses: actions/setup-python@v5
