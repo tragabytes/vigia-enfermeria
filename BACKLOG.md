@@ -6,23 +6,9 @@ Pendientes para retomar más adelante. Última actualización: 2026-04-25.
 
 ## 🐛 Bugs / fixes a corregir
 
-### 1. Notificación Telegram silenciosa cuando fallan fuentes
+### ~~1. Notificación Telegram silenciosa cuando fallan fuentes~~ ✅ Resuelto (2026-04-25, commit `881da0b`)
 
-**Síntoma observado en el primer run real (2026-04-25):**
-```
-WARNING vigia.sources.boam: BOAM 2026-04-24 error: 403 ...
-WARNING vigia.sources.comunidad_madrid: 404 Not Found for url: ...
-INFO __main__: Sin novedades hoy — no se envía notificación Telegram
-```
-
-Las fuentes capturan sus excepciones internamente con `try/except` y emiten un `logger.warning(...)`, pero no propagan el fallo al `main.py`. Por eso `errors` llega vacío al `notifier.send()` y el `if new_items or errors` no dispara mensaje. Resultado: **si una fuente cae, no te enteras hasta que entras a Actions a mirar los logs.**
-
-**Propuestas:**
-- Que cada `Source.fetch()` exponga una lista `self.last_errors` que `main.py` pueda recoger sin que la excepción se pierda.
-- O bien: capturar los WARNINGs con un `logging.Handler` custom que los inyecte en la lista `errors` que llega al notifier.
-- O bien: que `main.py` re-eleve si una fuente devuelve 0 items y ha habido WARNINGs en su logger.
-
-La primera opción es la más limpia.
+Implementado con la opción A del plan: atributo `self.last_errors` en la clase base `Source`, las 7 fuentes lo rellenan junto a su `logger.warning(...)`, `_run_source()` lo devuelve como tercer elemento de la tupla y `main.py` lo extiende a la lista global `errors`. 9 tests nuevos en `test_main_errors.py` cubren el comportamiento. Validado end-to-end con un run real: BOAM y Comunidad Madrid caídos generaron mensaje en Telegram.
 
 ### 2. BOAM devuelve 403 desde GitHub Actions
 
