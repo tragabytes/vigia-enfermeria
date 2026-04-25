@@ -1,0 +1,92 @@
+name: vigia-enfermeria daily
+
+on:
+  schedule:
+    # Lunes-viernes a las 09:00 hora España (08:00 UTC en verano, ajustar si necesario)
+    - cron: '0 8 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      since:
+        description: 'Fecha de inicio YYYY-MM-DD (vacío = automático)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Dry-run (solo imprime, no notifica)'
+        type: boolean
+        default: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # necesario para guardar estado en rama state
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Restaurar BD de estado
+        run: |
+          mkdir -p state
+          git fetch origin state --depth=1 2>/dev/null && \
+            git checkout FETCH_HEAD -- state/seen.db 2>/dev/null && \
+            echo "BD de estado restaurada" || \
+            echo "Sin estado previo — se creará nueva BD"
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar tests
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Ejecutar pipeline
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.since }}" ]; then
+            ARGS="--since ${{ github.event.inputs.since }}"
+          fi
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python -m vigia.main $ARGS
+
+      - name: Guardar BD de estado
+        if: always()
+        run: |
+          if [ ! -f state/seen.db ]; then
+            echo "No hay BD que guardar"
+            exit 0
+          fi
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          # Guardar DB en rama orphan "state"
+          cp state/seen.db /tmp/seen.db
+          git fetch origin state --depth=1 2>/dev/null || true
+
+          if git ls-remote --heads origin state | grep -q state; then
+            git checkout -B _state_tmp FETCH_HEAD
+          else
+            git checkout --orphan _state_tmp
+            git rm -rf . --quiet 2>/dev/null || true
+          fi
+
+          mkdir -p state
+          cp /tmp/seen.db state/seen.db
+          git add state/seen.db
+          git diff --staged --quiet || \
+            git commit -m "state: $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git push origin _state_tmp:state
+          git checkout "${{ github.sha }}" --quiet 2>/dev/null || \
+            git checkout main --quiet 2>/dev/null || true
+          git branch -D _state_tmp 2>/dev/null || true
