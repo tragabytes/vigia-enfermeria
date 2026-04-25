@@ -129,6 +129,38 @@ Añadido `"emt"` y `"empresa municipal de transportes"` a `HEALTH_ORGS` (BOCM) y
 Pendiente como mejora futura: parsers dedicados de portales propios con feed/API estructurado para los que los tengan. Casos interesantes detectados:
 - Majadahonda: `majadahonda.convoca.online` (plataforma específica de convocatorias)
 - Varios usan PORTALEMP: `lasrozas.portalemp.com`, `majadahonda.portalemp.com`, `colladovillalba.portalemp.com`
+- **Las Rozas portal oficial:** `https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo` — listado HTML estático que muestra solo procesos con plazo abierto (filtrado por el propio ayuntamiento). Beneficio adicional sobre BOCM: detectaríamos ANTES (sin esperar publicación oficial) y con la garantía de plazo vivo. Investigar estructura HTML para parser dedicado.
+
+### Pendiente: empresas públicas estatales (RENFE, ADIF, RTVE, Navantia, AENA, Correos…)
+
+Las grandes empresas públicas con servicio médico/SP propio convocan plazas de Enfermería del Trabajo periódicamente. Ahora mismo solo las pillaríamos si el BOE publica la convocatoria (sección 2A o 2B), pero las que tienen procesos selectivos propios (RTVE en su web, RENFE/ADIF en BOE…) merecen vigilancia explícita.
+
+**Mínimo viable** — añadir a `HEALTH_ORGS` (bocm.py) y `DEPT_KEYWORDS_FOR_BODY` (boe.py):
+- `"rtve"`, `"corporacion radio television espanola"`, `"radio television espanola"`
+- `"renfe"`, `"renfe operadora"`, `"renfe cercanias"`
+- `"adif"`, `"administrador de infraestructuras ferroviarias"`
+- `"navantia"`
+- `"aena"`
+- `"correos"`, `"sociedad estatal correos"`
+- `"paradores"`, `"paradores de turismo"`
+- `"loteria"`, `"loterias y apuestas del estado"` (si interesa)
+
+Y opcionalmente como `WATCHLIST_ORGS` para que aparezcan como tiles propios en la sección 06 del dashboard.
+
+**Mejora siguiente** — parser dedicado del portal de RTVE: `https://convocatorias.rtve.es/puestos-ofertados`. Ofrece el listado completo de procesos de RTVE con su estado, sin depender del BOE. Misma ventaja que Las Rozas: detección temprana + garantía de plazo abierto si filtran por estado.
+
+### Pendiente: variante "enfermería de empresa" en STRONG_PATTERNS
+
+Algunos organismos —RTVE entre ellos— llaman a la especialidad **"Enfermería de Empresa"** en lugar de "Enfermería del Trabajo". Es la denominación histórica previa al MIR (en el catálogo del Ministerio siguen como sinónimos a efectos formativos), y sigue apareciendo en convocatorias del sector público estatal.
+
+**Cambio:** ampliar `STRONG_PATTERNS` en `vigia/config.py` con:
+- `r"enfermeri[ao]\s+de\s+empresa"`
+- `r"enfermer[ao]\s+de\s+empresa"`
+- `r"diplomado\s+en\s+enfermeria\s+de\s+empresa"`
+
+Y añadir test en `test_extractor.py` con un título realista tipo "Convocatoria de la Corporación RTVE para plazas de Enfermería de Empresa".
+
+Riesgo: ninguno aparente. "Enfermería de empresa" es lo bastante específico como para no producir falsos positivos.
 
 ---
 
