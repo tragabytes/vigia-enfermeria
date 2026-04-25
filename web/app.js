@@ -699,7 +699,7 @@ function renderFooter() {
     <span>VERSION <span class="commit">${DATA.meta.version}</span></span>
     <span class="sep">│</span>
     <span>HEAD <span class="commit">${DATA.meta.commit}</span></span>
-    <span class="right">© 2022—2026 · NO COOKIES · NO TRACKERS · STATIC HTML</span>
+    <span class="right">© ${new Date().getUTCFullYear()} · NO COOKIES · NO TRACKERS · STATIC HTML</span>
   `;
 }
 
