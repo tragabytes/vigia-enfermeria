@@ -554,7 +554,7 @@ function drawSub() {
   const lines = [];
   const frame = `╔══════════════════════════════════════════════════╗
 ║  ░ ALERT CHANNEL — REQUEST ACCESS                ║
-║  ░ chan: @vigia_enfermeria_bot                   ║
+║  ░ chan: @vigia_enfermeria_lt_bot                   ║
 ╚══════════════════════════════════════════════════╝`;
   let body = '';
   const stepper = `
@@ -566,12 +566,12 @@ function drawSub() {
     </div>`;
   if (subState.step === 1) {
     body = `
-      <div class="line"><span class="p">$</span>open https://t.me/vigia_enfermeria_bot</div>
-      <div class="line"><span class="p">$</span>send <span class="amber">/start</span> &nbsp;<span class="muted">// the bot replies with a 6-digit pairing code</span></div>
-      <div class="line"><span class="muted">› Once you have the code, click [I HAVE A CODE] below.</span></div>
+      <div class="line"><span class="p">$</span>open https://t.me/vigia_enfermeria_lt_bot</div>
+      <div class="line"><span class="p">$</span>send <span class="amber">/start</span> &nbsp;<span class="muted">// future: the bot will reply with a 6-digit pairing code</span></div>
+      <div class="line"><span class="amber">!</span> <span class="muted">Self-service pairing not wired yet — see panel on the right for the manual flow.</span></div>
       <div class="submit-row">
-        <button class="btn-term" id="sub-next">[ I HAVE A CODE → ]</button>
-        <a class="btn-term ghost" href="https://t.me/vigia_enfermeria_bot" target="_blank" rel="noopener">OPEN TELEGRAM →</a>
+        <button class="btn-term" id="sub-next" disabled style="opacity:0.45;cursor:not-allowed">[ COMING SOON ]</button>
+        <a class="btn-term ghost" href="https://t.me/vigia_enfermeria_lt_bot" target="_blank" rel="noopener">OPEN TELEGRAM →</a>
       </div>`;
   } else if (subState.step === 2) {
     body = `

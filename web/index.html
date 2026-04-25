@@ -128,24 +128,28 @@
       <div class="subscribe-wrap">
         <div class="tty" id="tty" tabindex="0"></div>
         <div class="subscribe-side">
-          <h4>// ENROLLMENT FLOW</h4>
+          <h4>// AUTO-ENROLLMENT</h4>
+          <p style="margin:0 0 12px 0">
+            <b style="color:var(--amber)">Self-service subscription is on the roadmap.</b>
+            The pairing flow on the left is a preview — it isn't wired to a backend yet.
+          </p>
+          <h4>// HOW TO SUBSCRIBE TODAY</h4>
           <ol>
-            <li>Open <code>@vigia_enfermeria_bot</code> on Telegram</li>
-            <li>Send <code>/start</code> — the bot replies with a one-time 6-digit pairing code</li>
-            <li>Enter the code on this terminal (optionally with a recovery e-mail)</li>
-            <li>You'll receive a Telegram message every time a new finding is detected</li>
+            <li>Contact the maintainer (<a href="https://github.com/tragabytes" target="_blank">@tragabytes</a>)</li>
+            <li>Send your Telegram <code>chat_id</code> — get it from <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a></li>
+            <li>Once added to the recipient list, you'll receive the daily digest</li>
           </ol>
           <h4>// WHAT YOU'LL GET</h4>
           <ol>
-            <li>One push per finding — <b style="color:var(--phos)">title + AI summary + permalink</b></li>
-            <li>Daily digest at 06:30 UTC (toggle <code>/digest_only</code> on the bot)</li>
-            <li>Unsubscribe at any time with <code>/stop</code> or <code>POST /api/unsubscribe</code></li>
+            <li>One Telegram message per workday at <b style="color:var(--phos)">08:00 UTC (Mon–Fri)</b> with all new findings of the day</li>
+            <li>Each finding includes <b style="color:var(--phos)">title + AI summary + source link</b></li>
+            <li>If a source goes down, the digest also includes the error so you know to check</li>
           </ol>
           <div class="note">
             <b>// PRIVACY</b><br>
-            We store only <code>tg_chat_id</code> and an optional e-mail. The Cloudflare Worker
-            log is purged after 24h. There is no analytics, no cookies, no third-party
-            calls. Source code is open.
+            Open source on GitHub. Today the recipient list is managed manually via GitHub
+            Actions Secrets. No analytics, no cookies, no third-party calls. When the
+            self-service flow ships, only <code>tg_chat_id</code> will be stored.
           </div>
         </div>
       </div>
