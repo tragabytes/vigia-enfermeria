@@ -129,6 +129,57 @@ class Storage:
         )
         self._conn.commit()
 
+    def update_categoria(self, id_hash: str, categoria: str) -> None:
+        """Cambia la categoría de un item ya guardado. Lo usa la tarea de
+        mantenimiento `reclassify_all` cuando se afina CATEGORY_HINTS y
+        queremos rebobinar la clasificación de items históricos."""
+        self._conn.execute(
+            "UPDATE items SET categoria = ? WHERE id_hash = ?",
+            (categoria, id_hash),
+        )
+        self._conn.commit()
+
+    def iter_items_without_summary(self) -> list[Item]:
+        """Devuelve los items en BD que aún no tienen summary.
+
+        Reconstruye `Item` con todos los campos persistidos. No incluye
+        `extra.raw_text` (no se persiste): el enricher trabajará solo con
+        título, fuente, url y categoría — basta para resúmenes razonables.
+        """
+        cur = self._conn.execute(
+            """
+            SELECT id_hash, source, url, titulo, fecha, categoria, first_seen_at
+            FROM items
+            WHERE summary IS NULL OR summary = ''
+            ORDER BY first_seen_at DESC
+            """
+        )
+        items: list[Item] = []
+        for r in cur:
+            it = Item(
+                source=r[1],
+                url=r[2],
+                titulo=r[3],
+                fecha=date.fromisoformat(r[4]),
+                categoria=r[5],
+                id_hash=r[0],
+                first_seen_at=datetime.fromisoformat(r[6]),
+            )
+            items.append(it)
+        return items
+
+    def iter_all_items(self) -> list[tuple[str, str, str]]:
+        """Devuelve `(id_hash, titulo, categoria)` de todos los items.
+
+        Tupla mínima orientada a `reclassify_all`: solo necesitamos el
+        título para reclasificar y el id_hash para el UPDATE. Evitamos
+        materializar `Item` completos para una operación de mantenimiento
+        que puede recorrer miles de filas en el futuro.
+        """
+        return list(
+            self._conn.execute("SELECT id_hash, titulo, categoria FROM items")
+        )
+
     def filter_new(self, items: list[Item]) -> list[Item]:
         """Filtra la lista devolviendo solo los ítems nuevos, y los guarda."""
         new_items = []

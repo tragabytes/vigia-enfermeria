@@ -22,7 +22,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from pathlib import Path
 
-from vigia import dashboard, enricher
+from vigia import dashboard, enricher, maintenance
 from vigia.config import SOURCES_ENABLED
 from vigia.extractor import extract
 from vigia.notifier import send
@@ -120,6 +120,27 @@ def _run_probe(enabled_classes: list) -> int:
     return 1 if any_error else 0
 
 
+def _run_maintenance() -> int:
+    """Reclasifica + enriquece items existentes y refresca el dashboard.
+
+    Diseñado para correr puntualmente desde el workflow `maintenance.yml`,
+    no en el cron diario. Idempotente: ejecutarlo varias veces no causa
+    daño (los items ya con summary se saltan, los ya bien clasificados no
+    cambian).
+    """
+    storage = Storage()
+    n_recat = maintenance.reclassify_all(storage)
+    logger.info("Maintenance: %d items reclasificados", n_recat)
+    n_enriched = enricher.enrich_pending(storage)
+    logger.info("Maintenance: %d items enriquecidos", n_enriched)
+    try:
+        dashboard.export_all(storage, Path(DASHBOARD_OUT_DIR))
+    except Exception as exc:
+        logger.warning("No se pudo exportar el dashboard tras maintenance: %s", exc)
+    storage.close()
+    return 0
+
+
 def _run_source(source_cls, since_date: date) -> tuple[str, list, list[str]]:
     """
     Ejecuta una fuente en un thread y devuelve (nombre, items, errores).
@@ -152,6 +173,12 @@ def main() -> None:
         action="store_true",
         help="Solo comprueba la salud de cada fuente (HEAD/GET ligero) y termina",
     )
+    parser.add_argument(
+        "--maintenance",
+        action="store_true",
+        help="Reclasifica items existentes y enriquece con IA los que aún no "
+             "tengan summary. No procesa nuevas fuentes ni notifica.",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -168,6 +195,9 @@ def main() -> None:
 
     if args.probe:
         sys.exit(_run_probe(enabled_classes))
+
+    if args.maintenance:
+        sys.exit(_run_maintenance())
 
     since_date = date.fromisoformat(args.since) if args.since else _default_since()
     logger.info(

@@ -22,7 +22,7 @@ from __future__ import annotations
 import logging
 import os
 
-from vigia.storage import Item
+from vigia.storage import Item, Storage
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +95,35 @@ def enrich(items: list[Item]) -> list[Item]:
         enriched, len(items), failed,
     )
     return items
+
+
+def enrich_pending(storage: Storage) -> int:
+    """Enriquece los items en BD que aún no tienen summary y persiste el
+    resultado. Devuelve el nº de items efectivamente enriquecidos.
+
+    Útil como tarea de mantenimiento: cuando se incorporó la persistencia
+    del summary, los hallazgos previos quedaron sin él; este método los
+    completa de forma idempotente (los runs sucesivos solo enriquecen los
+    que sigan sin summary).
+
+    Como `raw_text` no se persiste, el LLM solo verá título + categoría +
+    fuente + URL — suficiente para un resumen sintético en la mayoría de
+    casos.
+    """
+    pending = storage.iter_items_without_summary()
+    if not pending:
+        logger.info("Enricher: no hay items pendientes de summary")
+        return 0
+
+    logger.info("Enricher: enriqueciendo %d items pendientes", len(pending))
+    enriched = enrich(pending)
+    n = 0
+    for item in enriched:
+        if item.summary:
+            storage.update_summary(item)
+            n += 1
+    logger.info("Enricher: %d/%d items recibieron summary", n, len(pending))
+    return n
 
 
 def _summarize(client, item: Item) -> str:

@@ -99,6 +99,16 @@ class TestCasosHistoricos:
         assert item is not None
         assert item.categoria == "bolsa"
 
+    def test_bolsa_unica_empleo_temporal(self):
+        """CODEM publica 'Bolsa única de empleo temporal de Especialista en
+        Enfermería del Trabajo'. Antes caía en 'otro' porque el hint era
+        'bolsa de empleo' (no admitía 'única' entre medio)."""
+        item = extract(_raw(
+            "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo (2024). Subsanación."
+        ))
+        assert item is not None
+        assert item.categoria == "bolsa"
+
     def test_oep(self):
         item = extract(_raw("Oferta de Empleo Público OEP 2025, plazas de Enfermería del Trabajo."))
         assert item is not None

@@ -1,0 +1,124 @@
+name: vigia-enfermeria maintenance
+
+# Workflow manual (workflow_dispatch) para tareas de mantenimiento que
+# operan sobre la BD ya poblada: reclasificar tras afinar CATEGORY_HINTS y
+# enriquecer con IA los items históricos sin summary.
+#
+# No hace probe de fuentes ni notifica por Telegram. Solo:
+#   1. Restaura la BD desde la rama state.
+#   2. Ejecuta `python -m vigia.main --maintenance`.
+#   3. Guarda la BD modificada de vuelta en state.
+#   4. Publica el dashboard refrescado en gh-pages.
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Restaurar BD de estado
+        run: |
+          mkdir -p state
+          git fetch origin state --depth=1 2>/dev/null && \
+            git checkout FETCH_HEAD -- state/seen.db 2>/dev/null && \
+            echo "BD de estado restaurada" || \
+            echo "Sin estado previo — abortando" && exit 1
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar maintenance
+        env:
+          # ANTHROPIC_API_KEY es opcional pero, sin él, enrich_pending no
+          # hace nada — el sentido del workflow es enriquecer, así que lo
+          # esperamos configurado.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python -m vigia.main --maintenance
+
+      - name: Guardar BD de estado
+        if: always()
+        run: |
+          if [ ! -f state/seen.db ]; then
+            echo "No hay BD que guardar"
+            exit 0
+          fi
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          cp state/seen.db /tmp/seen.db
+          git fetch origin state --depth=1 2>/dev/null || true
+
+          if git ls-remote --heads origin state | grep -q state; then
+            git checkout -B _state_tmp FETCH_HEAD
+          else
+            git checkout --orphan _state_tmp
+            git rm -rf . --quiet 2>/dev/null || true
+          fi
+
+          mkdir -p state
+          cp /tmp/seen.db state/seen.db
+          git add state/seen.db
+          git diff --staged --quiet || \
+            git commit -m "state: maintenance $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git push origin _state_tmp:state
+          git checkout "${{ github.sha }}" --quiet 2>/dev/null || \
+            git checkout main --quiet 2>/dev/null || true
+          git branch -D _state_tmp 2>/dev/null || true
+
+      - name: Publicar dashboard en gh-pages
+        if: always()
+        run: |
+          HAS_DATA="0"
+          HAS_WEB="0"
+          [ -d docs/data ] && [ -n "$(ls -A docs/data 2>/dev/null)" ] && HAS_DATA="1"
+          [ -d web ] && [ -n "$(ls -A web 2>/dev/null)" ] && HAS_WEB="1"
+          if [ "$HAS_DATA" = "0" ] && [ "$HAS_WEB" = "0" ]; then
+            echo "No hay nada que publicar"
+            exit 0
+          fi
+
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+
+          rm -rf /tmp/dashboard-data /tmp/dashboard-web
+          [ "$HAS_DATA" = "1" ] && cp -r docs/data /tmp/dashboard-data
+          [ "$HAS_WEB" = "1" ] && cp -r web /tmp/dashboard-web
+
+          git fetch origin gh-pages --depth=1 2>/dev/null || true
+          if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
+            git checkout -B _pages_tmp FETCH_HEAD
+          else
+            git checkout --orphan _pages_tmp
+            git rm -rf . --quiet 2>/dev/null || true
+          fi
+
+          if [ "$HAS_DATA" = "1" ]; then
+            mkdir -p data
+            rm -rf data/*
+            cp -r /tmp/dashboard-data/* data/
+          fi
+          if [ "$HAS_WEB" = "1" ]; then
+            cp /tmp/dashboard-web/* . 2>/dev/null || true
+          fi
+          touch .nojekyll
+
+          git add -A
+          git diff --staged --quiet || \
+            git commit -m "dashboard: maintenance $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
+          git push origin _pages_tmp:gh-pages
+          git checkout "${{ github.sha }}" --quiet 2>/dev/null || \
+            git checkout main --quiet 2>/dev/null || true
+          git branch -D _pages_tmp 2>/dev/null || true

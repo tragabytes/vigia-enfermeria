@@ -83,9 +83,17 @@ CATEGORIES = {
     "otro": "Otro",
 }
 
-# Palabras clave para clasificar automáticamente
+# Palabras clave para clasificar automáticamente.
+# OJO: el matching es por substring sobre el texto NORMALIZADO (sin acentos
+# ni caracteres especiales) — los hints también deben ir normalizados aquí.
+# El orden importa: la primera categoría que matchea gana.
 CATEGORY_HINTS: dict[str, list[str]] = {
-    "bolsa": ["bolsa de empleo", "bolsa de trabajo", "contratacion temporal"],
+    "bolsa": [
+        "bolsa de empleo",
+        "bolsa de trabajo",
+        "bolsa unica",          # cubre "Bolsa única de empleo temporal..."
+        "contratacion temporal",
+    ],
     "traslado": ["concurso de traslados", "concurso de meritos", "concurso-traslado"],
     "oposicion": ["convocatoria", "proceso selectivo", "pruebas selectivas", "concurso-oposicion", "oposicion"],
     "oep": ["oferta de empleo publico", "oep "],
