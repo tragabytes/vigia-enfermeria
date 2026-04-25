@@ -100,44 +100,55 @@ jobs:
             git checkout main --quiet 2>/dev/null || true
           git branch -D _state_tmp 2>/dev/null || true
 
-      - name: Publicar JSON del dashboard en gh-pages
-        # Sube docs/data/{items,sources_status,meta}.json a la rama gh-pages
-        # sin tocar el resto del contenido (HTML del dashboard cuando esté).
+      - name: Publicar dashboard en gh-pages
+        # Sube web/* (index.html, styles.css, app.js) y docs/data/*.json a
+        # la rama gh-pages, dejándola lista para servir desde GitHub Pages.
         # Se ejecuta siempre porque queremos refrescar el estado de las
         # fuentes incluso si el pipeline principal falló.
         if: always()
         run: |
-          if [ ! -d docs/data ] || [ -z "$(ls -A docs/data 2>/dev/null)" ]; then
-            echo "No hay JSON de dashboard que publicar"
+          HAS_DATA="0"
+          HAS_WEB="0"
+          [ -d docs/data ] && [ -n "$(ls -A docs/data 2>/dev/null)" ] && HAS_DATA="1"
+          [ -d web ] && [ -n "$(ls -A web 2>/dev/null)" ] && HAS_WEB="1"
+          if [ "$HAS_DATA" = "0" ] && [ "$HAS_WEB" = "0" ]; then
+            echo "No hay nada que publicar (ni docs/data ni web/)"
             exit 0
           fi
 
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config user.name "github-actions[bot]"
 
-          # Empaquetar el data/ generado en /tmp para preservarlo durante el
-          # checkout de la rama gh-pages (que sobreescribe el árbol).
-          rm -rf /tmp/dashboard-data
-          cp -r docs/data /tmp/dashboard-data
+          # Empaquetamos los assets antes del checkout, que sobreescribe el árbol.
+          rm -rf /tmp/dashboard-data /tmp/dashboard-web
+          [ "$HAS_DATA" = "1" ] && cp -r docs/data /tmp/dashboard-data
+          [ "$HAS_WEB" = "1" ] && cp -r web /tmp/dashboard-web
 
           git fetch origin gh-pages --depth=1 2>/dev/null || true
 
           if git ls-remote --heads origin gh-pages | grep -q gh-pages; then
             git checkout -B _pages_tmp FETCH_HEAD
           else
-            # Primera vez: rama orphan vacía. El HTML del dashboard se
-            # añadirá después; ahora solo publicamos los datos.
             git checkout --orphan _pages_tmp
             git rm -rf . --quiet 2>/dev/null || true
           fi
 
-          mkdir -p data
-          # Sobreescribir solo el contenido de data/, sin tocar index.html
-          # ni otros assets que pueda llevar la rama.
-          rm -rf data/*
-          cp -r /tmp/dashboard-data/* data/
+          # data/: contenido fresco del último run (probe + items).
+          if [ "$HAS_DATA" = "1" ]; then
+            mkdir -p data
+            rm -rf data/*
+            cp -r /tmp/dashboard-data/* data/
+          fi
 
-          git add data/
+          # web/: assets estáticos copiados a la raíz del sitio.
+          if [ "$HAS_WEB" = "1" ]; then
+            cp /tmp/dashboard-web/* . 2>/dev/null || true
+          fi
+
+          # .nojekyll evita que GitHub Pages intente procesar con Jekyll.
+          touch .nojekyll
+
+          git add -A
           git diff --staged --quiet || \
             git commit -m "dashboard: $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
           git push origin _pages_tmp:gh-pages
