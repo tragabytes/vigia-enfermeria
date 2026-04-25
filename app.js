@@ -32,14 +32,18 @@ const CAT_COLOR = {
   'otro':         '#888888',
 };
 
-let DATA = { items: [], sources: [], meta: {} };
+let DATA = { items: [], sources: [], meta: {}, targets: [] };
 
 /* ---- bootstrap ------------------------------------------------------- */
 async function loadData() {
   const items   = await fetch('data/items.json').then(r => r.json());
   const sources = await fetch('data/sources_status.json').then(r => r.json());
   const meta    = await fetch('data/meta.json').then(r => r.json());
-  DATA = { items, sources, meta };
+  // targets.json es opcional (versión vieja del backend no lo genera).
+  const targets = await fetch('data/targets.json')
+    .then(r => r.ok ? r.json() : [])
+    .catch(() => []);
+  DATA = { items, sources, meta, targets };
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -519,38 +523,21 @@ function renderSources() {
   });
 }
 
-/* ---- 6. Watchlist (HEALTH_ORGS) ------------------------------------- */
-const WATCHLIST = [
-  { id:'T-01', name:'SERMAS',                          desc:'Servicio Madrileño de Salud (incluye 11 hospitales públicos)', hits:178, hot:true },
-  { id:'T-02', name:'H. La Paz',                       desc:'Hospital Universitario La Paz — Servicio de Prevención',       hits: 14, hot:true },
-  { id:'T-03', name:'H. 12 de Octubre',                desc:'Hospital Universitario 12 de Octubre — Salud Laboral',         hits: 11, hot:true },
-  { id:'T-04', name:'H. Gregorio Marañón',             desc:'Hospital Universitario Gregorio Marañón — Prevención',         hits:  9, hot:true },
-  { id:'T-05', name:'H. Ramón y Cajal',                desc:'Hospital Universitario Ramón y Cajal — Salud Laboral',         hits:  6, hot:true },
-  { id:'T-06', name:'SUMMA 112',                       desc:'Servicio de Urgencia Médica de Madrid',                        hits: 12, hot:true },
-  { id:'T-07', name:'FNMT-RCM',                        desc:'Fábrica Nacional de Moneda y Timbre — Servicio Médico',        hits:  5, hot:true },
-  { id:'T-08', name:'EMT Madrid',                      desc:'Empresa Municipal de Transportes — Salud Laboral',             hits:  4, hot:true },
-  { id:'T-09', name:'Metro de Madrid',                 desc:'Metro de Madrid S.A. — Servicio de Prevención propio',         hits:  3, hot:true },
-  { id:'T-10', name:'Canal de Isabel II',              desc:'Canal de Isabel II — SP Mancomunado',                          hits:  6, hot:true },
-  { id:'T-11', name:'Ayto. Madrid',                    desc:'Ayuntamiento de Madrid — IMD, Bomberos, Policía Municipal',    hits: 18, hot:true },
-  { id:'T-12', name:'Las Rozas',                       desc:'Ayto. de Las Rozas — Corredor A-6',                            hits:  2, hot:false },
-  { id:'T-13', name:'Majadahonda',                     desc:'Ayto. de Majadahonda — Corredor A-6',                          hits:  2, hot:false },
-  { id:'T-14', name:'Pozuelo de Alarcón',              desc:'Ayto. de Pozuelo de Alarcón — Corredor A-6',                   hits:  1, hot:false },
-  { id:'T-15', name:'Boadilla del Monte',              desc:'Ayto. de Boadilla del Monte — Corredor A-6',                   hits:  1, hot:false },
-  { id:'T-16', name:'Villaviciosa de Odón',            desc:'Ayto. de Villaviciosa de Odón — Corredor A-6',                 hits:  1, hot:false },
-  { id:'T-17', name:'Alcorcón',                        desc:'Ayto. de Alcorcón — Corredor A-5',                             hits:  2, hot:false },
-  { id:'T-18', name:'Móstoles',                        desc:'Ayto. de Móstoles — Corredor A-5',                             hits:  3, hot:false },
-  { id:'T-19', name:'Fuenlabrada',                     desc:'Ayto. de Fuenlabrada — Corredor A-5',                          hits:  2, hot:false },
-  { id:'T-20', name:'Cuerpo Militar Sanidad',          desc:'Ministerio de Defensa — Esp. Enfermería del Trabajo',          hits:  4, hot:true },
-  { id:'T-21', name:'INSS',                            desc:'Instituto Nacional de la Seguridad Social',                    hits:  3, hot:false },
-  { id:'T-22', name:'AGE — Política Territorial',      desc:'Delegaciones de Gobierno — concurso de traslados',             hits:  2, hot:false },
-];
+/* ---- 6. Watchlist (organismos vigilados, calculados en backend) ----- */
 function renderWatchlist() {
-  $('#watchlist').innerHTML = WATCHLIST.map(t => `
-    <div class="target ${t.hot ? '' : 'cold'}">
-      <div class="id">${t.id}</div>
-      <div class="name">${t.name}</div>
-      <div class="desc">${t.desc}</div>
-      <div class="stat">HITS <b>${t.hits}</b> · ${t.hot ? 'ACTIVE' : 'COLD'}</div>
+  const targets = DATA.targets || [];
+  const active = targets.filter(t => t.active).length;
+  const total = targets.length;
+  const cold = total - active;
+  const meta = $('#watchlist-meta');
+  if (meta) meta.textContent = `${total} ENTITIES · ${active} ACTIVE · ${cold} COLD`;
+
+  $('#watchlist').innerHTML = targets.map(t => `
+    <div class="target ${t.active ? '' : 'cold'}">
+      <div class="id">${escapeHTML(t.id)}</div>
+      <div class="name">${escapeHTML(t.name)}</div>
+      <div class="desc">${escapeHTML(t.desc)}</div>
+      <div class="stat">HITS <b>${t.hits}</b> · ${t.active ? 'ACTIVE' : 'COLD'}</div>
     </div>
   `).join('');
 }

@@ -1,0 +1,156 @@
+[
+  {
+    "id": "T-01",
+    "name": "SERMAS",
+    "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
+    "hits": 2,
+    "active": true
+  },
+  {
+    "id": "T-02",
+    "name": "H. La Paz",
+    "desc": "Hospital Universitario La Paz — Servicio de Prevención",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-03",
+    "name": "H. 12 de Octubre",
+    "desc": "Hospital Universitario 12 de Octubre — Salud Laboral",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-04",
+    "name": "H. Gregorio Marañón",
+    "desc": "Hospital Universitario Gregorio Marañón — Prevención",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-05",
+    "name": "H. Ramón y Cajal",
+    "desc": "Hospital Universitario Ramón y Cajal — Salud Laboral",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-06",
+    "name": "SUMMA 112",
+    "desc": "Servicio de Urgencia Médica de Madrid",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-07",
+    "name": "FNMT-RCM",
+    "desc": "Fábrica Nacional de Moneda y Timbre — Servicio Médico",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-08",
+    "name": "EMT Madrid",
+    "desc": "Empresa Municipal de Transportes — Salud Laboral",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-09",
+    "name": "Metro de Madrid",
+    "desc": "Metro de Madrid S.A. — Servicio de Prevención propio",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-10",
+    "name": "Canal de Isabel II",
+    "desc": "Canal de Isabel II — SP Mancomunado",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-11",
+    "name": "Ayto. Madrid",
+    "desc": "Ayuntamiento de Madrid — IMD, Bomberos, Policía Municipal",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-12",
+    "name": "Las Rozas",
+    "desc": "Ayto. de Las Rozas — Corredor A-6",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-13",
+    "name": "Majadahonda",
+    "desc": "Ayto. de Majadahonda — Corredor A-6",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-14",
+    "name": "Pozuelo de Alarcón",
+    "desc": "Ayto. de Pozuelo de Alarcón — Corredor A-6",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-15",
+    "name": "Boadilla del Monte",
+    "desc": "Ayto. de Boadilla del Monte — Corredor A-6",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-16",
+    "name": "Villaviciosa de Odón",
+    "desc": "Ayto. de Villaviciosa de Odón — Corredor A-6",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-17",
+    "name": "Alcorcón",
+    "desc": "Ayto. de Alcorcón — Corredor A-5",
+    "hits": 2,
+    "active": true
+  },
+  {
+    "id": "T-18",
+    "name": "Móstoles",
+    "desc": "Ayto. de Móstoles — Corredor A-5",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-19",
+    "name": "Fuenlabrada",
+    "desc": "Ayto. de Fuenlabrada — Corredor A-5",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-20",
+    "name": "Cuerpo Militar Sanidad",
+    "desc": "Ministerio de Defensa — Esp. Enfermería del Trabajo",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-21",
+    "name": "INSS",
+    "desc": "Instituto Nacional de la Seguridad Social",
+    "hits": 0,
+    "active": false
+  },
+  {
+    "id": "T-22",
+    "name": "AGE — Política Territorial",
+    "desc": "Delegaciones del Gobierno — concurso de traslados",
+    "hits": 0,
+    "active": false
+  }
+]
