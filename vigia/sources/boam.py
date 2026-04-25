@@ -80,17 +80,17 @@ class BOAMSource(Source):
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
 
-        target_str = target.strftime("%-d/%m/%Y")  # "24/04/2026"
-        # En Windows strftime %-d no existe; normalizar
+        # El portal puede mostrar la fecha con o sin padding del día ("4/04/2026"
+        # o "04/04/2026"). Construimos ambas variantes manualmente para evitar
+        # %-d (no portable: solo funciona en Linux/Mac, falla en Windows).
+        target_str = f"{target.day}/{target.month:02d}/{target.year}"
         target_str_alt = target.strftime("%d/%m/%Y")
 
         for a in soup.find_all("a", href=True):
             href = a["href"]
             text = a.get_text(" ", strip=True)
-            # Buscar el enlace del BOAM con la fecha correcta
-            if "BOAM" in text and any(
-                t in text for t in [target_str, target_str_alt, target.strftime("%d/%m/%Y")]
-            ):
+            # Buscar el enlace del BOAM con la fecha correcta (con o sin padding)
+            if "BOAM" in text and (target_str in text or target_str_alt in text):
                 # Buscar el PDF de descarga en los hermanos del enlace
                 parent = a.find_parent()
                 if parent:

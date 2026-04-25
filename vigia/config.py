@@ -12,9 +12,20 @@ TELEGRAM_BOT_TOKEN: str = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID: str = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 # ---------------------------------------------------------------------------
-# User-Agent identificable (ver sección 9 del plan)
+# User-Agent
 # ---------------------------------------------------------------------------
-USER_AGENT = "vigia-enfermeria/1.0 (contacto: l.t.lombardia@gmail.com; github: vigia-enfermeria)"
+# Originalmente usábamos un UA identificable ("vigia-enfermeria/1.0 (contacto:
+# ...; github: ...)") siguiendo la sección 9 del PLAN, pero sede.madrid.es
+# (al que redirige www.madrid.es/boam) filtra UAs no-navegador y devuelve 403
+# con cualquier identificación honesta. Validado el 2026-04-25: con UA Firefox
+# devuelve 200 + 142KB; con el UA identificable, 403.
+# Como las demás fuentes admiten cualquier UA y solo hacemos 1 request/día por
+# fuente, usamos un UA de navegador estándar para toda la red de fuentes y
+# evitamos complejidad de override por fuente.
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) "
+    "Gecko/20100101 Firefox/128.0"
+)
 
 # ---------------------------------------------------------------------------
 # Términos de búsqueda (sección 3 del plan)
