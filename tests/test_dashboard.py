@@ -310,6 +310,121 @@ class TestExportAll:
         by_name = {r["name"]: r for r in data}
         assert by_name["boam"]["code"] == 403
 
+    def test_genera_targets_json(self, tmp_path):
+        """export_all debe escribir targets.json con la lista de 22 organismos."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        path = tmp_path / "out" / "targets.json"
+        assert path.exists()
+        targets = json.loads(path.read_text(encoding="utf-8"))
+        assert len(targets) == 22
+        ids = {t["id"] for t in targets}
+        assert "T-01" in ids and "T-22" in ids
+
+
+class TestTargetsPayload:
+    def _save(self, storage, titulo, fecha=date(2026, 4, 25), summary=None,
+              source="bocm", categoria="oposicion"):
+        storage.save(Item(
+            source=source,
+            url=f"https://example.com/{abs(hash(titulo))}",
+            titulo=titulo,
+            fecha=fecha,
+            categoria=categoria,
+            summary=summary,
+        ))
+
+    def test_match_por_titulo(self, tmp_path):
+        storage = Storage(db_path=tmp_path / "seen.db")
+        self._save(storage, "Convocatoria SERMAS Enfermería del Trabajo")
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        sermas = next(t for t in targets if t["id"] == "T-01")
+        assert sermas["hits"] == 1
+
+    def test_match_por_summary_tambien(self, tmp_path):
+        """Si el organismo solo aparece en el summary del enricher, debe contar."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        self._save(
+            storage,
+            titulo="Bolsa única de Enfermería del Trabajo (Subsanación)",
+            summary="Hospital Universitario La Paz convoca 4 plazas.",
+        )
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        la_paz = next(t for t in targets if t["id"] == "T-02")
+        assert la_paz["hits"] == 1
+
+    def test_active_si_publicacion_reciente(self, tmp_path):
+        """ACTIVE = al menos un item con fecha < 90 días."""
+        from datetime import timedelta
+        now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+        self._save(storage, "FNMT convoca proceso", fecha=date(2026, 4, 1))
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        fnmt = next(t for t in targets if t["id"] == "T-07")
+        assert fnmt["hits"] == 1
+        assert fnmt["active"] is True
+
+    def test_cold_si_publicacion_antigua(self, tmp_path):
+        """Hit de hace más de 90 días → organismo aparece como COLD."""
+        now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+        # Publicación de hace ~6 meses
+        self._save(storage, "FNMT convocó proceso", fecha=date(2025, 10, 1))
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        fnmt = next(t for t in targets if t["id"] == "T-07")
+        assert fnmt["hits"] == 1
+        assert fnmt["active"] is False
+
+    def test_sin_items_todos_en_cold_y_cero_hits(self, tmp_path):
+        storage = Storage(db_path=tmp_path / "seen.db")
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        assert all(t["hits"] == 0 for t in targets)
+        assert all(t["active"] is False for t in targets)
+
+    def test_meta_incluye_targets_active_y_total(self, tmp_path):
+        storage = Storage(db_path=tmp_path / "seen.db")
+        self._save(storage, "SERMAS Enfermería del Trabajo", fecha=date(2026, 4, 1))
+        dashboard.export_all(
+            storage, tmp_path / "out",
+            last_run_at=datetime(2026, 4, 25, tzinfo=timezone.utc),
+        )
+        storage.close()
+
+        meta = json.loads(
+            (tmp_path / "out" / "meta.json").read_text(encoding="utf-8")
+        )
+        assert meta["targets_total"] == 22
+        assert meta["targets_active"] == 1
+
+
+class TestExportAllExtras:
     def test_json_es_utf8_con_acentos(self, tmp_path):
         """Los títulos llevan acentos; el JSON debe preservarlos legibles."""
         storage = Storage(db_path=tmp_path / "seen.db")

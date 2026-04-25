@@ -110,6 +110,92 @@ CATEGORY_HINTS: dict[str, list[str]] = {
 
 
 # ---------------------------------------------------------------------------
+# Watchlist de organismos vigilados (sección 06 del dashboard)
+# ---------------------------------------------------------------------------
+# Cada `patterns` es una lista de substrings YA NORMALIZADOS (sin acentos,
+# minúsculas, alfanumérico) que se busca dentro de `normalize(titulo+summary)`
+# para contar hits del organismo. Pensar en variantes y formas comunes — las
+# convocatorias se publican con denominaciones inconsistentes.
+WATCHLIST_ORGS: list[dict] = [
+    {"id": "T-01", "name": "SERMAS",
+     "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
+     "patterns": ["sermas", "servicio madrileno de salud"]},
+    {"id": "T-02", "name": "H. La Paz",
+     "desc": "Hospital Universitario La Paz — Servicio de Prevención",
+     "patterns": ["hospital universitario la paz", "hospital la paz", " la paz "]},
+    {"id": "T-03", "name": "H. 12 de Octubre",
+     "desc": "Hospital Universitario 12 de Octubre — Salud Laboral",
+     "patterns": ["12 de octubre", "doce de octubre"]},
+    {"id": "T-04", "name": "H. Gregorio Marañón",
+     "desc": "Hospital Universitario Gregorio Marañón — Prevención",
+     "patterns": ["gregorio maranon"]},
+    {"id": "T-05", "name": "H. Ramón y Cajal",
+     "desc": "Hospital Universitario Ramón y Cajal — Salud Laboral",
+     "patterns": ["ramon y cajal"]},
+    {"id": "T-06", "name": "SUMMA 112",
+     "desc": "Servicio de Urgencia Médica de Madrid",
+     "patterns": ["summa 112", "summa112", "urgencia medica de madrid"]},
+    {"id": "T-07", "name": "FNMT-RCM",
+     "desc": "Fábrica Nacional de Moneda y Timbre — Servicio Médico",
+     "patterns": ["fnmt", "fabrica nacional de moneda", "casa de la moneda"]},
+    {"id": "T-08", "name": "EMT Madrid",
+     "desc": "Empresa Municipal de Transportes — Salud Laboral",
+     "patterns": [" emt ", "empresa municipal de transportes"]},
+    {"id": "T-09", "name": "Metro de Madrid",
+     "desc": "Metro de Madrid S.A. — Servicio de Prevención propio",
+     "patterns": ["metro de madrid", "metro madrid"]},
+    {"id": "T-10", "name": "Canal de Isabel II",
+     "desc": "Canal de Isabel II — SP Mancomunado",
+     "patterns": ["canal de isabel ii", "canal isabel ii"]},
+    {"id": "T-11", "name": "Ayto. Madrid",
+     "desc": "Ayuntamiento de Madrid — IMD, Bomberos, Policía Municipal",
+     "patterns": ["ayuntamiento de madrid", "ayto de madrid",
+                  "imd madrid", "bomberos madrid", "policia municipal madrid"]},
+    {"id": "T-12", "name": "Las Rozas",
+     "desc": "Ayto. de Las Rozas — Corredor A-6",
+     "patterns": ["las rozas"]},
+    {"id": "T-13", "name": "Majadahonda",
+     "desc": "Ayto. de Majadahonda — Corredor A-6",
+     "patterns": ["majadahonda"]},
+    {"id": "T-14", "name": "Pozuelo de Alarcón",
+     "desc": "Ayto. de Pozuelo de Alarcón — Corredor A-6",
+     "patterns": ["pozuelo"]},
+    {"id": "T-15", "name": "Boadilla del Monte",
+     "desc": "Ayto. de Boadilla del Monte — Corredor A-6",
+     "patterns": ["boadilla"]},
+    {"id": "T-16", "name": "Villaviciosa de Odón",
+     "desc": "Ayto. de Villaviciosa de Odón — Corredor A-6",
+     "patterns": ["villaviciosa de odon"]},
+    {"id": "T-17", "name": "Alcorcón",
+     "desc": "Ayto. de Alcorcón — Corredor A-5",
+     "patterns": ["alcorcon"]},
+    {"id": "T-18", "name": "Móstoles",
+     "desc": "Ayto. de Móstoles — Corredor A-5",
+     "patterns": ["mostoles"]},
+    {"id": "T-19", "name": "Fuenlabrada",
+     "desc": "Ayto. de Fuenlabrada — Corredor A-5",
+     "patterns": ["fuenlabrada"]},
+    {"id": "T-20", "name": "Cuerpo Militar Sanidad",
+     "desc": "Ministerio de Defensa — Esp. Enfermería del Trabajo",
+     "patterns": ["cuerpo militar de sanidad", "cuerpo militar sanidad",
+                  "ministerio de defensa"]},
+    {"id": "T-21", "name": "INSS",
+     "desc": "Instituto Nacional de la Seguridad Social",
+     "patterns": [" inss ", "instituto nacional de la seguridad social"]},
+    {"id": "T-22", "name": "AGE — Política Territorial",
+     "desc": "Delegaciones del Gobierno — concurso de traslados",
+     "patterns": ["politica territorial", "delegaciones del gobierno",
+                  "delegacion del gobierno"]},
+]
+
+# Días de antigüedad de la fecha de publicación a partir de los cuales se
+# considera que un organismo ya no tiene proceso activo. Heurística: las
+# convocatorias suelen tener plazo de 20-30 días desde publicación; pasados
+# 90 días, en la inmensa mayoría de casos el plazo cerró. Aproximación
+# pragmática hasta que el enricher sepa extraer la fecha de cierre real.
+WATCHLIST_RECENCY_DAYS = 90
+
+# ---------------------------------------------------------------------------
 # Fuentes habilitadas
 # ---------------------------------------------------------------------------
 SOURCES_ENABLED: list[str] = [

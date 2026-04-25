@@ -24,7 +24,12 @@ from pathlib import Path
 from typing import Optional
 
 from vigia import __version__
-from vigia.config import SOURCES_ENABLED
+from vigia.config import (
+    SOURCES_ENABLED,
+    WATCHLIST_ORGS,
+    WATCHLIST_RECENCY_DAYS,
+    normalize,
+)
 from vigia.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -54,6 +59,7 @@ def export_all(
     items_path = out_dir / "items.json"
     sources_path = out_dir / "sources_status.json"
     meta_path = out_dir / "meta.json"
+    targets_path = out_dir / "targets.json"
 
     items_payload = _items_payload(storage)
 
@@ -73,16 +79,23 @@ def export_all(
         sources_payload = _sources_payload(storage, None, now)
         _write_json(sources_path, sources_payload)
 
-    meta_payload = _meta_payload(storage, sources_payload, now)
+    targets_payload = _targets_payload(storage, now)
+    meta_payload = _meta_payload(storage, sources_payload, targets_payload, now)
 
     _write_json(items_path, items_payload)
+    _write_json(targets_path, targets_payload)
     _write_json(meta_path, meta_payload)
 
     logger.info(
-        "Dashboard exportado: %d items, %d fuentes en %s",
-        len(items_payload), len(sources_payload), out_dir,
+        "Dashboard exportado: %d items, %d fuentes, %d targets en %s",
+        len(items_payload), len(sources_payload), len(targets_payload), out_dir,
     )
-    return {"items": items_path, "sources": sources_path, "meta": meta_path}
+    return {
+        "items": items_path,
+        "sources": sources_path,
+        "meta": meta_path,
+        "targets": targets_path,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -176,9 +189,57 @@ def _sources_payload(
     return rows
 
 
+def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
+    """Calcula hits y estado activo/frío de cada organismo del watchlist.
+
+    `hits`  = nº de items cuyo título o summary contienen alguno de los
+              `patterns` del organismo (substring sobre texto normalizado).
+    `active` = True si al menos uno de esos hits tiene `fecha` (publicación
+              oficial) dentro de los últimos `WATCHLIST_RECENCY_DAYS` días.
+              Heurística: las convocatorias suelen tener plazo de
+              inscripción de 20-30 días desde publicación; pasados 90, lo
+              razonable es considerar el proceso cerrado.
+
+    Limitación conocida: no podemos saber con certeza si el plazo está
+    abierto sin la fecha de cierre real. La extracción estructurada de
+    deadline vía LLM queda anotada en BACKLOG.
+    """
+    cutoff_iso = (now - timedelta(days=WATCHLIST_RECENCY_DAYS)).date().isoformat()
+
+    rows = list(storage._conn.execute(
+        "SELECT titulo, COALESCE(summary, ''), fecha FROM items"
+    ))
+    # Pre-normalizamos una sola vez por item para no pagar normalize() N×M.
+    # Rodeamos con espacios para que patterns como " emt " (con guard de
+    # palabra) puedan matchear al inicio o final del texto.
+    items_idx = [
+        (" " + normalize(titulo + " " + summary) + " ", fecha)
+        for titulo, summary, fecha in rows
+    ]
+
+    targets: list[dict] = []
+    for org in WATCHLIST_ORGS:
+        hits = 0
+        recent = False
+        for text, fecha in items_idx:
+            if any(p in text for p in org["patterns"]):
+                hits += 1
+                if fecha >= cutoff_iso:
+                    recent = True
+        targets.append({
+            "id": org["id"],
+            "name": org["name"],
+            "desc": org["desc"],
+            "hits": hits,
+            "active": recent,
+        })
+    return targets
+
+
 def _meta_payload(
     storage: Storage,
     sources_payload: list[dict],
+    targets_payload: list[dict],
     now: datetime,
 ) -> dict:
     """Métricas globales: contadores, ventana temporal, build info."""
@@ -220,6 +281,9 @@ def _meta_payload(
         1 for s in sources_payload if s.get("status") in ("ok", "skipped")
     )
 
+    targets_active = sum(1 for t in targets_payload if t.get("active"))
+    targets_total = len(targets_payload)
+
     return {
         "total_items": total,
         "total_today": total_today,
@@ -230,6 +294,8 @@ def _meta_payload(
         "next_run_at": _next_cron_run(now).isoformat(),
         "sources_online": sources_online,
         "sources_total": sources_total,
+        "targets_active": targets_active,
+        "targets_total": targets_total,
         "version": __version__,
         "commit": _commit_short(),
     }
