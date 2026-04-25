@@ -10,10 +10,10 @@
   },
   "days_watching": 0,
   "first_seen_at": "2026-04-25T12:21:03.294822",
-  "last_run_at": "2026-04-25T20:11:17.922957+00:00",
+  "last_run_at": "2026-04-25T20:14:42.677732+00:00",
   "next_run_at": "2026-04-27T08:00:00+00:00",
   "sources_online": 8,
   "sources_total": 10,
   "version": "0.2.0",
-  "commit": "adc4f5f"
+  "commit": "e43f290"
 }
