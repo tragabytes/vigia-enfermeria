@@ -346,7 +346,7 @@ _CONVENTIONAL_RE = re.compile(
 
 def _changelog_payload(
     repo_dir: Optional[Path] = None,
-    max_entries: int = 8,
+    max_entries: int = 4,
 ) -> list[dict]:
     """Genera la lista FIELD NOTES desde el `git log` real del repo.
 
