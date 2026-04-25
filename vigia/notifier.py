@@ -27,6 +27,11 @@ logger = logging.getLogger(__name__)
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 MAX_MESSAGE_LEN = 4096  # límite de Telegram
 
+# URL pública del dashboard (rama gh-pages). Se incluye al final de cada
+# notificación para que el destinatario pueda inspeccionar el histórico,
+# las estadísticas y el estado de las fuentes desde un sitio estable.
+DASHBOARD_URL = "https://tragabytes.github.io/vigia-enfermeria/"
+
 
 def send(
     items: list[Item],
@@ -83,6 +88,9 @@ def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date
 
     for source_name, err_msg in errors:
         lines.append(f"⚠️ Fuente *{_escape(source_name)}* no respondió: {_escape(err_msg)}")
+
+    lines.append("")
+    lines.append(f"🛰️ Panel completo: {DASHBOARD_URL}")
 
     return "\n".join(lines)
 
