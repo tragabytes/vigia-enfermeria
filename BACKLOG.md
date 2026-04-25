@@ -10,18 +10,21 @@ Pendientes para retomar más adelante. Última actualización: 2026-04-25.
 
 Implementado con la opción A del plan: atributo `self.last_errors` en la clase base `Source`, las 7 fuentes lo rellenan junto a su `logger.warning(...)`, `_run_source()` lo devuelve como tercer elemento de la tupla y `main.py` lo extiende a la lista global `errors`. 9 tests nuevos en `test_main_errors.py` cubren el comportamiento. Validado end-to-end con un run real: BOAM y Comunidad Madrid caídos generaron mensaje en Telegram.
 
-### 2. BOAM y Ayuntamiento Madrid bloqueados por geolocalización (parcial)
+### ~~2. BOAM y Ayuntamiento Madrid bloqueados por geolocalización~~ 🟡 Mitigado (2026-04-25, commit `69e796c`)
 
-**Investigado el 2026-04-25, commit `b4e8c36`.** El primer 403 que veíamos era por User-Agent (`vigia-enfermeria/1.0...` filtrado): cambiando el UA global a uno de Firefox, **en local desde España BOAM funciona** (descarga PDF del sumario y parsea). Pero desde **GitHub Actions sigue dando 403**, y ahora la URL que falla es `https://www.madrid.es/boam` directamente, antes del redirect a `sede.madrid.es`.
+**Diagnóstico.** `madrid.es` filtra por **IP + UA combinados**. Solo desde IP española con UA de navegador real deja pasar. El runner de GHA (Azure US/EU) está fuera del rango admitido. Las fuentes `boam.py` y `ayuntamiento_madrid.py` (que pegan a `madrid.es/...`) siguen devolviendo 403 desde el cron.
 
-Conclusión: `madrid.es` filtra por **IP + UA combinados**. Solo desde IP española con UA de navegador real deja pasar. El runner de GHA (Azure US/EU) está fuera del rango admitido. La fuente `ayuntamiento_madrid` (que también pega a `madrid.es/portales/...`) tiene exactamente el mismo síntoma.
+**Mitigación implementada.** Investigando alternativas se descubrió que **`datos.madrid.es` (portal de datos abiertos del Ayuntamiento) NO está geo-bloqueado** y expone los datos del Ayto vía API CKAN estándar. Se creó la fuente `vigia/sources/datos_madrid.py` que monitoriza:
+- **OEP del Ayuntamiento** (300701-0-empleo-oep): detectó las 6 plazas de Enfermero/a del Trabajo OEP 2025 en el primer run real.
+- **Procesos selectivos de estabilización** (300687-0-plantilla-estabilizacion).
 
-**Impacto real:** bajo. BOAM publica las convocatorias del Ayuntamiento de Madrid, que en su mayoría también aparecen en BOE sección 2B (Administración Local). La cobertura primaria sigue siendo BOE + BOCM + Comunidad Madrid.
+Cobertura recuperada: OEPs y procesos selectivos del Ayto Madrid (decisiones agregadas, lo que más interesa). Lo que se sigue perdiendo: las disposiciones diarias del BOAM (pero la convocatoria con bases acabará apareciendo también en BOE 2B Administración Local, que sí monitorizamos).
 
-**Opciones de futuro (ordenadas por viabilidad):**
-1. **Self-host del cron en VPS español** (Hetzner Helsinki ~€4/mes, Contabo ES, OVH FR; o Raspberry Pi en casa). Requiere migrar el workflow a un cron de sistema + decidir cómo persistir la BD (igual que ahora pero local).
-2. **Investigar URL alternativa pública del BOAM** (¿RSS, JSON, endpoint XML como BOCM?). Sin garantía de que exista. **Vale la pena explorar antes de la opción 1.**
-3. **Proxy europeo gratis** — descartado: poco fiable, infringe TOS de muchos servicios.
+**Pendiente real (opcional, baja prioridad):** ejecutar el cron desde IP española para recuperar literalmente todo. Opciones:
+1. **Self-host en VPS español** (Hetzner Helsinki, Contabo ES, OVH FR; ~4€/mes; o Raspberry Pi en casa). Migra el workflow a cron de sistema, decide persistencia de BD.
+2. **fly.io con región Madrid** o **Vercel Edge Functions con región mad1** como proxy: free tier, IP española real. Solo el `boam.py` apuntaría a ese proxy, el resto seguiría como ahora.
+
+Coste-beneficio: con `datos_madrid.py` ya tenemos lo más jugoso del Ayto Madrid (OEPs + procesos). Migrar a VPS por las disposiciones diarias del BOAM es trabajo adicional con beneficio marginal.
 
 ### ~~3. Comunidad de Madrid `/buscador` da 404~~ ✅ Resuelto colateralmente (2026-04-25, commit `b4e8c36`)
 
