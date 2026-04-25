@@ -32,6 +32,7 @@ from vigia.sources.boe import BOESource
 from vigia.sources.canal_isabel_ii import CanalIsabelIISource
 from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
+from vigia.sources.datos_madrid import DatosMadridSource
 from vigia.sources.metro_madrid import MetroMadridSource
 from vigia.storage import Storage
 
@@ -47,6 +48,7 @@ SOURCE_REGISTRY = {
     "canal_isabel_ii": CanalIsabelIISource,
     "administracion_gob": AdministracionGobSource,
     "codem": CODEMSource,
+    "datos_madrid": DatosMadridSource,
 }
 
 

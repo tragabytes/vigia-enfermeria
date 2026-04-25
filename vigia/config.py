@@ -47,6 +47,11 @@ STRONG_PATTERNS: list[str] = [
     r"enfermero\s+de\s+salud\s+laboral",
     r"enfermeria\s+de\s+salud\s+laboral",
     r"enfermer[ao]\s+especialista.{0,30}trabajo",  # "Enfermero/a Especialista ... Trabajo"
+    # Variante "Enfermero/a del Trabajo" — tras normalize(), la "/" se convierte
+    # en espacio así que el texto queda "enfermero a del trabajo". Soportamos
+    # la "a"/"o" intercalada como opcional.
+    r"enfermer[ao]\s+(?:[ao]\s+)?del\s+trabajo",
+    r"enfermer[ao]\s+(?:[ao]\s+)?de\s+trabajo",
 ]
 
 # Match débil: solo si ADEMÁS aparece "enfermer" en el mismo fragmento (100 chars)
@@ -101,6 +106,7 @@ SOURCES_ENABLED: list[str] = [
     "canal_isabel_ii",
     "administracion_gob",
     "codem",
+    "datos_madrid",
 ]
 
 
