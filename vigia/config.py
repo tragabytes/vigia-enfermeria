@@ -95,7 +95,15 @@ CATEGORY_HINTS: dict[str, list[str]] = {
         "contratacion temporal",
     ],
     "traslado": ["concurso de traslados", "concurso de meritos", "concurso-traslado"],
-    "oposicion": ["convocatoria", "proceso selectivo", "pruebas selectivas", "concurso-oposicion", "oposicion"],
+    "oposicion": [
+        "convocatoria",
+        "proceso selectivo",
+        "pruebas selectivas",
+        "concurso-oposicion",
+        "oposicion",
+        "estabilizacion",   # "proceso de estabilización" en SERMAS
+        "acceso libre",     # "proceso de acceso libre para Diplomado..."
+    ],
     "oep": ["oferta de empleo publico", "oep "],
     "nombramiento": ["nombramiento", "resolucion", "adjudicacion"],
 }

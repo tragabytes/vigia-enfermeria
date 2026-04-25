@@ -109,6 +109,25 @@ class TestCasosHistoricos:
         assert item is not None
         assert item.categoria == "bolsa"
 
+    def test_proceso_estabilizacion_es_oposicion(self):
+        """SERMAS publica 'Proceso de estabilización en SERMAS de la categoría
+        de Enfermero/a Especialista en Enfermería del Trabajo'. Es un proceso
+        selectivo y debe clasificarse como oposicion (antes caía en otro)."""
+        item = extract(_raw(
+            "Proceso de estabilización en SERMAS de la categoría de Enfermero/a Especialista en Enfermería del Trabajo."
+        ))
+        assert item is not None
+        assert item.categoria == "oposicion"
+
+    def test_proceso_acceso_libre_es_oposicion(self):
+        """'Proceso de acceso libre para Diplomado en Enfermería Especialista
+        en Enfermería del Trabajo' también es un proceso selectivo."""
+        item = extract(_raw(
+            "Proceso de acceso libre para Diplomado en Enfermería Especialista en Enfermería del Trabajo."
+        ))
+        assert item is not None
+        assert item.categoria == "oposicion"
+
     def test_oep(self):
         item = extract(_raw("Oferta de Empleo Público OEP 2025, plazas de Enfermería del Trabajo."))
         assert item is not None
