@@ -1,0 +1,122 @@
+[
+  {
+    "id_hash": "7cf7d0f72e19707b",
+    "source": "datos_madrid",
+    "url": "https://datos.madrid.es/dataset/300701-0-empleo-oep/resource/300701-1-empleo-oep-csv/download/300701-1-empleo-oep-csv.csv",
+    "titulo": "[OEP] TL · A2 · F · Enfermero/a del Trabajo · E · TECNICA · MEDIO",
+    "fecha": "2024-12-20",
+    "categoria": "oep",
+    "first_seen_at": "2026-04-25T13:28:23.311908",
+    "summary": null
+  },
+  {
+    "id_hash": "7bd05641a1793b83",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/proceso-seleccion-singular-0",
+    "titulo": "Enfermeras especialistas en Enfermería del Trabajo. Hospital Universitario Fundación Alcorcón. 2022",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.296933",
+    "summary": null
+  },
+  {
+    "id_hash": "cb0b6886f2e07b79",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/especialista-enfermeria-trabajo-0",
+    "titulo": "Enfermera Especialista en Enfermería del Trabajo para el Hospital Universitario Fundación Alcorcón (2022)",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.296842",
+    "summary": null
+  },
+  {
+    "id_hash": "4f7002c8a5b3ff9e",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/especialista-enfermeria-trabajo-2",
+    "titulo": "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo (2024). Subsanación.",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.296771",
+    "summary": null
+  },
+  {
+    "id_hash": "1aafe2e00198889c",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/especialista-enfermeria-trabajo-4",
+    "titulo": "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo (2025). Subsanación.",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.296593",
+    "summary": null
+  },
+  {
+    "id_hash": "a4c428e5fbcf4f82",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/enfermeroa-medicina-trabajo",
+    "titulo": "Concurso de méritos en la categoría de Enfermero/a especialista en Enfermería del Trabajo en el Servicio Madrileño de Salud (2024)",
+    "fecha": "2026-04-25",
+    "categoria": "traslado",
+    "first_seen_at": "2026-04-25T12:21:03.296306",
+    "summary": null
+  },
+  {
+    "id_hash": "9d201f30c6517fda",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/estabilizacion-2022-enf-trabajo",
+    "titulo": "Proceso de estabilización en SERMAS de la categoría de Enfermero/a Especialista en Enfermería del Trabajo (2022)",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.295938",
+    "summary": null
+  },
+  {
+    "id_hash": "411450784ca4823f",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/concurso-traslados-enfermeria-trabajo",
+    "titulo": "Concurso de traslados en la categoría de Enfermero Especialista en Enfermería del Trabajo (2026)",
+    "fecha": "2026-04-25",
+    "categoria": "traslado",
+    "first_seen_at": "2026-04-25T12:21:03.295364",
+    "summary": null
+  },
+  {
+    "id_hash": "540d6a651569c4aa",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/enfermeria-trabajo-0",
+    "titulo": "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo (2026). Subsanación",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.295260",
+    "summary": null
+  },
+  {
+    "id_hash": "4b8a712a6f032733",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/promocion-interna-enfermeria-trabajo",
+    "titulo": "Proceso selectivo para el ingreso, por promoción interna, a plazas de la categoría profesional de Diplomado en Enfermería Especialista, Especialidad Enfermería del Trabajo (2023)",
+    "fecha": "2026-04-25",
+    "categoria": "oposicion",
+    "first_seen_at": "2026-04-25T12:21:03.295101",
+    "summary": null
+  },
+  {
+    "id_hash": "7c7cf06753cdc77c",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/especialista-enfermeria-trabajo",
+    "titulo": "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo. Inscripción y aportación de méritos",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.295016",
+    "summary": null
+  },
+  {
+    "id_hash": "eb9d7317337f1756",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/diplomado-enfermeria-trabajo",
+    "titulo": "Proceso de acceso libre para Diplomado en Enfermería Especialista en Enfermería del Trabajo (2025)",
+    "fecha": "2026-04-25",
+    "categoria": "otro",
+    "first_seen_at": "2026-04-25T12:21:03.294822",
+    "summary": null
+  }
+]
