@@ -68,6 +68,14 @@ class Storage:
                 first_seen_at TEXT NOT NULL
             )
         """)
+        # Migración idempotente para BDs creadas antes de exponer summary en
+        # el dashboard. ALTER TABLE ADD COLUMN no es destructivo y mantiene los
+        # datos previos. PRAGMA table_info devuelve filas (cid, name, type, ...).
+        existing_cols = {
+            row[1] for row in self._conn.execute("PRAGMA table_info(items)")
+        }
+        if "summary" not in existing_cols:
+            self._conn.execute("ALTER TABLE items ADD COLUMN summary TEXT")
         self._conn.commit()
 
     def is_new(self, item: Item) -> bool:
@@ -78,12 +86,17 @@ class Storage:
         return cur.fetchone() is None
 
     def save(self, item: Item) -> None:
-        """Inserta el ítem; no falla si ya existe (INSERT OR IGNORE)."""
+        """Inserta el ítem; no falla si ya existe (INSERT OR IGNORE).
+
+        El campo `summary` se inserta si ya viene relleno, pero el flujo
+        habitual lo añade después con `update_summary()` (el enricher se
+        ejecuta tras `filter_new`).
+        """
         self._conn.execute(
             """
             INSERT OR IGNORE INTO items
-                (id_hash, source, url, titulo, fecha, categoria, first_seen_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                (id_hash, source, url, titulo, fecha, categoria, first_seen_at, summary)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item.id_hash,
@@ -93,7 +106,22 @@ class Storage:
                 str(item.fecha),
                 item.categoria,
                 item.first_seen_at.isoformat(),
+                item.summary,
             ),
+        )
+        self._conn.commit()
+
+    def update_summary(self, item: Item) -> None:
+        """Persiste el `summary` generado por el enricher para un item ya guardado.
+
+        Se invoca tras `enricher.enrich(...)` desde main.py. Si el item no
+        tiene summary, no hace nada (evita pisar valores previos con NULL).
+        """
+        if not item.summary:
+            return
+        self._conn.execute(
+            "UPDATE items SET summary = ? WHERE id_hash = ?",
+            (item.summary, item.id_hash),
         )
         self._conn.commit()
 
