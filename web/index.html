@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vigia-enfermería · automated surveillance</title>
+<meta name="description" content="Automated surveillance of Spanish public-sector job postings for Occupational Health Nursing. Polls 8 official bulletins daily.">
+<link rel="stylesheet" href="styles.css">
+<script>
+  // EDITMODE — defaults persisted via __edit_mode_set_keys
+  window.TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "scanlines": true,
+    "flicker": true,
+    "density": "normal",
+    "typingSound": false
+  }/*EDITMODE-END*/;
+</script>
+</head>
+<body data-scanlines="on" data-flicker="on" data-density="normal">
+
+  <div class="statusbar" id="statusbar"></div>
+
+  <main class="shell">
+
+    <!-- ===== 1 · HERO =================================================== -->
+    <section class="hero" data-screen-label="01 Hero">
+      <div class="hero-meta" id="hero-meta"></div>
+      <h1 class="title flickerable" id="hero-title"></h1>
+      <div class="tagline" id="hero-tagline"></div>
+      <div class="counters" id="counters"></div>
+    </section>
+
+    <!-- ===== 2 · DAILY FEED ============================================ -->
+    <section data-screen-label="02 Daily Feed">
+      <div class="section-title">
+        <span class="num">[02]</span>
+        <span>TODAY · DAILY FEED</span>
+        <span class="rule"></span>
+        <span class="meta" id="feed-meta">—</span>
+      </div>
+      <div class="feed" id="feed"></div>
+    </section>
+
+    <!-- ===== 3 · HISTORICAL DATABASE =================================== -->
+    <section data-screen-label="03 Historical DB" style="margin-top:48px">
+      <div class="section-title">
+        <span class="num">[03]</span>
+        <span>HISTORICAL DATABASE</span>
+        <span class="rule"></span>
+        <span class="meta">SQLite · vigia.db · WAL</span>
+      </div>
+      <div class="cmdbar" id="cmdbar"></div>
+      <div class="tbl-wrap">
+        <table class="term">
+          <thead><tr id="hist-thead"></tr></thead>
+          <tbody id="hist-tbody"></tbody>
+        </table>
+        <div class="tbl-foot">
+          <span class="count" id="hist-count">—</span>
+          <span style="margin-left:auto">CLICK ROW → EXPAND DETAIL</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 4 · INTELLIGENCE ========================================== -->
+    <section data-screen-label="04 Intelligence" style="margin-top:48px">
+      <div class="section-title">
+        <span class="num">[04]</span>
+        <span>INTELLIGENCE · STATS</span>
+        <span class="rule"></span>
+        <span class="meta">AGGREGATED · ALL TIME</span>
+      </div>
+      <div class="intel">
+        <div class="panel">
+          <h3>HITS BY SOURCE <span class="meta">cumulative</span></h3>
+          <div class="bars" id="bars"></div>
+        </div>
+        <div class="panel">
+          <h3>HITS BY CATEGORY <span class="meta">distribution</span></h3>
+          <div id="donut"></div>
+        </div>
+        <div class="panel full">
+          <h3>ACTIVITY HEATMAP <span class="meta">last 365 days · UTC</span></h3>
+          <div class="heatmap" id="heatmap"></div>
+          <div class="heat-legend">
+            <span>LESS</span>
+            <span class="sw" style="background:#082208"></span>
+            <span class="sw" style="background:#103b0d"></span>
+            <span class="sw" style="background:#1a6f15"></span>
+            <span class="sw" style="background:#28b21f"></span>
+            <span class="sw" style="background:#39ff14;box-shadow:0 0 4px #39ff14"></span>
+            <span>MORE</span>
+            <span style="margin-left:auto">CELL = 1 DAY · HOVER FOR COUNT</span>
+          </div>
+          <div id="sparkline"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 5 · SOURCES STATUS ======================================== -->
+    <section data-screen-label="05 Sources" style="margin-top:48px">
+      <div class="section-title">
+        <span class="num">[05]</span>
+        <span>SOURCES · TARGETS PROBED</span>
+        <span class="rule"></span>
+        <span class="meta">CLICK ROW → FIELD MEMO</span>
+      </div>
+      <div class="tbl-wrap">
+        <table class="term sources-tbl">
+          <thead><tr>
+            <th>NAME</th>
+            <th>URL</th>
+            <th>LAST PROBE</th>
+            <th>HTTP</th>
+            <th>STATUS</th>
+            <th style="text-align:right">HITS</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="src-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== 6 · COVERAGE / WATCHLIST ================================== -->
+    <section data-screen-label="06 Watchlist" style="margin-top:48px">
+      <div class="section-title">
+        <span class="num">[06]</span>
+        <span>COVERAGE · TARGETS UNDER OBSERVATION</span>
+        <span class="rule"></span>
+        <span class="meta">22 ENTITIES · 14 ACTIVE · 8 COLD</span>
+      </div>
+      <div class="watchlist" id="watchlist"></div>
+    </section>
+
+    <!-- ===== 7 · SUBSCRIBE ============================================= -->
+    <section data-screen-label="07 Subscribe" style="margin-top:48px">
+      <div class="section-title">
+        <span class="num">[07]</span>
+        <span>SUBSCRIBE · TELEGRAM ENROLLMENT</span>
+        <span class="rule"></span>
+        <span class="meta">PUBLIC · FREE · NO TRACKING</span>
+      </div>
+      <div class="subscribe-wrap">
+        <div class="tty" id="tty" tabindex="0"></div>
+        <div class="subscribe-side">
+          <h4>// ENROLLMENT FLOW</h4>
+          <ol>
+            <li>Open <code>@vigia_enfermeria_bot</code> on Telegram</li>
+            <li>Send <code>/start</code> — the bot replies with a one-time 6-digit pairing code</li>
+            <li>Enter the code on this terminal (optionally with a recovery e-mail)</li>
+            <li>You'll receive a Telegram message every time a new finding is detected</li>
+          </ol>
+          <h4>// WHAT YOU'LL GET</h4>
+          <ol>
+            <li>One push per finding — <b style="color:var(--phos)">title + AI summary + permalink</b></li>
+            <li>Daily digest at 06:30 UTC (toggle <code>/digest_only</code> on the bot)</li>
+            <li>Unsubscribe at any time with <code>/stop</code> or <code>POST /api/unsubscribe</code></li>
+          </ol>
+          <div class="note">
+            <b>// PRIVACY</b><br>
+            We store only <code>tg_chat_id</code> and an optional e-mail. The Cloudflare Worker
+            log is purged after 24h. There is no analytics, no cookies, no third-party
+            calls. Source code is open.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 8 · HOW IT WORKS ========================================== -->
+    <section data-screen-label="08 How It Works" style="margin-top:48px">
+      <div class="section-title">
+        <span class="num">[08]</span>
+        <span>HOW IT WORKS · MANIFESTO</span>
+        <span class="rule"></span>
+        <span class="meta">$ man vigia</span>
+      </div>
+      <div class="howitworks">
+        <pre class="diagram" id="diagram"></pre>
+        <div class="changelog" id="changelog"></div>
+      </div>
+    </section>
+
+    <!-- ===== 9 · FOOTER ================================================ -->
+    <footer class="foot" id="footer"></footer>
+  </main>
+
+  <!-- ===== TWEAKS PANEL ================================================ -->
+  <aside class="tweaks" id="tweaks">
+    <header>
+      <span>▮ TWEAKS</span>
+      <span class="x">[ × ]</span>
+    </header>
+    <div class="body">
+      <div class="row"><label>SCANLINES</label><div class="toggle" id="tw-scan"></div></div>
+      <div class="row"><label>CRT FLICKER</label><div class="toggle" id="tw-flick"></div></div>
+      <div class="row"><label>HIGH DENSITY</label><div class="toggle" id="tw-density"></div></div>
+      <div class="row"><label>TYPING SOUND</label><div class="toggle" id="tw-sound"></div></div>
+    </div>
+  </aside>
+
+  <script src="app.js?v=2"></script>
+</body>
+</html>
