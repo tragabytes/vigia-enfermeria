@@ -31,65 +31,35 @@ Era el mismo problema que el bug #2: el portal `sede.comunidad.madrid` también 
 
 ## 🆕 Nuevas fuentes a añadir
 
-### CODEM — sección de comunicaciones
+### ~~CODEM — sección de comunicaciones~~ ✅ Resuelto (2026-04-25, commit `a6fa1ef`)
 
-Actualmente solo se monitoriza el RSS de **empleo público**:
-```
-Menu=e0fed1d6-aff3-4b0d-be4d-7a276dea3867   ← empleo público
-```
+Añadido el feed RSS de "Actualidad" de CODEM (~2400 items, 8MB) además del de "Empleo público" original. La fuente `codem.py` ahora itera sobre `CODEM_RSS_FEEDS = [(label, url), ...]` y deduplica vía `extra["feed"]`. En la inspección manual aparecía ya un match obvio en los primeros items: *"Canal de Isabel II convoca una plaza de enfermera especialista en Enfermería del Trabajo"*.
 
-CODEM tiene otra sección llamada **"Comunicaciones"** (o similar — verificar nombre exacto en codem.es) donde a veces publican avisos sobre concursos, bolsas y movimientos del SERMAS antes de que aparezcan en BOCM.
+### ~~Casa de la Moneda (FNMT-RCM)~~ ✅ Cobertura indirecta (2026-04-25, commit `b67ec63`)
 
-**Plan:**
-1. Explorar codem.es y localizar la sección de comunicaciones / noticias.
-2. Comprobar si tiene RSS feed propio (URL similar a `RssHyperLink.ashx?Menu=...`).
-3. Si lo tiene, añadir como segunda fuente dentro de `vigia/sources/codem.py` (lista de URLs de RSS) o como fuente nueva `codem_comunicaciones.py`.
+Añadido `"fnmt"`, `"casa de la moneda"` y `"fabrica nacional de moneda"` a `HEALTH_ORGS` (BOCM) y `DEPT_KEYWORDS_FOR_BODY` (BOE). Cuando aparezca una convocatoria del organismo en BOE/BOCM, se descargará el cuerpo/PDF para buscar la especialidad. Si en el futuro se decide añadir una fuente directa al portal de FNMT, sigue pendiente investigar URL.
 
-### Casa de la Moneda (FNMT-RCM)
+### ~~EMT Madrid (Empresa Municipal de Transportes)~~ ✅ Cobertura indirecta (2026-04-25, commit `b67ec63`)
 
-Fábrica Nacional de Moneda y Timbre — Real Casa de la Moneda. Es organismo público estatal con plantilla considerable y servicio de prevención propio, así que de tanto en tanto convoca puestos de Enfermería del Trabajo.
-
-**Plan:**
-1. Investigar `https://www.fnmt.es/empleo` (verificar URL real).
-2. Las convocatorias salen también en BOE sección 2A (organismo "FNMT"), así que actualmente quedan cubiertas por `boe.py`. Añadir "fnmt" o "casa de la moneda" o "fabrica nacional de moneda" a `DEPT_KEYWORDS_FOR_BODY` de `boe.py` para garantizar que se baja el body HTML.
-3. Considerar fuente directa solo si el portal propio expone convocatorias antes que BOE.
-
-### EMT Madrid (Empresa Municipal de Transportes)
-
-Como Metro Madrid, es una empresa pública municipal con servicio de prevención. Convocan ocasionalmente Enfermería del Trabajo.
-
-**Plan:**
-1. Investigar `https://www.emtmadrid.es/Empresa/Empleo` (URL a verificar).
-2. EMT publica en BOAM (al ser municipal) y a veces en BOCM. Verificar que `boam.py` y `bocm.py` capturan correctamente sus convocatorias.
-3. Añadir "emt" o "empresa municipal de transportes" a:
-   - `HEALTH_ORGS` de `bocm.py`
-   - `DEPT_KEYWORDS_FOR_BODY` de `boe.py`
-4. Considerar fuente directa si el portal propio resulta scrapeable.
+Añadido `"emt"` y `"empresa municipal de transportes"` a `HEALTH_ORGS` (BOCM) y `DEPT_KEYWORDS_FOR_BODY` (BOE). Si en el futuro se decide añadir una fuente directa al portal de EMT, sigue pendiente investigar URL.
 
 ### Boletines oficiales de otros ayuntamientos grandes de la Comunidad de Madrid
 
-Solo se monitoriza el BOAM (Madrid capital). Otros ayuntamientos grandes con servicios de prevención propios y plantilla suficiente para tener Enfermería del Trabajo:
+✅ **Cobertura indirecta vía BOCM** (2026-04-25, commit `b67ec63`): añadidos los 9 grandes ayuntamientos (>100k hab.) a `HEALTH_ORGS` de `bocm.py` para forzar la descarga de PDF cuando sus convocatorias aparezcan en el BOCM. La cobertura BOE viene gratis vía `"administracion local"`.
 
-| Municipio | Población | Boletín oficial propio | A investigar |
-|-----------|-----------|------------------------|--------------|
-| Móstoles | 209k | Posible BOM | URL portal empleo |
-| Alcalá de Henares | 195k | ¿BO Alcalá? | Sede electrónica |
-| Fuenlabrada | 192k | Sede electrónica | URL convocatorias |
-| Leganés | 187k | Sede electrónica | URL convocatorias |
-| Getafe | 187k | Sede electrónica | URL convocatorias |
-| Alcorcón | 173k | Sede electrónica | URL convocatorias |
-| Torrejón de Ardoz | 134k | Sede electrónica | URL convocatorias |
-| Parla | 130k | Sede electrónica | URL convocatorias |
-| Alcobendas | 117k | Sede electrónica | URL convocatorias |
+Pendiente como mejora futura: parsers dedicados de portales propios con feed/API estructurado para los que los tengan. Top 5 a investigar (por población): Móstoles, Alcalá, Fuenlabrada, Leganés, Getafe.
 
-**Nota:** muchos de estos municipios publican sus convocatorias **directamente en el BOCM** (no tienen boletín propio), así que `bocm.py` ya los cubre indirectamente. Pero es interesante:
-- Tener un parser dedicado para los que sí tienen portal propio con RSS / API.
-- Añadir los nombres de estos municipios a `HEALTH_ORGS` de `bocm.py` para forzar descarga de PDF cuando sus convocatorias aparezcan.
-
-**Plan:**
-1. Investigar individualmente cada uno (top 5: Móstoles, Alcalá, Fuenlabrada, Leganés, Getafe).
-2. Para los que tengan portal con feed/API estructurado, crear `vigia/sources/ayto_<municipio>.py`.
-3. Para el resto, ampliar la cobertura indirecta en BOCM.
+| Municipio | Población | A investigar |
+|-----------|-----------|--------------|
+| Móstoles | 209k | URL portal empleo |
+| Alcalá de Henares | 195k | Sede electrónica |
+| Fuenlabrada | 192k | URL convocatorias |
+| Leganés | 187k | URL convocatorias |
+| Getafe | 187k | URL convocatorias |
+| Alcorcón | 173k | URL convocatorias |
+| Torrejón de Ardoz | 134k | URL convocatorias |
+| Parla | 130k | URL convocatorias |
+| Alcobendas | 117k | URL convocatorias |
 
 ---
 
@@ -186,4 +156,4 @@ Si solo quieres compartirlo con un puñado de gente y no te molesta intervenir m
 
 - **Logs persistidos:** además de la BD `seen.db` en la rama `state`, considerar volcar un CSV histórico de todos los hallazgos (no solo nuevos) para análisis posterior.
 - **Dashboard mínimo:** página estática en GitHub Pages con la lista de convocatorias detectadas, ordenadas por fecha. El JSON podría generarse desde la BD en cada run y commitearse a la rama `gh-pages`.
-- **Test de fuentes "vivas":** un workflow opcional, manual, que ejecute solo el `fetch()` de cada fuente con un `--probe` y reporte cuáles devuelven HTTP 200 con contenido parseable. Útil para detectar URLs que han cambiado **antes** de que empiecen a fallar en el cron diario.
+- ~~**Test de fuentes "vivas":**~~ ✅ Resuelto (2026-04-25, commit `44f7240`). Añadido `python -m vigia.main --probe` que hace HEAD/GET ligero a la URL principal de cada fuente y muestra una tabla de salud. Integrado en `daily.yml` con `if: always() + continue-on-error: true` para que cada run del cron deje el estado de las fuentes en los logs sin afectar la conclusion del job.
