@@ -1,5 +1,5 @@
 /* =========================================================================
-   VIGIA-ENFERMERIA — terminal app logic
+   VIGÍA-ENFERMERÍA — terminal app logic
    Vanilla JS. No framework.
    ========================================================================= */
 
@@ -106,7 +106,10 @@ function renderStatusBar() {
   const m = DATA.meta;
   const lastRunAgo = ago(m.last_run_at);
   const next = new Date(m.next_run_at);
-  const nextStr = next.toISOString().slice(11, 16) + ' UTC';
+  const dayShort = next.toLocaleDateString('es-ES', {
+    weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC',
+  }).replace('.', '').toUpperCase();
+  const nextStr = `${dayShort} ${next.toISOString().slice(11, 16)} UTC`;
   $('#statusbar').innerHTML = `
     <span class="item"><span class="dot"></span><span class="val">SYSTEM ONLINE</span></span>
     <span class="sep">│</span>
@@ -130,16 +133,16 @@ function renderHero() {
   if (!$('#hero-meta')) return;
   $('#hero-meta').innerHTML = `
     <span class="glyph">[▮]</span>
-    <span>NODE</span><span class="v">vigia-01</span>
+    <span>NODE</span><span class="v">vigía-01</span>
     <span class="sep">/</span>
     <span>BUILD</span><span class="v">${DATA.meta.version}</span>
     <span class="sep">/</span>
     <span>HEAD</span><span class="v">${DATA.meta.commit}</span>
     <span class="right"><span class="dot"></span>SYSTEM ONLINE</span>
   `;
-  $('#hero-title').innerHTML = `<span class="bracket">/</span>&nbsp;vigia-enfermería&nbsp;<span class="cursor">▮</span>`;
+  $('#hero-title').innerHTML = `<span class="bracket">/</span>&nbsp;vigía-enfermería&nbsp;<span class="cursor">▮</span>`;
   $('#hero-tagline').innerHTML = `
-    <span class="prefix">$ ./vigia --whoami</span><br>
+    <span class="prefix">$ ./vigía --whoami</span><br>
     Automated surveillance of Spanish public-sector job postings for
     <b style="color:var(--phos)">Occupational Health Nursing</b>. Polls 8 official
     bulletins daily, hashes findings, enriches with Claude Haiku, dispatches
@@ -151,7 +154,7 @@ function renderHero() {
 function renderCounters() {
   const m = DATA.meta;
   const cs = [
-    { id: 'C-01', label: 'DAYS WATCHING',  val: m.days_watching,  delta: 'CONTINUOUS UPTIME SINCE 2022-11-25' },
+    { id: 'C-01', label: 'DAYS WATCHING',  val: m.days_watching,  delta: 'CONTINUOUS UPTIME SINCE ' + ((m.first_seen_at || new Date().toISOString()).slice(0, 10)) },
     { id: 'C-02', label: 'ITEMS LOGGED',   val: m.total_items,    delta: '+' + m.total_today + ' DETECTED LAST 24H' },
     { id: 'C-03', label: 'SOURCES ONLINE', val: m.sources_online, delta: m.sources_total - m.sources_online + ' SKIPPED — SEE TARGETS', deltaAmber: true, suffix: '/' + m.sources_total },
   ];
@@ -732,7 +735,7 @@ function renderHowItWorks() {
 <span class="dim">│</span>          ▼                                          ▼
 <span class="dim">│</span>  ┌──────────────┐                          ┌──────────────┐
 <span class="dim">│</span>  │  <span class="amb">SQLite</span>      │◀─────────────────────────│  <span class="fg">DISPATCH</span>    │
-<span class="dim">│</span>  │  vigia.db    │  store hits + summaries  │  Telegram    │──▶ subscribers
+<span class="dim">│</span>  │  vigía.db    │  store hits + summaries  │  Telegram    │──▶ subscribers
 <span class="dim">│</span>  │  WAL mode    │                          │  bot         │
 <span class="dim">│</span>  └──────────────┘                          └──────────────┘
 <span class="dim">│</span>          │
@@ -769,9 +772,9 @@ function renderHowItWorks() {
 /* ---- 9. Footer ------------------------------------------------------- */
 function renderFooter() {
   $('#footer').innerHTML = `
-    <span>BUILT WITH PARANOIA · MAINTAINED BY <a href="#" target="_blank">@lautaro</a></span>
+    <span>BUILT WITH PARANOIA · MAINTAINED BY <a href="https://github.com/tragabytes" target="_blank">@tragabytes</a></span>
     <span class="sep">│</span>
-    <span><a href="https://github.com/" target="_blank">github.com/lautaro/vigia-enfermeria →</a></span>
+    <span><a href="https://github.com/tragabytes/vigia-enfermeria" target="_blank">github.com/tragabytes/vigia-enfermeria →</a></span>
     <span class="sep">│</span>
     <span>VERSION <span class="commit">${DATA.meta.version}</span></span>
     <span class="sep">│</span>
