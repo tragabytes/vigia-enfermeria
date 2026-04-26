@@ -37,7 +37,13 @@ DB_PATH = Path(__file__).parent.parent / "state" / "seen.db"
 # Versión actual del esquema de enriquecimiento. Si subimos esto en el futuro
 # (ej. v3 = clustering de procesos relacionados), `iter_items_for_enrichment`
 # rebobinará automáticamente lo que esté por debajo.
-ENRICHMENT_VERSION = 2
+# v3 (2026-04-26): el extractor ya no trunca raw_text a 2KB y el enricher
+# inyecta hasta 12KB en el prompt + system prompt instruye al LLM a llamar
+# a fetch_url ante sospecha de truncado. Cambio de prompt → re-enriquecemos
+# para corregir falsos negativos previos (caso real: Policía Nacional
+# BOE-A-2026-795 que se marcó is_relevant=false porque el texto truncado
+# no incluía la sección de plazas T012-T016 de Enfermería en PRL).
+ENRICHMENT_VERSION = 3
 
 
 @dataclass

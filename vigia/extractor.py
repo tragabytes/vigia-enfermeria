@@ -80,13 +80,17 @@ def extract(raw: RawItem) -> Optional[Item]:
 
     categoria = _classify(combined)
 
-    # Pasamos el texto del RawItem (truncado) al Item.extra para que el
-    # enricher (vigia/enricher.py) tenga contexto adicional sin necesidad
-    # de re-descargar el cuerpo. No se persiste en SQL — solo vive durante
-    # el run.
+    # Pasamos el texto del RawItem al Item.extra para que el enricher
+    # (vigia/enricher.py) tenga contexto adicional sin necesidad de
+    # re-descargar el cuerpo. No se persiste en SQL — solo vive durante
+    # el run. Antes truncábamos a 2KB pero los items BOE pueden tener el
+    # listado de plazas relevantes a partir del char 8000+ (caso real:
+    # BOE-A-2026-795 Policía Nacional, plazas T012-T016 de Enfermería en
+    # PRL fuera de los primeros 2KB). El enricher decide cuánto inyectar
+    # al prompt vía MAX_TEXT_CHARS.
     extra: dict = {}
     if raw.text:
-        extra["raw_text"] = raw.text[:2000]
+        extra["raw_text"] = raw.text
 
     return Item(
         source=raw.source,

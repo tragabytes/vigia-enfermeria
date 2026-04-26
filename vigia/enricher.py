@@ -51,7 +51,12 @@ logger = logging.getLogger(__name__)
 MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 2048
 MAX_TOOL_ITERATIONS = 4   # tope de loops para evitar runaway costs
-MAX_TEXT_CHARS = 1500     # del raw_text inyectado en el prompt inicial
+# Texto inyectado en el prompt inicial. 1500 chars era insuficiente para
+# convocatorias BOE genéricas tipo "personal facultativo y técnico" donde
+# las plazas concretas de Enfermería viven más allá del char 8000 (caso
+# real: BOE-A-2026-795 Policía Nacional). 12k chars (~3k tokens input
+# extra por item) cubre la mayoría de items BOE/BOCM sin saturar contexto.
+MAX_TEXT_CHARS = 12000
 
 # ---------------------------------------------------------------------------
 # Configuración del fetcher (anti-SSRF + límites)
@@ -155,6 +160,7 @@ REGLAS DE EXTRACCIÓN:
 USO DE LA TOOL:
 - Si el título y `raw_text` son suficientes para todos los campos pedidos, NO llames a la tool — responde directamente con el JSON.
 - Si te falta algún dato clave (deadline, plazas, tasas, bases) y la URL principal está en dominio oficial, llámala una vez para inspeccionar el cuerpo.
+- IMPORTANTE — falsos negativos a evitar: si el sistema te ha enviado este item es porque un matcher automático YA detectó "Enfermería del Trabajo", "Enfermería de Empresa", "Enfermería de Salud Laboral" o "salud laboral + enfermer" en el cuerpo descargado de la convocatoria. Si el `raw_text` que recibes no muestra esa evidencia, ES PORQUE LLEGA TRUNCADO — los listados de plazas suelen estar más adelante en el documento. En ese caso DEBES llamar a `fetch_url` para descargar el HTML/PDF completo antes de marcar `is_relevant=false`. Solo descarta si tras consultar la URL tampoco aparece la especialidad.
 - Como mucho 2 llamadas a tool por item. Después responde con lo que tengas.
 
 FORMATO DE SALIDA OBLIGATORIO:
