@@ -322,7 +322,8 @@ def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
 
     rows = list(storage._conn.execute(
         """
-        SELECT titulo,
+        SELECT id_hash,
+               titulo,
                COALESCE(summary, ''),
                COALESCE(organismo, ''),
                fecha,
@@ -337,11 +338,12 @@ def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
     # Rodeamos con espacios para que patterns como " emt " (con guard de
     # palabra) puedan matchear al inicio o final del texto.
     items_idx = []
-    for titulo, summary, organismo, fecha, deadline, is_rel, fase, first_seen in rows:
+    for id_hash, titulo, summary, organismo, fecha, deadline, is_rel, fase, first_seen in rows:
         if is_rel == 0:    # explícitamente descartado por el enricher v2
             continue
         text = " " + normalize(titulo + " " + summary + " " + organismo) + " "
         items_idx.append({
+            "id_hash": id_hash,
             "text": text,
             "fecha": fecha,
             "deadline": deadline,
@@ -352,6 +354,7 @@ def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
     targets: list[dict] = []
     for org in WATCHLIST_ORGS:
         hits = 0
+        item_ids: list[str] = []
         recent_pub = False
         nearest_deadline: Optional[str] = None
         latest_phase: Optional[str] = None
@@ -361,6 +364,7 @@ def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
             if not any(p in it["text"] for p in org["patterns"]):
                 continue
             hits += 1
+            item_ids.append(it["id_hash"])
 
             # Recency fallback (item sin deadline_inscripcion conocido).
             if not it["deadline"] and it["fecha"] >= cutoff_iso:
@@ -398,6 +402,10 @@ def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
             "days_until": days_until,
             "urgent": urgent,
             "latest_phase": latest_phase,
+            # Lista de id_hash de los items que matchean este organismo.
+            # El frontend la usa para abrir el modal con los items concretos
+            # sin tener que replicar la lógica de normalización + match.
+            "item_ids": item_ids,
         })
     return targets
 

@@ -173,6 +173,28 @@
     <footer class="foot" id="footer"></footer>
   </main>
 
+  <!-- ===== TERMINAL MODAL =============================================
+       Diálogo nativo (<dialog>) que se abre al pinchar HITS en SOURCES o
+       en WATCHLIST. Reutiliza cardHTML() para mostrar los items que
+       matchean el filtro. ESC y click en el backdrop cierran. En móvil
+       se convierte en sheet a casi pantalla completa. -->
+  <dialog class="term-modal" id="term-modal" aria-labelledby="term-modal-title">
+    <div class="term-modal-frame">
+      <header class="term-modal-head">
+        <span class="corner left">┌─</span>
+        <span class="term-modal-title" id="term-modal-title">—</span>
+        <span class="term-modal-meta" id="term-modal-meta"></span>
+        <button class="term-modal-close" type="button" aria-label="Close">[ × ]</button>
+        <span class="corner right">─┐</span>
+      </header>
+      <div class="term-modal-body" id="term-modal-body"></div>
+      <footer class="term-modal-foot">
+        <span class="hint">› ESC or click outside to close</span>
+        <span class="bracket">└─────────────────────────────────────────────────────────────────────┘</span>
+      </footer>
+    </div>
+  </dialog>
+
   <!-- ===== TWEAKS PANEL ================================================ -->
   <aside class="tweaks" id="tweaks">
     <header>
@@ -187,6 +209,6 @@
     </div>
   </aside>
 
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>
