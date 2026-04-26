@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "592288f",
+    "kind": "fix",
+    "scope": "enricher",
+    "title": "elevar ventana de raw_text a 12KB + hint anti-truncado",
+    "body": "Diagnóstico tras el backfill `--since 2026-01-01`:"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "422f783",
     "kind": "feat",
     "scope": "boe",
@@ -22,13 +30,5 @@
     "scope": "web",
     "title": "campana SVG con glow rojo pulsante en header y watchlist",
     "body": "Sustituye el texto plano \"URGENT · …\" del header y el emoji `⏰` del"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "53520fc",
-    "kind": "fix",
-    "scope": "web",
-    "title": "modal header móvil + alarma sin bell ni movimiento",
-    "body": "Dos retoques visuales pedidos por el usuario:"
   }
 ]
