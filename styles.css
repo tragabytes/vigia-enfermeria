@@ -508,6 +508,74 @@ table.term td.col-title {
 .expanded-row .e-title { color: var(--phos); font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
 .expanded-row .e-summary { color: var(--fg); font-size: 12px; line-height: 1.6; margin-bottom: 12px; padding: 10px 12px; background: var(--bg); border-left: 2px solid var(--phos-dim); }
 .expanded-row .e-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.expanded-row .e-aux-row {
+  display: flex; flex-wrap: wrap; gap: 8px 18px;
+  margin: 0 0 12px 0;
+  font-size: 10.5px; letter-spacing: 0.1em;
+  color: var(--fg-dim);
+}
+.expanded-row .e-aux b { color: var(--phos-dim); font-weight: 500; margin-right: 4px; }
+.expanded-row .e-aux.e-discarded { color: var(--amber); }
+.expanded-row .e-aux.e-discarded b { color: var(--amber); }
+
+/* =========================================================================
+   Enricher v2 — chips de campos estructurados (proceso/plazas/deadline/tasa)
+   ========================================================================= */
+.chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin: 0 0 12px 0;
+}
+.expanded-row .chips { margin-bottom: 10px; }
+.chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  border: 1px solid var(--phos-fade);
+  background: var(--bg-well);
+  color: var(--phos-dim);
+  text-transform: uppercase;
+}
+.chip-pt { color: var(--phos); border-color: var(--phos-dim); }
+.chip-plz { color: #6cb4ff; border-color: color-mix(in oklab, #6cb4ff 40%, transparent); }
+.chip-eur { color: var(--amber); border-color: var(--amber-dim); }
+.chip-fase { color: #c46cff; border-color: color-mix(in oklab, #c46cff 40%, transparent); }
+.chip-dl { color: var(--phos-dim); border-color: var(--phos-fade); }
+.chip-dl-open { color: var(--phos); border-color: var(--phos-dim); }
+.chip-dl-urgent {
+  color: var(--amber);
+  border-color: var(--amber);
+  text-shadow: 0 0 6px color-mix(in oklab, var(--amber) 50%, transparent);
+}
+.chip-dl-closed { color: var(--fg-faint); border-color: var(--phos-ghost); text-decoration: line-through; }
+.chip-discard {
+  color: #ff6c8a;
+  border-color: color-mix(in oklab, #ff6c8a 40%, transparent);
+  background: color-mix(in oklab, #ff6c8a 10%, var(--bg-well));
+}
+
+/* Card descartada por el enricher: opaca para indicar que es ruido */
+.card.card-discarded { opacity: 0.55; border-style: dashed; }
+.card.card-discarded:hover { opacity: 0.9; }
+
+/* Línea destacada para el next_action en la card */
+.card .meta-grid .next-action {
+  grid-column: 1 / -1;
+  color: var(--amber);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  border-top: 1px dashed var(--phos-ghost);
+  padding-top: 8px; margin-top: 4px;
+}
+
+/* Toggle "show discarded" en el cmdbar */
+.cmdbar .toggle-seg input[type="checkbox"] {
+  accent-color: var(--phos);
+  width: 12px; height: 12px;
+  cursor: pointer;
+}
+.cmdbar .toggle-seg label { cursor: pointer; }
 
 .tbl-foot {
   display: flex; align-items: center; gap: 14px;
@@ -584,6 +652,21 @@ table.term td.col-title {
 .sources-tbl td.col-code { width: 64px; color: var(--phos); }
 .sources-tbl td.col-status { width: 100px; }
 .sources-tbl td.col-hits { width: 80px; text-align: right; color: var(--phos); font-variant-numeric: tabular-nums; }
+.sources-tbl .hits-link {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--phos);
+  font: inherit;
+  padding: 0 6px;
+  cursor: pointer;
+  letter-spacing: 0;
+}
+.sources-tbl .hits-link:hover,
+.sources-tbl .hits-link:focus-visible {
+  border-color: var(--phos-dim);
+  background: rgba(57, 255, 20, 0.06);
+  outline: none;
+}
 .sources-tbl td.col-probe { width: 130px; color: var(--fg-dim); font-size: 11px; }
 .status-pill {
   display: inline-block;
@@ -645,8 +728,11 @@ table.term td.col-title {
   animation: pulse 2.4s infinite;
 }
 .target.cold::before { color: var(--phos-fade); animation: none; text-shadow: none; }
+.target.urgent::before { color: var(--amber); text-shadow: 0 0 8px var(--amber); }
+.target.urgent { border-color: color-mix(in oklab, var(--amber) 40%, transparent); }
 .target .id { color: var(--fg-faint); font-size: 9.5px; letter-spacing: 0.18em; }
 .target .name { color: var(--phos); letter-spacing: 0.04em; }
+.target.urgent .name { color: var(--amber); }
 .target .desc { color: var(--fg-dim); font-size: 10.5px; }
 .target .stat {
   display: flex; gap: 8px; font-size: 10px;
@@ -654,6 +740,17 @@ table.term td.col-title {
 }
 .target .stat b { color: var(--phos); font-weight: 500; }
 .target.cold .name { color: var(--fg-dim); }
+.target .countdown {
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--phos-dim);
+  border-top: 1px dashed var(--phos-ghost);
+  padding-top: 4px; margin-top: 2px;
+}
+.target.urgent .countdown { color: var(--amber); }
+.target .phase {
+  font-size: 9.5px; letter-spacing: 0.14em;
+  color: var(--fg-dim);
+}
 
 /* =========================================================================
    Section 7: Subscribe Terminal
