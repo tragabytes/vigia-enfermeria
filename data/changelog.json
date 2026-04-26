@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "5942fc6",
+    "kind": "fix",
+    "scope": "enricher",
+    "title": "snippets dirigidos por prioridad (HIGH/LOW) anti falso-negativo",
+    "body": "El v3 (commit 592288f) elevó MAX_TEXT_CHARS a 12KB y pasó el body"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "592288f",
     "kind": "fix",
     "scope": "enricher",
@@ -22,13 +30,5 @@
     "scope": "web",
     "title": "tamaño de campana relativo a la letra del contenedor",
     "body": "La campana iba a 14px fijos, demasiado grande contra el texto del"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "c46eb26",
-    "kind": "feat",
-    "scope": "web",
-    "title": "campana SVG con glow rojo pulsante en header y watchlist",
-    "body": "Sustituye el texto plano \"URGENT · …\" del header y el emoji `⏰` del"
   }
 ]

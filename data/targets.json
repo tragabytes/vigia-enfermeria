@@ -215,7 +215,7 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "otro",
+    "latest_phase": "convocatoria",
     "item_ids": [
       "cb0b6886f2e07b79",
       "7bd05641a1793b83"

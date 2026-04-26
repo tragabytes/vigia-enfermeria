@@ -1,10 +1,10 @@
 {
   "total_items": 25,
   "total_today": 25,
-  "total_relevant": 21,
-  "total_irrelevant": 4,
+  "total_relevant": 22,
+  "total_irrelevant": 3,
   "total_enriched": 24,
-  "total_open_deadlines": 1,
+  "total_open_deadlines": 2,
   "by_category": {
     "bolsa": 4,
     "nombramiento": 2,
@@ -15,7 +15,7 @@
   },
   "days_watching": 0,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-04-26T16:06:52.561896+00:00",
+  "last_run_at": "2026-04-26T16:19:18.308750+00:00",
   "next_run_at": "2026-04-27T08:00:00+00:00",
   "sources_online": 8,
   "sources_total": 10,
@@ -23,5 +23,5 @@
   "targets_urgent": 1,
   "targets_total": 26,
   "version": "0.2.0",
-  "commit": "592288f"
+  "commit": "5942fc6"
 }
