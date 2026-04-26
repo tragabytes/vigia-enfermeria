@@ -248,6 +248,15 @@ def enrich_pending(storage: Storage) -> int:
     BD vía `update_enrichment` y devuelve el nº de items efectivamente
     enriquecidos.
 
+    Importante: los items reconstruidos desde la BD NO traen `raw_text`
+    (no se persiste). Antes de pasarlos al LLM, pre-cargamos el body de
+    cada URL llamando a `_fetch_body_full` (whitelist anti-SSRF, sin
+    recortar al final) — así los snippets dirigidos pueden hacer su
+    trabajo y el LLM recibe la evidencia exacta del match. Sin este
+    paso, items BOE largos se enriquecían como falso negativo porque
+    Sonnet veía un raw_text vacío y luego fetch_url le recortaba a 30k
+    chars, dejando fuera los anexos con plazas de Enfermería.
+
     Pensado para correr desde el workflow `maintenance.yml` cuando se
     sube `ENRICHMENT_VERSION` o se incorporan los nuevos campos.
     """
@@ -257,9 +266,24 @@ def enrich_pending(storage: Storage) -> int:
         return 0
 
     logger.info(
-        "Enricher: %d items pendientes (objetivo v%d)",
+        "Enricher: %d items pendientes (objetivo v%d) — pre-cargando bodies",
         len(pending), ENRICHMENT_VERSION,
     )
+    fetched = 0
+    for item in pending:
+        if item.extra is None:
+            item.extra = {}
+        if item.extra.get("raw_text"):
+            continue
+        body = _fetch_body_full(item.url)
+        if body and not body.startswith("ERROR"):
+            item.extra["raw_text"] = body
+            fetched += 1
+    logger.info(
+        "Enricher: %d/%d bodies pre-cargados desde URL del item",
+        fetched, len(pending),
+    )
+
     enriched = enrich(pending)
     n = 0
     for item in enriched:
@@ -271,6 +295,73 @@ def enrich_pending(storage: Storage) -> int:
         n, len(pending), ENRICHMENT_VERSION,
     )
     return n
+
+
+def _fetch_body_full(url: str) -> str:
+    """Descarga el body de una URL y devuelve texto plano SIN truncar.
+
+    Usado por `enrich_pending` para repoblar `Item.extra["raw_text"]` con
+    el cuerpo completo, de forma que `_extract_relevant_snippets` pueda
+    localizar las menciones relevantes aunque vivan en el char 100k+.
+
+    Comparte whitelist y validaciones con `_run_fetch_url` (la tool que
+    usa el LLM), pero NO trunca a `MAX_FETCH_TEXT_CHARS` — el snippet
+    extractor se encarga del recorte inteligente cuando construye el
+    prompt. Si la URL no es válida o sale de whitelist, devuelve string
+    vacío (caller maneja el caso).
+    """
+    if not url or not isinstance(url, str):
+        return ""
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return ""
+    if parsed.scheme not in ("http", "https"):
+        return ""
+    host = (parsed.hostname or "").lower()
+    if host not in ALLOWED_FETCH_HOSTS:
+        logger.debug("enrich_pending: URL fuera de whitelist (%s) — saltando", host)
+        return ""
+
+    try:
+        resp = requests.get(
+            url,
+            timeout=FETCH_TIMEOUT_SECONDS,
+            stream=True,
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/pdf,application/json,*/*",
+            },
+            allow_redirects=True,
+        )
+    except requests.RequestException as exc:
+        logger.warning("enrich_pending: fetch de %s falló: %s", url, exc)
+        return ""
+
+    final_host = (urlparse(resp.url).hostname or "").lower()
+    if final_host not in ALLOWED_FETCH_HOSTS:
+        resp.close()
+        return ""
+    if resp.status_code != 200:
+        resp.close()
+        return ""
+
+    body = bytearray()
+    for chunk in resp.iter_content(chunk_size=8192):
+        if not chunk:
+            continue
+        body.extend(chunk)
+        if len(body) >= MAX_FETCH_BYTES:
+            body = body[:MAX_FETCH_BYTES]
+            break
+    resp.close()
+
+    content_type = (resp.headers.get("content-type") or "").lower()
+    is_pdf = "pdf" in content_type or url.lower().endswith(".pdf")
+    text = _extract_pdf_text(bytes(body)) if is_pdf else _extract_html_text(bytes(body))
+    if text.startswith("ERROR"):
+        return ""
+    return text
 
 
 # ---------------------------------------------------------------------------

@@ -43,10 +43,13 @@ DB_PATH = Path(__file__).parent.parent / "state" / "seen.db"
 # v4 (2026-04-26): el enricher inyecta SNIPPETS dirigidos (ventanas de
 # 400 chars alrededor de cada keyword strong) en lugar de truncar el inicio.
 # Imprescindible para items BOE largos donde el listado de plazas vive a
-# partir del char 80k. Cambio de prompt → re-enriquecemos otra vez para
-# corregir el false negative de Policía Nacional que ni v3 resolvió
-# (snippets quedaban saturados por menciones genéricas de "PRL" tempranas).
-ENRICHMENT_VERSION = 4
+# partir del char 80k.
+# v5 (2026-04-26): `enrich_pending` pre-fetchea el body completo desde la
+# URL del item ANTES de pasar al LLM. Sin esto, items reprocesados desde
+# BD llegaban con raw_text vacío (no se persiste) y los snippets no
+# tenían sobre qué actuar. Cierra el bug definitivamente — Policía
+# Nacional tampoco se rescató en v4 por este motivo.
+ENRICHMENT_VERSION = 5
 
 
 @dataclass
