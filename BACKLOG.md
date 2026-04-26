@@ -112,6 +112,23 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 **Migración hacia Nivel 3 (futuro).** Si en el futuro queremos vincular item existente con su corrección/anexo (timeline de la convocatoria), entonces Claude Agent SDK con loop. No bloqueante hoy.
 
+### Pendiente: revisar pickup de CIEMAT tras cron del 27/04/2026
+
+Tras commit `b8d47f3` (parser CIEMAT con extracción de PDFs anexos), el siguiente cron del lunes **27/04/2026 a las 08:00 UTC** debería:
+
+1. Ejecutar el parser nuevo `vigia/sources/ciemat.py` por primera vez en producción.
+2. Detectar la oferta `2380` (Concurso Específico I 2026 — Personal Funcionario CIEMAT) cuyo PDF de perfiles formativos contiene "Especialidad de Enfermería del trabajo".
+3. Pasarla por extractor + enricher v2 → JSON estructurado con plazas, organismo, deadline.
+4. Notificar por Telegram + sumar 1 hit al tile `T-23 CIEMAT` del watchlist.
+
+**Cosas que validar el lunes** cuando llegue la notificación / refrescando el dashboard:
+- ¿El item aparece en el feed con `is_relevant=true` y la oferta etiquetada como CIEMAT?
+- ¿El enricher extrajo deadline/plazas correctamente del PDF (puede que el PDF no tenga esos campos explícitos)?
+- ¿El tile T-23 CIEMAT del watchlist pasa a `hits=1` y `active=true` (o `urgent` si plazo ≤7 días)?
+- ¿La fuente `ciemat` en la sección 5 del dashboard reporta `status=ok` con hits=1?
+
+Si algo no encaja: ajustar selectores, prompt del enricher, o la lista PDF host whitelist según lo observado.
+
 ### Pendiente: parsers propios para OPIs estatales (CIEMAT, IAC, INIA, ISCIII…)
 
 CIEMAT publica plazas en su web propia (`ciemat.es/ofertas-de-empleo/-/ofertas/oferta/<id>`) que no monitorizamos directamente. Las convocatorias en BOE bajo "Ministerio de Ciencia, Innovación y Universidades" son OPIs conjuntas y a veces el HTML del item no da pista en los primeros KB. Pillamos el caso por departamento + plan B (anexos PDF) cuando aplica, pero un parser dedicado al portal CIEMAT detecta antes y cubre plazas que solo viven ahí.
