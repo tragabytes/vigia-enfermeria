@@ -70,14 +70,18 @@ def export_all(
     # - Si tenemos `probe_results` (caller normal: --probe), regeneramos todo.
     # - Si no (caller normal: pipeline diario sin probe, o --maintenance), no
     #   sobrescribimos el JSON existente — el último probe sigue siendo el
-    #   más informativo. Reutilizamos su contenido para los contadores de
-    #   meta.json. Si tampoco existe el fichero, generamos uno mínimo a
-    #   partir de los hits agregados.
+    #   más informativo. Pero sí refrescamos `total_hits` con datos vivos de
+    #   la BD: el resto de campos (url/code/status/last_probe_at) se quedan
+    #   congelados al último --probe real, los hits sí cambian cada run.
+    # - Si tampoco existe el fichero, generamos uno mínimo a partir de los
+    #   hits agregados.
     if probe_results is not None:
         sources_payload = _sources_payload(storage, probe_results, now)
         _write_json(sources_path, sources_payload)
     elif sources_path.exists():
         sources_payload = json.loads(sources_path.read_text(encoding="utf-8"))
+        sources_payload = _refresh_total_hits(storage, sources_payload, now)
+        _write_json(sources_path, sources_payload)
     else:
         sources_payload = _sources_payload(storage, None, now)
         _write_json(sources_path, sources_payload)
@@ -193,6 +197,47 @@ def _sources_payload(
 
     rows.sort(key=lambda r: r["name"])
     return rows
+
+
+def _refresh_total_hits(
+    storage: Storage,
+    sources_payload: list[dict],
+    now: datetime,
+) -> list[dict]:
+    """Refresca `total_hits` en un sources_payload pre-existente.
+
+    El resto de campos del último probe (url, code, status, last_probe_at,
+    detail) se mantienen — no tenemos información más fresca sobre ellos
+    sin volver a ejecutar `--probe`. Lo único que sí ha podido cambiar
+    desde el probe anterior es el conteo acumulado por fuente, así que
+    lo refrescamos contra la BD.
+
+    Si la BD tiene una fuente que no estaba en el payload (fuente nueva
+    aún no probeada), se añade marcada como `unknown`. Si una fuente del
+    payload ya no tiene hits, se conserva con `total_hits=0`.
+    """
+    hits_by_source: dict[str, int] = dict(storage._conn.execute(
+        "SELECT source, COUNT(*) FROM items GROUP BY source"
+    ))
+    known: set[str] = set()
+    for entry in sources_payload:
+        name = entry.get("name", "")
+        known.add(name)
+        entry["total_hits"] = hits_by_source.get(name, 0)
+    for name, count in hits_by_source.items():
+        if name in known:
+            continue
+        sources_payload.append({
+            "name": name,
+            "url": None,
+            "status": "unknown",
+            "code": None,
+            "detail": "sin probe en este run",
+            "last_probe_at": now.isoformat(),
+            "total_hits": count,
+        })
+    sources_payload.sort(key=lambda r: r["name"])
+    return sources_payload
 
 
 def _targets_payload(storage: Storage, now: datetime) -> list[dict]:

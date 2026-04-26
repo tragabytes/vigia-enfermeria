@@ -310,6 +310,68 @@ class TestExportAll:
         by_name = {r["name"]: r for r in data}
         assert by_name["boam"]["code"] == 403
 
+    def test_sin_probe_refresca_total_hits(self, tmp_path):
+        """Aunque reutilicemos el sources_status.json del último --probe,
+        los `total_hits` por fuente sí deben refrescarse contra la BD: el
+        conteo crece cada día y queremos que el dashboard lo refleje.
+        Los campos del último probe (url, code, status) siguen congelados."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        out = tmp_path / "out"
+
+        # Probe inicial con BD vacía (sin items todavía).
+        full_probe = [
+            {"name": "boe", "url": "https://boe.es", "status": "ok",
+             "code": 200, "detail": ""},
+            {"name": "bocm", "url": "https://bocm.es", "status": "ok",
+             "code": 200, "detail": ""},
+        ]
+        dashboard.export_all(storage, out, probe_results=full_probe)
+        first = json.loads((out / "sources_status.json").read_text(encoding="utf-8"))
+        assert all(r["total_hits"] == 0 for r in first)
+
+        # Llegan items nuevos a la BD entre runs.
+        _seed(storage, [
+            _item("a", source="boe"),
+            _item("b", source="boe"),
+            _item("c", source="bocm"),
+        ])
+
+        # Segundo export sin probe (pipeline diario): los hits se actualizan,
+        # pero los códigos HTTP del probe anterior se conservan.
+        dashboard.export_all(storage, out)
+        storage.close()
+        second = json.loads((out / "sources_status.json").read_text(encoding="utf-8"))
+        by_name = {r["name"]: r for r in second}
+        assert by_name["boe"]["total_hits"] == 2
+        assert by_name["bocm"]["total_hits"] == 1
+        assert by_name["boe"]["code"] == 200
+        assert by_name["boe"]["url"] == "https://boe.es"
+        assert by_name["boe"]["status"] == "ok"
+
+    def test_sin_probe_anade_fuentes_nuevas_en_bd(self, tmp_path):
+        """Si entre el último --probe y el run actual la BD ha estrenado
+        una fuente nueva (ej. se acaba de añadir un parser), debe aparecer
+        en sources_status.json marcada como `unknown` con sus total_hits."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        out = tmp_path / "out"
+
+        full_probe = [
+            {"name": "boe", "url": "https://boe.es", "status": "ok",
+             "code": 200, "detail": ""},
+        ]
+        dashboard.export_all(storage, out, probe_results=full_probe)
+
+        # Items de una fuente que no estaba en el probe original.
+        _seed(storage, [_item("nuevo", source="codem")])
+
+        dashboard.export_all(storage, out)
+        storage.close()
+        data = json.loads((out / "sources_status.json").read_text(encoding="utf-8"))
+        by_name = {r["name"]: r for r in data}
+        assert "codem" in by_name
+        assert by_name["codem"]["status"] == "unknown"
+        assert by_name["codem"]["total_hits"] == 1
+
     def test_genera_targets_json(self, tmp_path):
         """export_all debe escribir targets.json con la lista de 22 organismos."""
         storage = Storage(db_path=tmp_path / "seen.db")
