@@ -1,5 +1,37 @@
 [
   {
+    "id_hash": "961becb796a4c975",
+    "source": "boe",
+    "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-795",
+    "titulo": "Resolución de 9 de enero de 2026, de la Dirección General de la Policía, por la que se convoca proceso selectivo para la provisión de plazas de personal facultativo y técnico del Cuerpo Nacional de Policía.",
+    "fecha": "2026-01-14",
+    "categoria": "oposicion",
+    "first_seen_at": "2026-04-26T15:53:03.089446",
+    "summary": "DGP convoca proceso selectivo (oposición+concurso) para 31 plazas de facultativos y 16 de técnicos del CNP. Especialidades: Medicina, Psicología, Farmacia y otras técnicas. Sin plazas de Enfermería del Trabajo.",
+    "is_relevant": false,
+    "relevance_reason": "Convocatoria de personal facultativo y técnico del Cuerpo Nacional de Policía (Dirección General de la Policía). Las especialidades históricas de este cuerpo son Medicina, Psicología, Farmacia, Análisis Clínicos, Radiología e informática/técnica; no se convoca Enfermería del Trabajo ni ninguna especialidad de enfermería. El término 'enfermería' no aparece en ningún punto del texto consultado.",
+    "process_type": "oposicion",
+    "organismo": "Dirección General de la Policía – Ministerio del Interior",
+    "centro": "División de Formación y Perfeccionamiento, Unidad de Procesos Selectivos",
+    "plazas": 47,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-01-14",
+    "tasas_eur": 31.1,
+    "url_bases": "https://www.boe.es/boe/dias/2026/01/14/pdfs/BOE-A-2026-795.pdf",
+    "url_inscripcion": "https://www.policia.es",
+    "requisitos_clave": [
+      "Nacionalidad española",
+      "Ser funcionario/a de carrera de cualquier Administración Pública",
+      "Titulación académica específica de la plaza solicitada (Medicina, Psicología, Farmacia u otras técnicas)",
+      "Capacidad funcional para el desempeño de las tareas de la especialidad"
+    ],
+    "fase": "convocatoria",
+    "next_action": null,
+    "confidence": 0.88,
+    "enriched_at": "2026-04-26T15:53:32.428578+00:00",
+    "enriched_version": 2
+  },
+  {
     "id_hash": "9cf13badc950da97",
     "source": "bocm",
     "url": "https://www.bocm.es/bocm-20260213-10",

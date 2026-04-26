@@ -280,5 +280,53 @@
     "urgent": false,
     "latest_phase": null,
     "item_ids": []
+  },
+  {
+    "id": "T-23",
+    "name": "CIEMAT",
+    "desc": "Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-24",
+    "name": "Policía Nacional",
+    "desc": "Cuerpo Nacional de Policía — Servicio de Prevención y Sanitario",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-25",
+    "name": "Guardia Civil",
+    "desc": "Cuerpo de la Guardia Civil — Servicio de Sanidad",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-26",
+    "name": "Instituciones Penitenciarias",
+    "desc": "Secretaría General de Instituciones Penitenciarias",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
   }
 ]
