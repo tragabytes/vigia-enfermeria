@@ -112,6 +112,108 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 **Migración hacia Nivel 3 (futuro).** Si en el futuro queremos vincular item existente con su corrección/anexo (timeline de la convocatoria), entonces Claude Agent SDK con loop. No bloqueante hoy.
 
+### Pendiente: bug — fecha `published` siempre = `detected` en items de Comunidad de Madrid
+
+**Síntoma observado en producción (2026-04-26):** todos los items de la sección 03 (Historical DB) procedentes de `comunidad_madrid` muestran `published = 2026-04-26` (idéntica al `detected`), aunque sean bolsas de 2024 / 2025 etiquetadas explícitamente con esos años en el título.
+
+**Diagnóstico.** En [`vigia/sources/comunidad_madrid.py:121`](vigia/sources/comunidad_madrid.py:121), `pub_date = date.today()` es el fallback cuando el regex `Apertura.*?(\d{2}/\d{2}/\d{4})` no matchea. Las bolsas en estado "Subsanación", "En tramitación" o cerradas no muestran "Apertura de plazo" en el bloque `div.estado` — solo lo hacen las que tienen plazo abierto. Resultado: el sistema asume que se publicaron hoy.
+
+**Fix propuesto (1-2h):**
+1. Probar regex adicionales sobre el `div.estado`: "Fin de plazo", "Resolución de", "Última actualización", "Fecha BOCM".
+2. Bajar el detalle del item (link relativo bajo el título) y buscar fecha de publicación oficial ahí.
+3. Como último fallback: extraer el año de `(YYYY)` que aparece en muchos títulos ("Bolsa única (2024). Subsanación") y usar `date(YYYY, 1, 1)` para indicar "no exacta, año conocido".
+4. Añadir test que use HTML de respuesta real con cada uno de los estados.
+
+Validar el fix también contra los 11 items históricos en BD: corregir su `fecha` con un script de mantenimiento puntual.
+
+---
+
+### Pendiente: parser propio Metro de Madrid (caso `Técnico/a en Enfermería del Trabajo`)
+
+**Caso real:** [https://www.metromadrid.es/es/oferta-empleo/tecnicoa-en-enfermeria-del-trabajo-en-el-servicio-de-salud-laboral-del-area-de-prevencion-y-salud-laboral](https://www.metromadrid.es/es/oferta-empleo/tecnicoa-en-enfermeria-del-trabajo-en-el-servicio-de-salud-laboral-del-area-de-prevencion-y-salud-laboral) — el sistema NO la pilló.
+
+**Estado actual.** [`vigia/sources/metro_madrid.py`](vigia/sources/metro_madrid.py) es un stub porque `metromadrid.es` está protegido por WAF (F5/Akamai-style). Devuelve "Request Rejected" a cualquier UA/IP no-autorizado. Verificado el 2026-04-26 con UA Firefox real desde IP no-española: HTTP 200 con cuerpo de 245 bytes "Request Rejected".
+
+**Implicación.** Metro Madrid contrata directamente vía su portal — las plazas de su Servicio de Salud Laboral NO siempre acaban en BOE/BOCM (al ser una S.A. pública con autonomía contratante). Hoy no las vemos.
+
+**Solución requiere:** ejecutar el cron desde IP española. Ver tarea de "Investigar acceso desde IP española" más abajo. Una vez resuelta esa, implementar el parser dedicado del portal de oferta de empleo de metromadrid.es (HTML server-side, listado de ofertas activas + detalle).
+
+---
+
+### Pendiente: parsers de universidades públicas de Madrid (UAM, UCM, UPM, URJC, UC3M, UAH)
+
+Las universidades públicas convocan plazas para sus servicios de prevención y unidades sanitarias. Casos reales que perdemos:
+
+- **UAM** — [Pruebas selectivas ingreso Escala Especial Superior de Servicios — Enfermero (nov 2024)](https://www.uam.es/uam/ptgas/concursos-oposiciones-bolsas/pruebas-selectivas-ingreso-escala-especial-superior-de-servicios-enfermero-noviembre-2024)
+- **UCM** — [Orden 4 DU — Enfermería del Trabajo](https://www.ucm.es/orden-4-du-enfermeria-del-trabajo)
+- **UPM** — algo reciente (URL exacta a investigar)
+- **URJC, UC3M, UAH** — añadir por completitud
+
+Estructura típica: cada universidad tiene una sección "Concursos / Oposiciones / Bolsas" en su portal de PTGAS / RR.HH. donde lista las convocatorias activas. Cada plaza enlaza a PDF de bases.
+
+**Trabajo:**
+1. Investigar selectores HTML de cada portal universitario.
+2. Crear `vigia/sources/universidades_madrid.py` (un solo módulo con varias URLs base) o uno por universidad.
+3. Extraer listado + detalle + PDFs de bases (whitelist anti-SSRF por universidad).
+4. Añadir cada universidad a `WATCHLIST_ORGS` (T-27 UAM, T-28 UCM, etc.).
+5. Tests con mocks.
+
+Estimación: 1-2h por universidad.
+
+---
+
+### Pendiente: tracking de proceso específico en Comunidad de Madrid
+
+**URL en seguimiento manual del usuario:** [https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo](https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo)
+
+Esta es una página estática del portal `www.comunidad.madrid` (NO `sede.comunidad.madrid` que es lo que monitorizamos hoy). Es una "ficha de proceso" que describe la categoría profesional Diplomado en Enfermería del Trabajo y enlaza a las convocatorias activas cuando existen.
+
+**¿El sistema avisará si sale algo nuevo?**
+- *Probablemente sí* indirectamente: cuando se publique una convocatoria concreta (bolsa, oposición, traslados) para esta categoría, aparecerá en el buscador `sede.comunidad.madrid/buscador?t=enfermeria` que ya monitorizamos via `comunidad_madrid.py`.
+- *Pero no garantizado*: si la "ficha del proceso" se actualiza ANTES de que la convocatoria salga (cambio de fecha previsto, novedad informativa), no lo detectaríamos. La ficha tiene su propio ciclo de vida.
+
+**Tarea:** añadir un parser específico que monitorice la URL del proceso (HTTP GET periódico, hash del cuerpo o detección de cambios en `<time>` / sección de convocatorias). Si cambia, generar un `RawItem` con marcador "ACTUALIZACIÓN DE FICHA". Patrón mínimo, ~1h.
+
+---
+
+### Pendiente: investigación profunda del problema de IP geo-bloqueada
+
+**Estado.** Hoy `BOAM`, `ayuntamiento_madrid` y `metro_madrid` son fuentes degradadas porque `madrid.es` y `metromadrid.es` filtran las IPs de los runners de GitHub Actions (Azure US/EU). Tenemos workaround parcial (`datos_madrid.py` vía API CKAN), pero:
+
+- BOAM: no vemos las disposiciones diarias del Boletín del Ayuntamiento.
+- Ayuntamiento Madrid: solo cobertura indirecta vía BOE / datos.madrid.
+- Metro Madrid: contrata por portal propio que no vemos en absoluto. **Plazas perdidas comprobadas.**
+
+**Esto no debería quedar así.** Opciones a investigar a fondo:
+
+1. **Self-host en VPS español.** Hetzner Helsinki / Contabo Madrid (~3-5€/mes) o Raspberry Pi en casa con conexión doméstica. Ventaja: IP española real, sin tonterías. Desventaja: salir de GitHub Actions implica gestionar cron, persistencia BD, SSH, monitoreo.
+
+2. **Proxy en región Madrid solo para fuentes geo-bloqueadas.** fly.io con `regions=mad`, o Vercel Edge Functions con `region: ['mad1']`, o un Cloudflare Worker corriendo en datacenter cercano. El cron seguiría en GitHub Actions; solo redirigiría las requests a `madrid.es` / `metromadrid.es` a través del proxy. Ventaja: cero migración. Desventaja: latencia añadida + posible coste si supera free tier.
+
+3. **Servicio comercial de proxies residenciales.** Bright Data / Smartproxy con IP rotativa española. Desventaja: caro (~$10-30/mes) + ético cuestionable + a veces detectado igualmente.
+
+4. **Tor exit node en España.** Free pero detectable y poco fiable.
+
+**Decisión a tomar:**
+- Si vamos por 1: dimensionar VPS, decidir si copiamos todo el stack o solo movemos cron + BD a allí dejando el dashboard publicado a gh-pages.
+- Si vamos por 2: probar fly.io primero (free tier amplio, region MAD disponible). Mock-up de proxy con un pequeño script que reciba URL + auth token y reenvíe.
+
+**Validar primero:** ¿es realmente la IP el factor único, o también el UA / cookies / TLS fingerprint? Ya validamos UA Firefox y headers básicos. Para confirmar 100%: probar la URL desde casa (IP española residencial) con curl + Firefox UA y ver si pasa. Si SÍ pasa, IP es el único filtro y opciones 1/2 son válidas. Si NO pasa, hay protección JS-only o TLS fingerprinting y necesitamos navegador real headless (Playwright) — eso es otro nivel de complejidad.
+
+Prioridad: **alta**. Cada plaza perdida en Metro/BOAM es señal directa de fallo.
+
+---
+
+### ~~Variante "ATS/DUE" en STRONG_PATTERNS~~ ✅ Resuelto (2026-04-26)
+
+Añadidas variantes para la denominación pre-Bolonia "ATS/DUE" (Ayudante Técnico Sanitario / Diplomado Universitario en Enfermería) en `STRONG_PATTERNS` y `WEAK_CONTEXT_PATTERNS`:
+- STRONG: `ats due de prevencion`, `ats due de salud laboral` y variantes con guión/barra.
+- WEAK: `ats due` + (`prevencion` | `salud laboral` | `riesgos laborales`) en ventana de 100 chars.
+
+Caso real motivador: [BOE-A-2022-23854](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2022-23854) (Tribunal de Cuentas, 30/12/2022) — "Resolución por la que se convoca proceso selectivo, por el turno de acceso libre, para la provisión de plaza vacante de ATS/DUE de Prevención y Salud laboral." Verificado: el extractor ahora hace match (`Categoría: oposicion`).
+
+---
+
 ### Pendiente: revisar pickup de CIEMAT tras cron del 27/04/2026
 
 Tras commit `b8d47f3` (parser CIEMAT con extracción de PDFs anexos), el siguiente cron del lunes **27/04/2026 a las 08:00 UTC** debería:

@@ -58,6 +58,16 @@ STRONG_PATTERNS: list[str] = [
     r"enfermeri[ao]\s+de\s+empresa",
     r"enfermer[ao]\s+(?:[ao]\s+)?de\s+empresa",
     r"diplomado\s+en\s+enfermeria\s+de\s+empresa",
+    # ATS/DUE — denominación pre-Bolonia que sigue apareciendo en
+    # convocatorias antiguas y en algunas administraciones (Tribunal de
+    # Cuentas, Defensa, etc.). Ej. real: BOE-A-2022-23854 (Tribunal de
+    # Cuentas, 30/12/2022): "ATS/DUE de Prevención y Salud laboral".
+    # Tras normalize() la "/" se convierte en espacio: "ats due de
+    # prevencion y salud laboral".
+    r"ats\s*[-/]?\s*due\s+de\s+prevenci[óo]n",
+    r"ats\s*[-/]?\s*due\s+de\s+salud\s+laboral",
+    r"ats\s+due\s+de\s+prevencion",
+    r"ats\s+due\s+de\s+salud\s+laboral",
 ]
 
 # Match débil: solo si ADEMÁS aparece "enfermer" en el mismo fragmento (100 chars)
@@ -65,6 +75,11 @@ WEAK_CONTEXT_PATTERNS: list[tuple[str, str]] = [
     (r"salud laboral", r"enfermer"),
     (r"servicio de prevencion", r"enfermer"),
     (r"prevencion de riesgos laborales", r"enfermer"),
+    # ATS/DUE histórico: si aparece junto a contexto de PRL/salud laboral,
+    # es match. El patrón "ats due" ya implica enfermería (DUE = Diplomado
+    # Universitario en Enfermería), por eso aquí el confirmador es el
+    # contexto laboral en vez de "enfermer".
+    (r"ats\s+due", r"prevencion|salud laboral|riesgos laborales"),
 ]
 
 # Falsos positivos a descartar (antes de alertar)
