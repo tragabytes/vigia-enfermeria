@@ -3,20 +3,20 @@
   "total_today": 24,
   "by_category": {
     "bolsa": 4,
-    "nombramiento": 1,
+    "nombramiento": 2,
     "oep": 1,
-    "oposicion": 11,
-    "otro": 4,
+    "oposicion": 8,
+    "otro": 6,
     "traslado": 3
   },
   "days_watching": 0,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-04-26T08:14:47.897012+00:00",
+  "last_run_at": "2026-04-26T08:49:08.864509+00:00",
   "next_run_at": "2026-04-27T08:00:00+00:00",
   "sources_online": 0,
   "sources_total": 10,
   "targets_active": 3,
   "targets_total": 22,
   "version": "0.2.0",
-  "commit": "local"
+  "commit": "e8fb0ed"
 }

@@ -7,7 +7,7 @@
     "fecha": "2026-02-13",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.640479",
-    "summary": null
+    "summary": "No se puede generar resumen. Texto adicional no disponible. Título truncado impide identificar plazas, especialidad y detalles. Consultar https://www.bocm.es/bocm-20260213-10"
   },
   {
     "id_hash": "36a60542e7dedcf8",
@@ -17,7 +17,7 @@
     "fecha": "2026-03-25",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.640479",
-    "summary": null
+    "summary": "Resolución 11/03/2026 - Dirección General Función Pública: Listas definitivas admitidos/excluidos oposición promoción interna, plazas laborales categoría diplom. BOCM 25/03/2026."
   },
   {
     "id_hash": "0dc18097e9aa779e",
@@ -27,7 +27,7 @@
     "fecha": "2026-04-23",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.640479",
-    "summary": null
+    "summary": "**CONSEJERÍA SANIDAD MADRID**\nConvocatoria Libre Designación. 1 puesto vacante. Orden 585/2026, 13 abril. \n[Especialidad y fechas no disponibles en fuente]"
   },
   {
     "id_hash": "4219aec17a4acc37",
@@ -35,9 +35,9 @@
     "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-8792",
     "titulo": "Resolución de 13 de abril de 2026, del Instituto de Salud Carlos III, O.A., M.P., por la que se publica el Convenio con la Comunidad Autónoma de las Illes Balears, para la formación de especialistas en medicina y enfermería del trabajo.",
     "fecha": "2026-04-21",
-    "categoria": "oposicion",
+    "categoria": "nombramiento",
     "first_seen_at": "2026-04-26T08:14:47.624627",
-    "summary": null
+    "summary": "Convenio Instituto de Salud Carlos III - Illes Balears. Formación especialistas Medicina y Enfermería del Trabajo. Resolución 13 abril 2026."
   },
   {
     "id_hash": "477665a57d787814",
@@ -47,7 +47,7 @@
     "fecha": "2026-01-07",
     "categoria": "nombramiento",
     "first_seen_at": "2026-04-26T08:14:47.624627",
-    "summary": null
+    "summary": "Nombramiento personal estatutario fijo Enfermero/a Especialista Enfermería del Trabajo. Servicio Madrileño de Salud. Resolución 9 dic 2025."
   },
   {
     "id_hash": "07fd6d40b3f62811",
@@ -57,7 +57,7 @@
     "fecha": "2026-01-29",
     "categoria": "traslado",
     "first_seen_at": "2026-04-26T08:14:47.624627",
-    "summary": null
+    "summary": "TRASLADO voluntario Enfermero/a Especialista Enfermería del Trabajo. Servicio Madrileño Salud. BOCM 29/01/2026."
   },
   {
     "id_hash": "3f6a3037ed941cc3",
@@ -67,7 +67,7 @@
     "fecha": "2026-02-10",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.624627",
-    "summary": null
+    "summary": "MODIFICA COMPOSICIÓN TRIBUNAL CALIFICADOR. Oposiciones Diplomado Enfermería. Dirección General Función Pública. Resolución 29/01/2026."
   },
   {
     "id_hash": "d19513e2ad77ee73",
@@ -77,7 +77,7 @@
     "fecha": "2026-02-24",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.577238",
-    "summary": null
+    "summary": "Oposición Escala Gestión Prevención y Salud Laboral. Universidad de Granada, acceso libre. Consultar BOE para plazas y plazo inscripción."
   },
   {
     "id_hash": "4f7002c8a5b3ff9e",
@@ -87,7 +87,7 @@
     "fecha": "2026-04-26",
     "categoria": "bolsa",
     "first_seen_at": "2026-04-26T08:14:47.561128",
-    "summary": null
+    "summary": "COMUNIDAD MADRID: Bolsa única empleo temporal Especialista Enfermería del Trabajo (2024). Subsanación de solicitudes. Enlace: https://sede.comunidad.madrid/oferta-empleo/especialista-enfermeria-trabajo-2"
   },
   {
     "id_hash": "cb0b6886f2e07b79",
@@ -97,7 +97,7 @@
     "fecha": "2026-04-26",
     "categoria": "otro",
     "first_seen_at": "2026-04-26T08:14:47.561128",
-    "summary": null
+    "summary": "ENFERMERA ESPECIALISTA EN ENFERMERÍA DEL TRABAJO. Hospital Universitario Fundación Alcorcón. Convocatoria 2022. Comunidad de Madrid."
   },
   {
     "id_hash": "7bd05641a1793b83",
@@ -107,7 +107,7 @@
     "fecha": "2026-04-26",
     "categoria": "otro",
     "first_seen_at": "2026-04-26T08:14:47.561128",
-    "summary": null
+    "summary": "CONVOCATORIA ENFERMERAS ESPECIALISTAS EN ENFERMERÍA DEL TRABAJO. HOSPITAL UNIVERSITARIO FUNDACIÓN ALCORCÓN (MADRID). PROCESO SELECCIÓN SINGULAR 2022."
   },
   {
     "id_hash": "1a423071ba1f76d1",
@@ -117,7 +117,7 @@
     "fecha": "2026-03-24",
     "categoria": "otro",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "III Congreso Internacional de Enfermería del Trabajo en Palencia. Convocado por CODEM. Especialidad: Salud Laboral/Enfermería del Trabajo. Fecha límite de inscripción no disponible."
   },
   {
     "id_hash": "7cf7d0f72e19707b",
@@ -127,7 +127,7 @@
     "fecha": "2024-12-20",
     "categoria": "oep",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "**[OEP] Enfermero/a del Trabajo · Nivel A2 · Madrid**\nOposición técnica. Especialidad: Enfermería del Trabajo/Salud Laboral. Datos completos en recurso CSV municipal."
   },
   {
     "id_hash": "eb9d7317337f1756",
@@ -137,7 +137,7 @@
     "fecha": "2026-04-26",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "MADRID: Oposición Diplomado Enfermería Especialista Enfermería Trabajo 2025. Acceso libre. Información completa en sede.comunidad.madrid"
   },
   {
     "id_hash": "7c7cf06753cdc77c",
@@ -147,7 +147,7 @@
     "fecha": "2026-04-26",
     "categoria": "bolsa",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "BOLSA ÚNICA EMPLEO TEMPORAL. Especialista en Enfermería del Trabajo. Comunidad de Madrid. Inscripción abierta."
   },
   {
     "id_hash": "4b8a712a6f032733",
@@ -157,7 +157,7 @@
     "fecha": "2026-04-26",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "MADRID | Promoción interna Diplomado Enfermería Especialista (Enfermería Trabajo) | Comunidad Madrid 2023 | Inscripción abierta"
   },
   {
     "id_hash": "540d6a651569c4aa",
@@ -167,7 +167,7 @@
     "fecha": "2026-04-26",
     "categoria": "bolsa",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "COMUNIDAD MADRID. Bolsa única empleo temporal Especialista Enfermería del Trabajo (2026). Subsanación de solicitudes. Plazas y fechas límite no especificadas en datos disponibles."
   },
   {
     "id_hash": "411450784ca4823f",
@@ -177,7 +177,7 @@
     "fecha": "2026-04-26",
     "categoria": "traslado",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "MADRID | Concurso traslados Enfermero Especialista Enfermería Trabajo | Comunidad Madrid | 2026 | Inscripción pendiente de publicación"
   },
   {
     "id_hash": "9d201f30c6517fda",
@@ -187,7 +187,7 @@
     "fecha": "2026-04-26",
     "categoria": "oposicion",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "SERMAS estabiliza Enfermero/a Especialista en Enfermería del Trabajo (2022). Oposición. Más info: https://sede.comunidad.madrid/oferta-empleo/estabilizacion-2022-enf-trabajo"
   },
   {
     "id_hash": "a4c428e5fbcf4f82",
@@ -197,7 +197,7 @@
     "fecha": "2026-04-26",
     "categoria": "traslado",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "Concurso méritos Enfermero/a especialista Enfermería Trabajo - Servicio Madrileño Salud (2024). Traslado. Consultar plazo inscripción en sede.comunidad.madrid."
   },
   {
     "id_hash": "1aafe2e00198889c",
@@ -207,7 +207,7 @@
     "fecha": "2026-04-26",
     "categoria": "bolsa",
     "first_seen_at": "2026-04-26T08:14:47.545242",
-    "summary": null
+    "summary": "COMUNIDAD MADRID. Bolsa única empleo temporal Especialista Enfermería del Trabajo (2025). Subsanación de solicitudes. Consultar fecha límite en sede.comunidad.madrid."
   },
   {
     "id_hash": "511a52df34c5193f",
@@ -217,7 +217,7 @@
     "fecha": "2026-04-10",
     "categoria": "otro",
     "first_seen_at": "2026-04-26T08:14:47.529556",
-    "summary": null
+    "summary": "CANAL ISABEL II convoca plaza ENFERMERO/A ESPECIALISTA EN ENFERMERÍA DEL TRABAJO. Consulta detalles y plazo en https://convocatoriascanaldeisabelsegunda.es/convocatoria-245"
   },
   {
     "id_hash": "ab2b2dbb861bc605",
@@ -225,9 +225,9 @@
     "url": "http://www.codem.es/Canales/Ficha.aspx",
     "titulo": "Canal de Isabel II convoca una plaza de enfermera especialista en Enfermería del Trabajo",
     "fecha": "2026-04-10",
-    "categoria": "oposicion",
+    "categoria": "otro",
     "first_seen_at": "2026-04-26T08:14:47.529556",
-    "summary": null
+    "summary": "Canal de Isabel II convoca plaza enfermera especialista Enfermería del Trabajo. Consultar URL para plazos e inscripción."
   },
   {
     "id_hash": "d1b63fbd62840597",
@@ -235,8 +235,8 @@
     "url": "http://www.codem.es/Canales/Ficha.aspx",
     "titulo": "La Comunidad de Madrid aprueba las listas definitivas de admitidos y excluidos en la promoción interna de Enfermería del Trabajo",
     "fecha": "2026-03-27",
-    "categoria": "oposicion",
+    "categoria": "otro",
     "first_seen_at": "2026-04-26T08:14:47.529556",
-    "summary": null
+    "summary": "Comunidad de Madrid publica listas definitivas de admitidos y excluidos en promoción interna de Enfermería del Trabajo. Consultar enlace para detalles de plazas y calendario."
   }
 ]
