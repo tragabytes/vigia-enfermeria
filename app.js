@@ -141,6 +141,22 @@ const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
   {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
 ));
 
+/* SVG inline de campana de alarma. Usado en el header (status bar) y en
+   los tiles urgent del watchlist. `currentColor` hereda del padre para
+   que la animación que pulsa el color del contenedor también afecte al
+   trazo de la campana. La clase .bell-svg añade un drop-shadow rojo
+   pulsante via @keyframes bellGlow. */
+function bellIcon(extraClass = '') {
+  return `<svg class="bell-svg ${extraClass}" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="currentColor" d="M12 2.5a1 1 0 0 0-1 1V4.6A6.5 6.5 0 0 0 5.5 11v3.5l-1.6 1.6A1.3 1.3 0 0 0 4.8 18.4h14.4a1.3 1.3 0 0 0 .92-2.22l-1.62-1.62V11A6.5 6.5 0 0 0 13 4.6V3.5a1 1 0 0 0-1-1Z"/>
+    <path fill="currentColor" d="M10 19.6a2 2 0 0 0 4 0Z"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M3.6 7.4c.4-1.2 1-2.3 1.7-3.2"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M1.5 8.7c.5-1.7 1.4-3.3 2.5-4.6"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M20.4 7.4c-.4-1.2-1-2.3-1.7-3.2"/>
+    <path fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" d="M22.5 8.7c-.5-1.7-1.4-3.3-2.5-4.6"/>
+  </svg>`;
+}
+
 /* Helpers para los campos del enricher v2 ----------------------------- */
 
 /* Días hasta el deadline (>=0 si en futuro, <0 si ya cerró). null si no hay. */
@@ -310,10 +326,11 @@ function renderStatusBar() {
   const nextStr = `${dayShort} ${next.toISOString().slice(11, 16)} UTC`;
 
   // Alarma de urgentes: sale solo si hay targets urgentes (deadline ≤7 días).
-  // Caso 1 urgente: muestra el nombre + countdown ("URGENT · CANAL II · CIERRA EN 2D").
-  // Caso N urgentes: contador genérico ("N URGENTES").
+  // Caso 1 urgente: bell + nombre + countdown ("[bell] CANAL II · CIERRA EN 2D").
+  // Caso N urgentes: bell + contador genérico ("[bell] N URGENTES").
   // Click → modal del urgente más próximo / scroll a sección 06 si hay varios.
-  // Estética: pulso rojo en todo el pill (sin icono, sin shake).
+  // Estética: pulso rojo en todo el pill + glow rojo independiente en la
+  // campana, sin desplazamiento.
   const urgentTargets = (DATA.targets || []).filter(t => t.urgent);
   let alarmHTML = '';
   if (urgentTargets.length === 1) {
@@ -323,14 +340,14 @@ function renderStatusBar() {
               : `CIERRA EN ${t.days_until}D`;
     alarmHTML = `
       <span class="item alarm" id="alarm-bell" data-target-id="${escapeHTML(t.id)}" title="Ver convocatoria urgente">
-        <span class="val">URGENT · ${escapeHTML(t.name.toUpperCase())} · ${escapeHTML(txt)}</span>
+        ${bellIcon('bell-alarm')}<span class="val">${escapeHTML(t.name.toUpperCase())} · ${escapeHTML(txt)}</span>
       </span>`;
   } else if (urgentTargets.length > 1) {
     // Ordenamos por días restantes para usar el más urgente al hacer click.
     urgentTargets.sort((a, b) => (a.days_until ?? 99) - (b.days_until ?? 99));
     alarmHTML = `
       <span class="item alarm" id="alarm-bell" data-target-id="${escapeHTML(urgentTargets[0].id)}" title="Ir a la sección de watchlist">
-        <span class="val">${urgentTargets.length} URGENTES</span>
+        ${bellIcon('bell-alarm')}<span class="val">${urgentTargets.length} URGENTES</span>
       </span>`;
   }
 
@@ -905,7 +922,11 @@ function renderWatchlist() {
       const txt = t.days_until <= 0 ? 'CIERRA HOY'
                 : t.days_until === 1 ? 'CIERRA MAÑANA'
                 : `CIERRA EN ${t.days_until} DÍAS`;
-      countdown = `<div class="countdown">⏰ ${escapeHTML(txt)}</div>`;
+      // En tiles urgent usamos la campana con pulso de glow rojo (mismo
+      // patrón visual que el header). En tiles solo activos (no urgentes)
+      // mantenemos el reloj clásico.
+      const icon = t.urgent ? bellIcon('bell-alarm') : '⏰';
+      countdown = `<div class="countdown">${icon} ${escapeHTML(txt)}</div>`;
     }
     const fase = (t.latest_phase && t.latest_phase !== 'convocatoria' && t.latest_phase !== 'otro')
       ? `<div class="phase">⛓ ${escapeHTML(FASE_LABEL[t.latest_phase] || t.latest_phase.toUpperCase())}</div>`

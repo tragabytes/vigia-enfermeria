@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "c46eb26",
+    "kind": "feat",
+    "scope": "web",
+    "title": "campana SVG con glow rojo pulsante en header y watchlist",
+    "body": "Sustituye el texto plano \"URGENT · …\" del header y el emoji `⏰` del"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "53520fc",
     "kind": "fix",
     "scope": "web",
@@ -22,13 +30,5 @@
     "scope": "ci",
     "title": "restaurar snapshot vía git show para no ensuciar el índice",
     "body": "El step \"Restaurar último snapshot del dashboard\" usaba"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "ae58586",
-    "kind": "fix",
-    "scope": "dashboard",
-    "title": "blindar SOURCES contra el degradado null/unknown",
-    "body": "Regresión del bug 1dd68cb: tras el run de maintenance.yml, la sección 5"
   }
 ]
