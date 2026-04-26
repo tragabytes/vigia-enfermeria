@@ -803,8 +803,41 @@ table.term td.col-title {
   letter-spacing: 0.18em;
   margin-left: 4px;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 .statusbar .item.alarm:hover { background: var(--alarm-red-bg); }
+
+/* Campana SVG ────────────────────────────────────────────────────────
+   Inline en el pill del header y en los tiles urgent del watchlist.
+   `currentColor` hereda del padre para integrarse con el pulso del pill,
+   y un drop-shadow pulsante añade el resplandor rojo independiente.
+   ───────────────────────────────────────────────────────────────── */
+.bell-svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: var(--alarm-red);
+  vertical-align: -3px;
+  filter: drop-shadow(0 0 2px var(--alarm-red-glow));
+}
+.bell-svg.bell-alarm {
+  animation: bellGlow 1.6s ease-in-out infinite;
+}
+.target.urgent .bell-svg { color: var(--alarm-red-bright); }
+.statusbar .item.alarm .bell-svg { color: inherit; }
+@keyframes bellGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 1px var(--alarm-red-glow));
+  }
+  50% {
+    filter: drop-shadow(0 0 7px var(--alarm-red));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bell-svg.bell-alarm { animation: none; filter: drop-shadow(0 0 4px var(--alarm-red-glow)); }
+}
 /* Pulso del pill: color, borde y un fondo tenue van y vienen al unísono.
    Sin movimiento — solo intensidad, como una luz que palpita. */
 @keyframes alarmPill {
