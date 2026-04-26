@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "94ed7cd",
+    "kind": "fix",
+    "scope": "ci",
+    "title": "restaurar snapshot vía git show para no ensuciar el índice",
+    "body": "El step \"Restaurar último snapshot del dashboard\" usaba"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "ae58586",
     "kind": "fix",
     "scope": "dashboard",
@@ -22,13 +30,5 @@
     "scope": "dashboard",
     "title": "refrescar total_hits al reutilizar sources_status del último probe",
     "body": "El branch elif sources_path.exists() leía el JSON existente y lo dejaba"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "57f7835",
-    "kind": "feat",
-    "scope": "web",
-    "title": "número HITS clickable en SOURCES filtra el feed histórico por esa fuente",
-    "body": "En la sección 05 (SOURCES · TARGETS PROBED), el número de HITS de cada"
   }
 ]
