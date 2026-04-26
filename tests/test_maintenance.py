@@ -2,18 +2,39 @@
 Tests de las tareas de mantenimiento sobre la BD ya poblada.
 
 Cubre `reclassify_all` (rebobinar el clasificador tras afinar
-CATEGORY_HINTS) y `enricher.enrich_pending` (rellenar summary IA en items
-históricos sin él).
+CATEGORY_HINTS) y `enricher.enrich_pending` (re-enriquecer a v2 los items
+históricos que aún estén en versión anterior).
 """
 from __future__ import annotations
 
 from datetime import date
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
 from vigia import maintenance, enricher
-from vigia.storage import Item, Storage
+from vigia.storage import ENRICHMENT_VERSION, Item, Storage
+
+
+_FAKE_V2_JSON = """{
+  "is_relevant": true,
+  "relevance_reason": "Plaza Enfermería del Trabajo",
+  "process_type": "bolsa",
+  "summary": "Resumen IA",
+  "organismo": "CODEM",
+  "centro": null,
+  "plazas": 4,
+  "deadline_inscripcion": null,
+  "fecha_publicacion_oficial": "2026-04-25",
+  "tasas_eur": null,
+  "url_bases": null,
+  "url_inscripcion": null,
+  "requisitos_clave": [],
+  "fase": "convocatoria",
+  "next_action": null,
+  "confidence": 0.85
+}"""
 
 
 def _make_item(titulo: str, categoria: str = "otro", summary=None) -> Item:
@@ -77,36 +98,51 @@ class TestReclassifyAll:
 # ---------------------------------------------------------------------------
 
 class TestEnrichPending:
-    def _patch_anthropic(self, monkeypatch, response_text: str = "Resumen IA"):
+    """Backfill al objetivo `ENRICHMENT_VERSION`.
+
+    `enrich_pending` reprocesa todos los items con `enriched_version`
+    distinto del actual: los sin enriquecer y los que solo tenían el
+    summary v1 (string-only). Los que ya están en v2 se saltan.
+    """
+    def _patch_anthropic(self, monkeypatch, json_text: str = _FAKE_V2_JSON):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
-        block = MagicMock(); block.type = "text"; block.text = response_text
-        resp = MagicMock(); resp.content = [block]
+        block = SimpleNamespace(type="text", text=json_text)
+        resp = SimpleNamespace(stop_reason="end_turn", content=[block])
         client = MagicMock()
         client.messages.create.return_value = resp
         import anthropic
         monkeypatch.setattr(anthropic, "Anthropic", lambda: client)
         return client
 
-    def test_enriquece_solo_los_que_no_tienen_summary(self, tmp_path, monkeypatch):
+    def test_enriquece_los_legacy_y_los_no_enriquecidos(self, tmp_path, monkeypatch):
+        """Tanto items sin summary como items con summary v1 deben pasar a v2."""
         client = self._patch_anthropic(monkeypatch)
         storage = Storage(db_path=tmp_path / "seen.db")
         storage.save(_make_item("Item sin summary"))
-        storage.save(_make_item("Item con summary", summary="ya estaba"))
+        storage.save(_make_item("Item con summary v1", summary="resumen v1"))
 
         n = enricher.enrich_pending(storage)
-        assert n == 1
-        # Sólo se llamó al SDK 1 vez (el otro ya tenía summary)
-        assert client.messages.create.call_count == 1
+        assert n == 2
+        assert client.messages.create.call_count == 2
 
-        rows = dict(storage._conn.execute("SELECT titulo, summary FROM items"))
+        rows = dict(storage._conn.execute(
+            "SELECT titulo, enriched_version FROM items"
+        ))
         storage.close()
-        assert rows["Item sin summary"] == "Resumen IA"
-        assert rows["Item con summary"] == "ya estaba"
+        assert rows["Item sin summary"] == ENRICHMENT_VERSION
+        assert rows["Item con summary v1"] == ENRICHMENT_VERSION
 
-    def test_sin_pendientes_no_llama_al_sdk(self, tmp_path, monkeypatch):
+    def test_no_reprocesa_items_ya_en_v2(self, tmp_path, monkeypatch):
+        """Si un item ya tiene enriched_version = ENRICHMENT_VERSION, se salta."""
         client = self._patch_anthropic(monkeypatch)
         storage = Storage(db_path=tmp_path / "seen.db")
-        storage.save(_make_item("Item con summary", summary="x"))
+        storage.save(_make_item("Item ya enriquecido"))
+        # Marcamos el item como ya en v2
+        storage._conn.execute(
+            "UPDATE items SET enriched_version = ? WHERE titulo = ?",
+            (ENRICHMENT_VERSION, "Item ya enriquecido"),
+        )
+        storage._conn.commit()
 
         n = enricher.enrich_pending(storage)
         storage.close()

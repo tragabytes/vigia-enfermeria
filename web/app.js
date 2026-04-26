@@ -32,6 +32,27 @@ const CAT_COLOR = {
   'otro':         '#888888',
 };
 
+/* Etiquetas legibles para los enums del enricher v2. Si llega un valor
+   desconocido (versión más nueva del backend que el frontend), caemos al
+   string crudo en MAYÚSCULAS para no romper nada. */
+const PROCESS_TYPE_LABEL = {
+  'oposicion':          'OPOSICIÓN',
+  'bolsa':              'BOLSA',
+  'concurso_traslados': 'CONCURSO TRASLADOS',
+  'interinaje':         'INTERINAJE',
+  'temporal':           'TEMPORAL',
+  'otro':               'OTRO',
+};
+const FASE_LABEL = {
+  'convocatoria':           'CONVOCATORIA',
+  'admitidos_provisional':  'ADMITIDOS PROV.',
+  'admitidos_definitivo':   'ADMITIDOS DEF.',
+  'examen':                 'EXAMEN',
+  'calificacion':           'CALIFICACIÓN',
+  'propuesta_nombramiento': 'PROPUESTA NOMBR.',
+  'otro':                   'ACTUALIZACIÓN',
+};
+
 let DATA = { items: [], sources: [], meta: {}, targets: [], changelog: [] };
 
 /* ---- bootstrap ------------------------------------------------------- */
@@ -113,8 +134,79 @@ const escapeHTML = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
   {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
 ));
 
+/* Helpers para los campos del enricher v2 ----------------------------- */
+
+/* Días hasta el deadline (>=0 si en futuro, <0 si ya cerró). null si no hay. */
+function daysUntil(iso) {
+  if (!iso) return null;
+  const dl = new Date(iso + 'T00:00:00Z');
+  if (isNaN(dl)) return null;
+  const today = new Date();
+  const todayUTC = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  return Math.round((dl.getTime() - todayUTC) / 86400000);
+}
+
+/* Texto legible "en N días", "HOY", "mañana", "cerrado hace N días". */
+function deadlineText(iso) {
+  const d = daysUntil(iso);
+  if (d === null) return null;
+  if (d < 0)  return `cerrado hace ${-d} días`;
+  if (d === 0) return 'HOY';
+  if (d === 1) return 'mañana';
+  return `en ${d} días`;
+}
+
+/* Badge de urgencia: 'urgent' si <=7 días, 'open' si futuro, 'closed' si pasado. */
+function deadlineState(iso) {
+  const d = daysUntil(iso);
+  if (d === null) return null;
+  if (d < 0) return 'closed';
+  if (d <= 7) return 'urgent';
+  return 'open';
+}
+
+/* Formatea un importe en euros con el estilo del notifier (30€ o 30,50€). */
+function fmtEur(amount) {
+  if (amount === null || amount === undefined) return null;
+  if (Math.abs(amount - Math.round(amount)) < 0.005) {
+    return `${Math.round(amount)}€`;
+  }
+  return `${amount.toFixed(2).replace('.', ',')}€`;
+}
+
+/* HTML de los chips meta v2 (process_type, plazas, deadline, tasa, fase).
+   Devuelve string vacío si el item no tiene ninguno de estos campos. */
+function chipsHTML(it) {
+  const chips = [];
+  if (it.process_type) {
+    const lbl = PROCESS_TYPE_LABEL[it.process_type] || it.process_type.toUpperCase();
+    chips.push(`<span class="chip chip-pt">${escapeHTML(lbl)}</span>`);
+  }
+  if (it.plazas) {
+    chips.push(`<span class="chip chip-plz">${escapeHTML(String(it.plazas))} PLAZAS</span>`);
+  }
+  if (it.deadline_inscripcion) {
+    const state = deadlineState(it.deadline_inscripcion);
+    const txt = deadlineText(it.deadline_inscripcion);
+    chips.push(
+      `<span class="chip chip-dl chip-dl-${state}" title="Cierre ${it.deadline_inscripcion}">⏰ ${escapeHTML(txt)}</span>`
+    );
+  }
+  if (it.tasas_eur !== null && it.tasas_eur !== undefined) {
+    chips.push(`<span class="chip chip-eur">${escapeHTML(fmtEur(it.tasas_eur))}</span>`);
+  }
+  if (it.fase && it.fase !== 'convocatoria' && it.fase !== 'otro') {
+    const lbl = FASE_LABEL[it.fase] || it.fase.toUpperCase();
+    chips.push(`<span class="chip chip-fase">⛓ ${escapeHTML(lbl)}</span>`);
+  }
+  if (it.is_relevant === false) {
+    chips.push(`<span class="chip chip-discard">DISCARDED</span>`);
+  }
+  return chips.length ? `<div class="chips">${chips.join('')}</div>` : '';
+}
+
 /* Mini-renderer de Markdown inline para el summary del enricher. Cubre los
-   estilos que produce Claude Haiku en respuestas cortas: **bold**, *italic*,
+   estilos que produce Claude en respuestas cortas: **bold**, *italic*,
    `code` y saltos de línea. Anti-XSS: escapamos HTML antes de aplicar las
    reglas, así cualquier marcado del LLM queda reducido a texto. */
 function renderInlineMarkdown(s) {
@@ -190,7 +282,7 @@ function renderHero() {
     <span class="prefix">$ ./vigía --whoami</span><br>
     Automated surveillance of Spanish public-sector job postings for
     <b style="color:var(--phos)">Occupational Health Nursing</b>. Polls 8 official
-    bulletins daily, hashes findings, enriches with Claude Haiku, dispatches
+    bulletins daily, hashes findings, enriches with Claude Sonnet 4.6 (tool use), dispatches
     to Telegram. Built with paranoia. Public log.
   `;
 }
@@ -255,8 +347,12 @@ function isToday(iso) {
   return (iso || '').slice(0, 10) === ref;
 }
 function renderFeed() {
+  // En el daily feed nunca mostramos los descartados (is_relevant=false):
+  // son ruido confirmado por el enricher. Quien quiera auditarlos puede
+  // activar el toggle "show discarded" en la sección Historical DB.
   const today = DATA.items
     .filter(it => isToday(it.first_seen_at))
+    .filter(it => it.is_relevant !== false)
     .sort((a,b) => b.first_seen_at.localeCompare(a.first_seen_at));
   const root = $('#feed');
   if (today.length === 0) {
@@ -287,8 +383,27 @@ function renderFeed() {
   $('#feed .card')?.classList.add('open');
 }
 function cardHTML(it, i) {
+  const chips = chipsHTML(it);
+  // Modelo del enricher (mostrado en el header del summary). Items v2
+  // pasaron por Sonnet; legacy v1 por Haiku. Items sin enriquecer todavía
+  // (enriched_version=null) llevan el placeholder neutro.
+  let enrichedTag = '';
+  if (it.enriched_version === 2) enrichedTag = 'claude-sonnet-4-6';
+  else if (it.enriched_version === 1) enrichedTag = 'claude-haiku-4-5';
+  else enrichedTag = 'pending enrichment';
+
+  // Línea de acción inmediata + datos auxiliares (organismo, próxima acción)
+  const auxLines = [];
+  if (it.organismo) auxLines.push(`<div>ORGANISMO     <b>${escapeHTML(it.organismo)}</b></div>`);
+  if (it.next_action) auxLines.push(`<div class="next-action">› ${escapeHTML(it.next_action)}</div>`);
+
+  // Enlace a las bases si difiere del anuncio principal
+  const basesBtn = (it.url_bases && it.url_bases !== it.url)
+    ? `<a href="${it.url_bases}" target="_blank" rel="noopener" class="btn-term ghost">OPEN BASES →</a>`
+    : '';
+
   return `
-    <div class="card" data-id="${it.id_hash}">
+    <div class="card${it.is_relevant === false ? ' card-discarded' : ''}" data-id="${it.id_hash}">
       <div class="head">
         <div class="ts">[${fmtDate(it.first_seen_at)}] <span class="age">T-${ago(it.first_seen_at)}</span></div>
         <div><span class="badge src ${it.source}">${SOURCE_LABEL[it.source] || it.source.toUpperCase()}</span></div>
@@ -299,6 +414,7 @@ function cardHTML(it, i) {
         </div>
       </div>
       <div class="body">
+        ${chips}
         <div class="meta-grid">
           <div>ID_HASH       <b>${it.id_hash}</b></div>
           <div>PUB DATE      <b>${fmtDate(it.fecha)}</b></div>
@@ -306,13 +422,15 @@ function cardHTML(it, i) {
           <div>SOURCE        <b>${SOURCE_LABEL[it.source]}</b></div>
           <div>CATEGORY      <b>${CAT_LABEL[it.categoria]}</b></div>
           <div>DETECTION LAG <b>${detectionLag(it)} </b></div>
+          ${auxLines.join('')}
         </div>
         <div class="summary-block">
-          <span class="lbl">› AI SUMMARY (claude-haiku-4.5)</span>
+          <span class="lbl">› AI SUMMARY (${enrichedTag})</span>
           ${renderInlineMarkdown(it.summary)}
         </div>
         <div class="actions">
           <a href="${it.url}" target="_blank" rel="noopener" class="btn-term">OPEN SOURCE →</a>
+          ${basesBtn}
           <button class="btn-term ghost" data-copy="${it.url}">COPY PERMALINK</button>
           <button class="btn-term ghost" data-copy="${it.id_hash}">COPY HASH</button>
         </div>
@@ -333,6 +451,7 @@ const filterState = {
   from:'',
   to:'',
   q:'',
+  showDiscarded: false,        // toggle: incluir items con is_relevant=false
   sortKey:'first_seen_at',
   sortDir:'desc',
   expanded: null,
@@ -355,16 +474,19 @@ function renderHistorical() {
     </select></span>
     <span class="seg"><label>date:</label><input id="f-from" type="date" style="width:130px"> .. <input id="f-to" type="date" style="width:130px"></span>
     <span class="seg"><label>q:</label><input id="f-q" class="q" type="text" placeholder='"texto..."'></span>
+    <span class="seg toggle-seg"><label for="f-discarded">show discarded:</label><input id="f-discarded" type="checkbox"${filterState.showDiscarded ? ' checked' : ''}></span>
     <span class="clear" id="f-clear">[× clear]</span>
   `;
-  ['#f-source','#f-cat','#f-from','#f-to','#f-q'].forEach(sel => {
+  ['#f-source','#f-cat','#f-from','#f-to','#f-q','#f-discarded'].forEach(sel => {
     const el = $(sel);
     el.addEventListener('input', () => { syncFilter(); drawTable(); });
     el.addEventListener('change', () => { syncFilter(); drawTable(); });
   });
   $('#f-clear').addEventListener('click', () => {
     filterState.source = ''; filterState.category=''; filterState.from=''; filterState.to=''; filterState.q='';
+    filterState.showDiscarded = false;
     $('#f-source').value=''; $('#f-cat').value=''; $('#f-from').value=''; $('#f-to').value=''; $('#f-q').value='';
+    $('#f-discarded').checked = false;
     drawTable();
   });
 
@@ -399,9 +521,14 @@ function syncFilter() {
   filterState.from     = $('#f-from').value;
   filterState.to       = $('#f-to').value;
   filterState.q        = $('#f-q').value.toLowerCase().trim();
+  filterState.showDiscarded = !!$('#f-discarded')?.checked;
 }
 function applyFilters(items) {
   return items.filter(it => {
+    // Por defecto los items con is_relevant=false (falsos positivos
+    // confirmados por el enricher) se ocultan. El toggle "show discarded"
+    // los muestra para auditoría.
+    if (!filterState.showDiscarded && it.is_relevant === false) return false;
     if (filterState.source && it.source !== filterState.source) return false;
     if (filterState.category && it.categoria !== filterState.category) return false;
     if (filterState.from && it.first_seen_at.slice(0,10) < filterState.from) return false;
@@ -470,12 +597,26 @@ function injectExpanded(id) {
   tr.classList.add('expanded');
   const e = document.createElement('tr');
   e.className = 'expanded-row';
+  const chips = chipsHTML(it);
+  // Aux: organismo y next action (si los tenemos por v2)
+  const aux = [];
+  if (it.organismo) aux.push(`<span class="e-aux"><b>ORG:</b> ${escapeHTML(it.organismo)}</span>`);
+  if (it.next_action) aux.push(`<span class="e-aux"><b>NEXT:</b> ${escapeHTML(it.next_action)}</span>`);
+  if (it.relevance_reason && it.is_relevant === false) {
+    aux.push(`<span class="e-aux e-discarded"><b>WHY DISCARDED:</b> ${escapeHTML(it.relevance_reason)}</span>`);
+  }
+  const basesBtn = (it.url_bases && it.url_bases !== it.url)
+    ? `<a href="${it.url_bases}" target="_blank" rel="noopener" class="btn-term ghost">OPEN BASES →</a>`
+    : '';
   e.innerHTML = `
     <td colspan="6">
       <div class="e-title">› ${escapeHTML(it.titulo)}</div>
+      ${chips}
+      ${aux.length ? `<div class="e-aux-row">${aux.join('')}</div>` : ''}
       <div class="e-summary"><b style="color:var(--phos-dim);font-weight:500;">AI SUMMARY:</b> ${renderInlineMarkdown(it.summary)}</div>
       <div class="e-actions">
         <a href="${it.url}" target="_blank" rel="noopener" class="btn-term">OPEN SOURCE →</a>
+        ${basesBtn}
         <button class="btn-term ghost" data-copy="${it.url}">COPY PERMALINK</button>
         <span style="color:var(--fg-dim);font-size:11px;letter-spacing:.14em;margin-left:auto;align-self:center;">HASH ${it.id_hash} · LAG ${detectionLag(it)}</span>
       </div>
@@ -617,23 +758,58 @@ function filterHistoricalBySource(name) {
   histSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ---- 6. Watchlist (organismos vigilados, calculados en backend) ----- */
+/* ---- 6. Watchlist (organismos vigilados, calculados en backend) -----
+   Orden: urgent (deadline ≤ 7 días) → active → cold. Dentro de cada
+   bucket, los que tienen deadline más próximo arriba; en cold mantenemos
+   orden original. Esto coloca lo accionable primero sin matar la lista. */
 function renderWatchlist() {
-  const targets = DATA.targets || [];
-  const active = targets.filter(t => t.active).length;
+  const targets = (DATA.targets || []).slice();
+  const urgentN = targets.filter(t => t.urgent).length;
+  const activeN = targets.filter(t => t.active && !t.urgent).length;
   const total = targets.length;
-  const cold = total - active;
-  const meta = $('#watchlist-meta');
-  if (meta) meta.textContent = `${total} ENTITIES · ${active} ACTIVE · ${cold} COLD`;
+  const cold = total - urgentN - activeN;
 
-  $('#watchlist').innerHTML = targets.map(t => `
-    <div class="target ${t.active ? '' : 'cold'}">
+  const meta = $('#watchlist-meta');
+  if (meta) {
+    const urgentChip = urgentN > 0 ? ` · ${urgentN} URGENT` : '';
+    meta.textContent = `${total} ENTITIES · ${urgentN + activeN} ACTIVE${urgentChip} · ${cold} COLD`;
+  }
+
+  // Ranking determinista. Los urgentes con menor days_until al frente.
+  targets.sort((a, b) => {
+    const rank = (t) => t.urgent ? 0 : (t.active ? 1 : 2);
+    const ra = rank(a), rb = rank(b);
+    if (ra !== rb) return ra - rb;
+    // Dentro del mismo rank: primero los que tienen deadline más cerca.
+    const da = a.days_until ?? Infinity;
+    const db = b.days_until ?? Infinity;
+    if (da !== db) return da - db;
+    return (a.id || '').localeCompare(b.id || '');
+  });
+
+  $('#watchlist').innerHTML = targets.map(t => {
+    const cls = t.urgent ? 'urgent' : (t.active ? '' : 'cold');
+    const stateLabel = t.urgent ? 'URGENT' : (t.active ? 'ACTIVE' : 'COLD');
+    let countdown = '';
+    if (t.days_until !== null && t.days_until !== undefined) {
+      const txt = t.days_until <= 0 ? 'CIERRA HOY'
+                : t.days_until === 1 ? 'CIERRA MAÑANA'
+                : `CIERRA EN ${t.days_until} DÍAS`;
+      countdown = `<div class="countdown">⏰ ${escapeHTML(txt)}</div>`;
+    }
+    const fase = (t.latest_phase && t.latest_phase !== 'convocatoria' && t.latest_phase !== 'otro')
+      ? `<div class="phase">⛓ ${escapeHTML(FASE_LABEL[t.latest_phase] || t.latest_phase.toUpperCase())}</div>`
+      : '';
+    return `
+    <div class="target ${cls}">
       <div class="id">${escapeHTML(t.id)}</div>
       <div class="name">${escapeHTML(t.name)}</div>
       <div class="desc">${escapeHTML(t.desc)}</div>
-      <div class="stat">HITS <b>${t.hits}</b> · ${t.active ? 'ACTIVE' : 'COLD'}</div>
-    </div>
-  `).join('');
+      <div class="stat">HITS <b>${t.hits}</b> · ${stateLabel}</div>
+      ${countdown}
+      ${fase}
+    </div>`;
+  }).join('');
 }
 
 /* ---- 7. Subscribe terminal ------------------------------------------ */
@@ -743,9 +919,9 @@ function renderHowItWorks() {
 <span class="dim">│</span>  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
 <span class="dim">│</span>  │  <span class="fg">8 SOURCES</span>   │───▶│  <span class="fg">EXTRACTOR</span>   │───▶│  <span class="fg">ENRICHER</span>    │
 <span class="dim">│</span>  │  BOE / BOCM  │    │  regex       │    │  claude-     │
-<span class="dim">│</span>  │  CMA / AYTO  │    │  strong+weak │    │  haiku-4.5   │
-<span class="dim">│</span>  │  CANAL CODEM │    │  hash dedupe │    │  summary     │
-<span class="dim">│</span>  │  DATOS BOAM  │    │  + classify  │    │  generation  │
+<span class="dim">│</span>  │  CMA / AYTO  │    │  strong+weak │    │  sonnet-4.6  │
+<span class="dim">│</span>  │  CANAL CODEM │    │  hash dedupe │    │  + tool use  │
+<span class="dim">│</span>  │  DATOS BOAM  │    │  + classify  │    │  structured  │
 <span class="dim">│</span>  └──────────────┘    └──────────────┘    └──────────────┘
 <span class="dim">│</span>          │                                          │
 <span class="dim">│</span>          ▼                                          ▼

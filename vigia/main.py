@@ -259,14 +259,19 @@ def main() -> None:
 
     # --- Fase 3.5: Enriquecimiento con IA (solo items nuevos, opcional) ---
     # Si ANTHROPIC_API_KEY no está configurada, enricher.enrich() devuelve la
-    # lista intacta y el cron sigue funcionando como antes.
+    # lista intacta y el cron sigue funcionando como antes. Si está configurada,
+    # cada item recibe campos estructurados (is_relevant, plazas, deadline,
+    # organismo, fase, next_action…) además del summary textual.
     new_items = enricher.enrich(new_items)
 
-    # Persistimos el summary recién generado para que el dashboard pueda
-    # mostrarlo sin re-llamar al LLM. Si el enricher se saltó (sin API key)
-    # o falló para un item, update_summary() es no-op para ese item.
+    # Persistimos los campos del enricher (v2 estructurado) o solo el summary
+    # (fallback v1) según lo que haya rellenado el LLM. Si el enricher se
+    # saltó por completo (sin key, sin SDK), ambos métodos son no-op.
     for item in new_items:
-        storage.update_summary(item)
+        if item.enriched_version is not None:
+            storage.update_enrichment(item)
+        else:
+            storage.update_summary(item)
 
     # --- Fase 3.6: Export del dashboard ---
     # Se vuelca la BD a JSON antes de notificar. Sin probe_results: el step
@@ -280,10 +285,22 @@ def main() -> None:
     storage.close()
 
     # --- Fase 4: Notificación ---
-    if new_items or errors:
-        send(new_items, errors)
+    # Filtramos los items marcados como falsos positivos por el enricher
+    # (`is_relevant=false`): siguen guardados en BD para auditoría, pero no
+    # generan ruido en Telegram. Items sin enriquecer (`is_relevant=None`)
+    # se notifican igual — graceful degradation cuando el enricher está off.
+    notifiable = [it for it in new_items if it.is_relevant is not False]
+    discarded = len(new_items) - len(notifiable)
+    if discarded:
+        logger.info(
+            "Notifier: %d items descartados (is_relevant=false) — no se envían",
+            discarded,
+        )
+
+    if notifiable or errors:
+        send(notifiable, errors)
     else:
-        logger.info("Sin novedades hoy — no se envía notificación Telegram")
+        logger.info("Sin novedades relevantes hoy — no se envía notificación Telegram")
 
 
 if __name__ == "__main__":

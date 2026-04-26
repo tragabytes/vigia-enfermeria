@@ -113,17 +113,39 @@ def export_all(
 # ---------------------------------------------------------------------------
 
 def _items_payload(storage: Storage) -> list[dict]:
-    """Lista de hallazgos en formato plano, ordenados por first_seen_at desc."""
+    """Lista de hallazgos en formato plano, ordenados por first_seen_at desc.
+
+    Incluye los campos del enricher v2 (is_relevant, plazas, deadline,
+    organismo, fase, next_action…). Los items marcados como falsos positivos
+    (is_relevant=false) viajan igualmente al frontend pero con la flag al
+    descubierto: el cliente decide si los oculta por defecto o los muestra
+    con badge "DISCARDED" para auditoría.
+    """
     cur = storage._conn.execute(
         """
         SELECT id_hash, source, url, titulo, fecha, categoria,
-               first_seen_at, summary
+               first_seen_at, summary,
+               is_relevant, relevance_reason, process_type, organismo, centro,
+               plazas, deadline_inscripcion, fecha_publicacion_oficial,
+               tasas_eur, url_bases, url_inscripcion, requisitos_clave,
+               fase, next_action, confidence, enriched_at, enriched_version
         FROM items
         ORDER BY first_seen_at DESC
         """
     )
     rows = []
     for r in cur:
+        # is_relevant viene como 0/1/NULL: lo expresamos como bool|None para
+        # que el frontend trate los `null` como "sin enriquecer todavía"
+        # (no descartado, no confirmado).
+        is_relevant: Optional[bool] = (
+            None if r[8] is None else bool(r[8])
+        )
+        try:
+            requisitos = json.loads(r[19]) if r[19] else None
+        except (TypeError, json.JSONDecodeError):
+            requisitos = None
+
         rows.append({
             "id_hash": r[0],
             "source": r[1],
@@ -133,6 +155,23 @@ def _items_payload(storage: Storage) -> list[dict]:
             "categoria": r[5],
             "first_seen_at": r[6],
             "summary": r[7],
+            "is_relevant": is_relevant,
+            "relevance_reason": r[9],
+            "process_type": r[10],
+            "organismo": r[11],
+            "centro": r[12],
+            "plazas": r[13],
+            "deadline_inscripcion": r[14],
+            "fecha_publicacion_oficial": r[15],
+            "tasas_eur": r[16],
+            "url_bases": r[17],
+            "url_inscripcion": r[18],
+            "requisitos_clave": requisitos,
+            "fase": r[20],
+            "next_action": r[21],
+            "confidence": r[22],
+            "enriched_at": r[23],
+            "enriched_version": r[24],
         })
     return rows
 
@@ -241,48 +280,110 @@ def _refresh_total_hits(
 
 
 def _targets_payload(storage: Storage, now: datetime) -> list[dict]:
-    """Calcula hits y estado activo/frío de cada organismo del watchlist.
+    """Calcula hits y estado de cada organismo del watchlist.
 
-    `hits`  = nº de items cuyo título o summary contienen alguno de los
-              `patterns` del organismo (substring sobre texto normalizado).
-    `active` = True si al menos uno de esos hits tiene `fecha` (publicación
-              oficial) dentro de los últimos `WATCHLIST_RECENCY_DAYS` días.
-              Heurística: las convocatorias suelen tener plazo de
-              inscripción de 20-30 días desde publicación; pasados 90, lo
-              razonable es considerar el proceso cerrado.
+    Para cada organismo:
 
-    Limitación conocida: no podemos saber con certeza si el plazo está
-    abierto sin la fecha de cierre real. La extracción estructurada de
-    deadline vía LLM queda anotada en BACKLOG.
+    - `hits`: nº de items cuyo título/summary/organismo contienen alguno de
+      los `patterns` (substring sobre texto normalizado). Los items con
+      `is_relevant=False` (descartados por el enricher v2) NO cuentan.
+    - `nearest_deadline`: la fecha de cierre de inscripción más próxima en
+      el futuro entre los hits del organismo (formato `YYYY-MM-DD`). `null`
+      si ningún hit tiene deadline o todos vencieron.
+    - `days_until`: días desde hoy hasta `nearest_deadline`, o `null`.
+    - `urgent`: `True` si `days_until <= 7`.
+    - `active`: `True` si hay deadline futuro O — para items sin deadline
+      conocido (no enriquecidos a v2) — si hay fecha de publicación dentro
+      de los últimos `WATCHLIST_RECENCY_DAYS` días. La heurística sigue
+      como fallback hasta que el backfill v2 cubra todo el histórico.
+    - `latest_phase`: fase del proceso más recientemente actualizada para
+      este organismo (`convocatoria`, `examen`, …) o `null`.
+
+    Solo se ignora `is_relevant=False`. `is_relevant=None` (sin enriquecer)
+    se considera potencialmente relevante para no degradar el dashboard
+    durante el backfill.
     """
+    today_iso = now.date().isoformat()
     cutoff_iso = (now - timedelta(days=WATCHLIST_RECENCY_DAYS)).date().isoformat()
 
     rows = list(storage._conn.execute(
-        "SELECT titulo, COALESCE(summary, ''), fecha FROM items"
+        """
+        SELECT titulo,
+               COALESCE(summary, ''),
+               COALESCE(organismo, ''),
+               fecha,
+               deadline_inscripcion,
+               is_relevant,
+               fase,
+               first_seen_at
+        FROM items
+        """
     ))
     # Pre-normalizamos una sola vez por item para no pagar normalize() N×M.
     # Rodeamos con espacios para que patterns como " emt " (con guard de
     # palabra) puedan matchear al inicio o final del texto.
-    items_idx = [
-        (" " + normalize(titulo + " " + summary) + " ", fecha)
-        for titulo, summary, fecha in rows
-    ]
+    items_idx = []
+    for titulo, summary, organismo, fecha, deadline, is_rel, fase, first_seen in rows:
+        if is_rel == 0:    # explícitamente descartado por el enricher v2
+            continue
+        text = " " + normalize(titulo + " " + summary + " " + organismo) + " "
+        items_idx.append({
+            "text": text,
+            "fecha": fecha,
+            "deadline": deadline,
+            "fase": fase,
+            "first_seen": first_seen,
+        })
 
     targets: list[dict] = []
     for org in WATCHLIST_ORGS:
         hits = 0
-        recent = False
-        for text, fecha in items_idx:
-            if any(p in text for p in org["patterns"]):
-                hits += 1
-                if fecha >= cutoff_iso:
-                    recent = True
+        recent_pub = False
+        nearest_deadline: Optional[str] = None
+        latest_phase: Optional[str] = None
+        latest_phase_seen_at = ""
+
+        for it in items_idx:
+            if not any(p in it["text"] for p in org["patterns"]):
+                continue
+            hits += 1
+
+            # Recency fallback (item sin deadline_inscripcion conocido).
+            if not it["deadline"] and it["fecha"] >= cutoff_iso:
+                recent_pub = True
+
+            # Deadline real: cogemos el más próximo en el futuro.
+            dl = it["deadline"]
+            if dl and dl >= today_iso:
+                if nearest_deadline is None or dl < nearest_deadline:
+                    nearest_deadline = dl
+
+            # Fase del proceso más reciente (por first_seen).
+            if it["fase"] and (it["first_seen"] or "") > latest_phase_seen_at:
+                latest_phase = it["fase"]
+                latest_phase_seen_at = it["first_seen"] or ""
+
+        days_until: Optional[int] = None
+        if nearest_deadline:
+            try:
+                dl_date = date.fromisoformat(nearest_deadline)
+                days_until = max(0, (dl_date - now.date()).days)
+            except ValueError:
+                days_until = None
+
+        active = bool(nearest_deadline) or recent_pub
+        urgent = days_until is not None and days_until <= 7
+
         targets.append({
             "id": org["id"],
             "name": org["name"],
             "desc": org["desc"],
             "hits": hits,
-            "active": recent,
+            "active": active,
+            "nearest_deadline": nearest_deadline,
+            "days_until": days_until,
+            "urgent": urgent,
+            "latest_phase": latest_phase,
         })
     return targets
 
@@ -333,11 +434,40 @@ def _meta_payload(
     )
 
     targets_active = sum(1 for t in targets_payload if t.get("active"))
+    targets_urgent = sum(1 for t in targets_payload if t.get("urgent"))
     targets_total = len(targets_payload)
+
+    # Métricas del enricher v2: cuántos items siguen sin enriquecer (informa
+    # al dashboard cuándo ejecutar mantenimiento), cuántos quedaron como
+    # falso positivo confirmado, y cuántos tienen plazo de inscripción
+    # vivo. Sirve también de telemetría: una caída fuerte en
+    # `total_relevant_open` puede indicar un problema con el extractor.
+    total_enriched = storage._conn.execute(
+        "SELECT COUNT(*) FROM items WHERE enriched_version IS NOT NULL"
+    ).fetchone()[0]
+    total_irrelevant = storage._conn.execute(
+        "SELECT COUNT(*) FROM items WHERE is_relevant = 0"
+    ).fetchone()[0]
+    total_relevant = total - total_irrelevant
+
+    today_iso_full = date.today().isoformat()
+    total_open_deadlines = storage._conn.execute(
+        """
+        SELECT COUNT(*) FROM items
+        WHERE deadline_inscripcion IS NOT NULL
+          AND deadline_inscripcion >= ?
+          AND (is_relevant IS NULL OR is_relevant = 1)
+        """,
+        (today_iso_full,),
+    ).fetchone()[0]
 
     return {
         "total_items": total,
         "total_today": total_today,
+        "total_relevant": total_relevant,
+        "total_irrelevant": total_irrelevant,
+        "total_enriched": total_enriched,
+        "total_open_deadlines": total_open_deadlines,
         "by_category": by_category,
         "days_watching": days_watching,
         "first_seen_at": first_seen_min,
@@ -346,6 +476,7 @@ def _meta_payload(
         "sources_online": sources_online,
         "sources_total": sources_total,
         "targets_active": targets_active,
+        "targets_urgent": targets_urgent,
         "targets_total": targets_total,
         "version": __version__,
         "commit": _commit_short(),

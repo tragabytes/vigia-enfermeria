@@ -17,6 +17,25 @@ import logging
 from datetime import date
 from typing import Optional
 
+PROCESS_TYPE_LABEL = {
+    "oposicion":          "Oposición",
+    "bolsa":              "Bolsa",
+    "concurso_traslados": "Concurso traslados",
+    "interinaje":         "Interinaje",
+    "temporal":           "Contrato temporal",
+    "otro":               "Otro",
+}
+
+FASE_LABEL = {
+    "convocatoria":           "Convocatoria",
+    "admitidos_provisional":  "Admitidos provisional",
+    "admitidos_definitivo":   "Admitidos definitivo",
+    "examen":                 "Fechas de examen",
+    "calificacion":           "Calificación",
+    "propuesta_nombramiento": "Propuesta de nombramiento",
+    "otro":                   "Actualización",
+}
+
 import requests
 
 from vigia.config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, USER_AGENT
@@ -76,12 +95,7 @@ def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date
 
     if items:
         for item in items:
-            lines.append(f"🟢 *NUEVO en {item.source.upper()}*")
-            lines.append(f"{_escape(item.titulo)}")
-            lines.append(f"📌 {_escape(item.categoria)}")
-            if item.summary:
-                lines.append(f"_{_escape(item.summary)}_")
-            lines.append(f"🔗 {item.url}")
+            lines.extend(_format_item(item, today))
             lines.append("")
     else:
         lines.append("Sin novedades hoy.\n")
@@ -93,6 +107,85 @@ def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date
     lines.append(f"🛰️ Panel completo: {DASHBOARD_URL}")
 
     return "\n".join(lines)
+
+
+def _format_item(item: Item, today: date) -> list[str]:
+    """Bloque por convocatoria, aprovechando los campos del enricher v2.
+
+    Si el enricher v2 no ha corrido (sin API key, fallo, item legacy), las
+    líneas de plazas/cierre/tasa/bases simplemente se omiten — el formato
+    degrada al del enricher v1 (header + título + categoría + summary + url).
+    """
+    block: list[str] = []
+    header = f"🟢 *NUEVO en {item.source.upper()}*"
+    if item.organismo:
+        header += f" — {_escape(item.organismo)}"
+    block.append(header)
+    block.append(f"*{_escape(item.titulo)}*")
+
+    # Línea de proceso: tipo · plazas · tasa
+    proc_bits: list[str] = []
+    if item.process_type:
+        proc_bits.append(PROCESS_TYPE_LABEL.get(item.process_type, item.process_type))
+    if item.plazas:
+        proc_bits.append(f"{item.plazas} plazas")
+    if item.tasas_eur is not None:
+        proc_bits.append(_format_eur(item.tasas_eur) + " tasa")
+    if proc_bits:
+        block.append("📊 " + " · ".join(_escape(b) for b in proc_bits))
+
+    # Cierre con countdown
+    if item.deadline_inscripcion:
+        countdown = _format_countdown(item.deadline_inscripcion, today)
+        if countdown:
+            block.append(f"⏰ {countdown}")
+
+    # Fase del proceso si no es la inicial (evita ruido en convocatorias nuevas)
+    if item.fase and item.fase not in ("convocatoria", "otro"):
+        fase_label = FASE_LABEL.get(item.fase, item.fase)
+        block.append(f"🪪 Fase: {_escape(fase_label)}")
+
+    # Acción inmediata
+    if item.next_action:
+        block.append(f"🎯 {_escape(item.next_action)}")
+
+    # Summary (si existe; solo cuando aporta más allá del título)
+    if item.summary:
+        block.append(f"_{_escape(item.summary)}_")
+
+    # Enlaces — anuncio principal siempre; bases si difieren del anuncio
+    block.append(f"🔗 {item.url}")
+    if item.url_bases and item.url_bases != item.url:
+        block.append(f"📎 Bases: {item.url_bases}")
+
+    # Categoría legacy al final como tag (consume poco y mantiene continuidad
+    # con el layout previo)
+    block.append(f"📌 {_escape(item.categoria)}")
+    return block
+
+
+def _format_countdown(deadline_iso: str, today: date) -> Optional[str]:
+    """Devuelve 'Cierre: DD/MM/YYYY (en N días)' o variantes según signo."""
+    try:
+        dl = date.fromisoformat(deadline_iso)
+    except ValueError:
+        return None
+    days = (dl - today).days
+    fecha_es = dl.strftime("%d/%m/%Y")
+    if days < 0:
+        return f"Cierre: {fecha_es} (cerrado hace {-days} días)"
+    if days == 0:
+        return f"Cierre: {fecha_es} (HOY)"
+    if days == 1:
+        return f"Cierre: {fecha_es} (mañana)"
+    return f"Cierre: {fecha_es} (en {days} días)"
+
+
+def _format_eur(amount: float) -> str:
+    """Formatea importes con separador decimal de coma. 30.0 → '30€', 30.5 → '30,50€'."""
+    if abs(amount - round(amount)) < 0.005:
+        return f"{int(round(amount))}€"
+    return f"{amount:.2f}€".replace(".", ",")
 
 
 def _escape(text: str) -> str:

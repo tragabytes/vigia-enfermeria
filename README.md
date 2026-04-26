@@ -1,6 +1,6 @@
 # vigia-enfermeria
 
-Monitor automatizado de convocatorias de **Enfermería del Trabajo** en la administración pública de Madrid. Ejecuta cada día laborable, busca en BOE, BOCM, BOAM, Comunidad de Madrid, Ayuntamiento de Madrid, datos.madrid.es, Canal de Isabel II y CODEM, enriquece los hallazgos con un resumen generado por Claude Haiku, y envía alertas por Telegram cuando aparece algo nuevo.
+Monitor automatizado de convocatorias de **Enfermería del Trabajo** en la administración pública de Madrid. Ejecuta cada día laborable, busca en BOE, BOCM, BOAM, Comunidad de Madrid, Ayuntamiento de Madrid, datos.madrid.es, Canal de Isabel II y CODEM, enriquece los hallazgos con Claude Sonnet 4.6 (tool use sobre la URL real → JSON estructurado con plazas, deadline, organismo, tasas, fase, próxima acción) y envía alertas por Telegram con countdown y CTAs accionables cuando aparece algo nuevo.
 
 El estado se persiste en una BD SQLite en la rama `state` y se publica como JSON en la rama `gh-pages` para alimentar un dashboard web público.
 
@@ -98,7 +98,11 @@ Tras la primera ejecución exitosa:
 
 ### 9. Habilitar la capa de IA (opcional)
 
-Si configuras el secret `ANTHROPIC_API_KEY`, el enricher añade un resumen breve a cada hallazgo nuevo usando Claude Haiku 4.5 (~$0.001 por item). Sin la key, el pipeline funciona igual pero sin resumen. El campo `summary` se persiste en la BD para que el dashboard pueda mostrarlo sin re-llamar al modelo.
+Si configuras el secret `ANTHROPIC_API_KEY`, el enricher v2 hace una llamada agentica a **Claude Sonnet 4.6** con la tool `fetch_url` (whitelist de dominios oficiales, anti-SSRF) que descarga el cuerpo del boletín o PDF de bases y devuelve un JSON estructurado con 16 campos (`is_relevant`, `process_type`, `plazas`, `deadline_inscripcion`, `organismo`, `tasas_eur`, `url_bases`, `requisitos_clave`, `fase`, `next_action`, `confidence`…). Sin la key, el pipeline funciona igual pero sin enriquecer (graceful degradation): los items se guardan y se notifican como antes, sin chips/countdown/filtrado de falsos positivos.
+
+Coste estimado al volumen real (≤3 items relevantes/día): ~$3-5/año. El pipeline diario solo paga por los items que pasan `filter_new` — días sin novedad son gratis.
+
+**Backfill del histórico.** Tras configurar la key, ejecuta `gh workflow run maintenance.yml` para que `enrich_pending(storage)` reprocese todos los items que aún estén en `enriched_version < 2`. Idempotente.
 
 ---
 
@@ -153,11 +157,11 @@ python -m pytest tests/ -v
 vigia/
   config.py          # keywords, sources, normalización
   main.py            # pipeline principal
-  extractor.py       # motor de matching
-  enricher.py        # capa IA (Claude Haiku) — opcional
-  notifier.py        # envío Telegram
-  storage.py         # SQLite deduplicación + summary
-  dashboard.py       # exportador JSON para gh-pages
+  extractor.py       # motor de matching (regex strong/weak, FP)
+  enricher.py        # capa IA v2 (Sonnet 4.6 + tool use → JSON estructurado)
+  notifier.py        # envío Telegram con countdown + chips
+  storage.py         # SQLite con migración aditiva idempotente (v2)
+  dashboard.py       # exportador JSON (items + sources + targets + meta + changelog)
   sources/
     boe.py           # API BOE
     bocm.py          # XML BOCM
@@ -188,13 +192,15 @@ utils/
 ## Pipeline
 
 ```
-sources/*.py  →  extractor.py  →  storage (filter_new)  →  enricher.py  →  storage (update_summary)  →  dashboard.export_all  →  notifier.py
+sources/*.py  →  extractor.py  →  storage (filter_new)  →  enricher.py (v2)  →  storage (update_enrichment)  →  dashboard.export_all  →  notifier.py (filtra is_relevant=false)
 ```
 
 1. Cada fuente devuelve `RawItem`.
-2. El extractor aplica reglas (match fuerte/débil, falsos positivos) y devuelve `Item` o `None`.
-3. La BD deduplica y guarda los items nuevos.
-4. El enricher (si hay `ANTHROPIC_API_KEY`) añade `summary` y se persiste con `update_summary`.
-5. El dashboard exporta `items.json`, `sources_status.json` y `meta.json` a `docs/data/`.
-6. El notifier manda el resumen del día a Telegram.
-7. El workflow pushea la BD a la rama `state` y los JSON a la rama `gh-pages`.
+2. El extractor aplica reglas (match fuerte/débil, falsos positivos por keywords) y devuelve `Item` o `None`.
+3. La BD deduplica y guarda los items nuevos (campos básicos).
+4. El enricher v2 (si hay `ANTHROPIC_API_KEY`) llama a Sonnet 4.6 con tool use sobre la URL real, valida el JSON contra el schema y persiste 16 campos estructurados (`is_relevant`, `process_type`, `plazas`, `deadline_inscripcion`, `organismo`, `tasas_eur`, `url_bases`, `fase`, `next_action`, `confidence`, …).
+5. El dashboard exporta `items.json` (con chips), `sources_status.json`, `targets.json` (watchlist con countdown real), `meta.json` y `changelog.json` a `docs/data/`.
+6. El notifier filtra los items con `is_relevant=false` (falsos positivos confirmados por el LLM) y manda el resumen accionable a Telegram con plazas, cierre, tasa, bases y `next_action`.
+7. El workflow pushea la BD a la rama `state` y los JSON + frontend a la rama `gh-pages`.
+
+**Mantenimiento.** El workflow `maintenance.yml` (manual, `workflow_dispatch`) corre `enrich_pending(storage)` para reprocesar items históricos cuando se sube `ENRICHMENT_VERSION` o se afina el prompt. Idempotente: items ya en la versión actual se saltan.

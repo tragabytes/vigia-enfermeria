@@ -74,10 +74,56 @@ class TestItemsJson:
         item = json.loads(
             (tmp_path / "out" / "items.json").read_text(encoding="utf-8")
         )[0]
+        # v1 (siempre presentes) + v2 (rellenos cuando el enricher haya
+        # corrido; null mientras tanto)
         assert set(item.keys()) == {
             "id_hash", "source", "url", "titulo", "fecha",
             "categoria", "first_seen_at", "summary",
+            "is_relevant", "relevance_reason", "process_type", "organismo",
+            "centro", "plazas", "deadline_inscripcion",
+            "fecha_publicacion_oficial", "tasas_eur", "url_bases",
+            "url_inscripcion", "requisitos_clave", "fase", "next_action",
+            "confidence", "enriched_at", "enriched_version",
         }
+        # Item recién insertado (sin enricher v2) → todos los campos v2
+        # son null/None.
+        assert item["is_relevant"] is None
+        assert item["enriched_version"] is None
+        assert item["plazas"] is None
+
+    def test_items_incluyen_campos_v2_si_estan_persistidos(self, tmp_path):
+        from vigia.storage import ENRICHMENT_VERSION
+        storage = Storage(db_path=tmp_path / "seen.db")
+        it = _item("Convocatoria con datos v2")
+        storage.save(it)
+        # Simulamos enriquecimiento v2 directo en BD
+        it.is_relevant = True
+        it.process_type = "oposicion"
+        it.organismo = "SERMAS"
+        it.plazas = 12
+        it.deadline_inscripcion = "2026-05-15"
+        it.tasas_eur = 30.5
+        it.requisitos_clave = ["Título de Enfermería del Trabajo"]
+        it.fase = "convocatoria"
+        it.next_action = "Presentar instancia online"
+        it.confidence = 0.9
+        it.enriched_at = "2026-04-26T12:00:00+00:00"
+        it.enriched_version = ENRICHMENT_VERSION
+        storage.update_enrichment(it)
+
+        dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        item = json.loads(
+            (tmp_path / "out" / "items.json").read_text(encoding="utf-8")
+        )[0]
+        assert item["is_relevant"] is True
+        assert item["plazas"] == 12
+        assert item["deadline_inscripcion"] == "2026-05-15"
+        assert item["tasas_eur"] == 30.5
+        assert item["requisitos_clave"] == ["Título de Enfermería del Trabajo"]
+        assert item["fase"] == "convocatoria"
+        assert item["enriched_version"] == ENRICHMENT_VERSION
 
 
 class TestSourcesStatusJson:
@@ -484,6 +530,107 @@ class TestTargetsPayload:
         )
         assert meta["targets_total"] == 22
         assert meta["targets_active"] == 1
+
+    def test_active_por_deadline_real_supera_heuristica_de_fecha(self, tmp_path):
+        """Si el enricher v2 marcó deadline_inscripcion en el futuro, el
+        organismo debe aparecer ACTIVE aunque la fecha de publicación sea
+        antigua."""
+        from vigia.storage import ENRICHMENT_VERSION
+        from datetime import datetime, timezone, date
+
+        now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+
+        # Publicación de hace 6 meses (heurística: cold), pero deadline
+        # extraído por el enricher dice que cierra el 15/05/2026 (futuro).
+        it = Item(
+            source="bocm",
+            url="https://example.com/sermas-1",
+            titulo="SERMAS Enfermería del Trabajo (publicado hace 6m)",
+            fecha=date(2025, 10, 1),
+            categoria="oposicion",
+        )
+        storage.save(it)
+        it.is_relevant = True
+        it.deadline_inscripcion = "2026-05-15"
+        it.fase = "convocatoria"
+        it.enriched_version = ENRICHMENT_VERSION
+        storage.update_enrichment(it)
+
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        sermas = next(t for t in targets if t["id"] == "T-01")
+        assert sermas["active"] is True
+        assert sermas["nearest_deadline"] == "2026-05-15"
+        assert sermas["days_until"] == 20
+        assert sermas["urgent"] is False  # >7 días
+        assert sermas["latest_phase"] == "convocatoria"
+
+    def test_urgent_si_deadline_a_menos_de_7_dias(self, tmp_path):
+        from vigia.storage import ENRICHMENT_VERSION
+        from datetime import datetime, timezone, date
+
+        now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+
+        it = Item(
+            source="bocm",
+            url="https://example.com/sermas-urgent",
+            titulo="SERMAS Enfermería del Trabajo cierra en 3 días",
+            fecha=date(2026, 4, 1),
+            categoria="oposicion",
+        )
+        storage.save(it)
+        it.is_relevant = True
+        it.deadline_inscripcion = "2026-04-28"  # 3 días después de now
+        it.enriched_version = ENRICHMENT_VERSION
+        storage.update_enrichment(it)
+
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        sermas = next(t for t in targets if t["id"] == "T-01")
+        assert sermas["urgent"] is True
+        assert sermas["days_until"] == 3
+
+    def test_irrelevant_no_cuenta_para_watchlist(self, tmp_path):
+        """Items con is_relevant=false (falsos positivos) no deben aparecer
+        como hits del organismo, aunque coincidan con el patrón."""
+        from vigia.storage import ENRICHMENT_VERSION
+        from datetime import datetime, timezone, date
+
+        now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=timezone.utc)
+        storage = Storage(db_path=tmp_path / "seen.db")
+
+        it = Item(
+            source="boe",
+            url="https://example.com/sermas-fp",
+            titulo="SERMAS plazas Enfermería de Salud Mental",
+            fecha=date(2026, 4, 1),
+            categoria="oposicion",
+        )
+        storage.save(it)
+        it.is_relevant = False  # ← descartado por el enricher
+        it.relevance_reason = "Es Salud Mental, no Trabajo"
+        it.enriched_version = ENRICHMENT_VERSION
+        storage.update_enrichment(it)
+
+        dashboard.export_all(storage, tmp_path / "out", last_run_at=now)
+        storage.close()
+
+        targets = json.loads(
+            (tmp_path / "out" / "targets.json").read_text(encoding="utf-8")
+        )
+        sermas = next(t for t in targets if t["id"] == "T-01")
+        assert sermas["hits"] == 0
+        assert sermas["active"] is False
 
 
 class TestChangelog:
