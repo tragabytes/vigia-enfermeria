@@ -22,6 +22,10 @@
   --amber-dim:    #8a5f00;
   --red:          #ff3344;
   --red-dim:      #8a1c24;
+  --alarm-red:        #ff003c;
+  --alarm-red-bright: #ff5470;
+  --alarm-red-glow:   rgba(255, 0, 60, 0.55);
+  --alarm-red-bg:     rgba(255, 0, 60, 0.18);
 
   --fg:           #d4dcc6;
   --fg-dim:       #6f7a64;
@@ -728,11 +732,9 @@ table.term td.col-title {
   animation: pulse 2.4s infinite;
 }
 .target.cold::before { color: var(--phos-fade); animation: none; text-shadow: none; }
-.target.urgent::before { color: var(--amber); text-shadow: 0 0 8px var(--amber); }
-.target.urgent { border-color: color-mix(in oklab, var(--amber) 40%, transparent); }
+.target.urgent::before { color: var(--alarm-red); text-shadow: 0 0 10px var(--alarm-red-glow); animation: alarmDot 1.6s ease-in-out infinite; }
 .target .id { color: var(--fg-faint); font-size: 9.5px; letter-spacing: 0.18em; }
 .target .name { color: var(--phos); letter-spacing: 0.04em; }
-.target.urgent .name { color: var(--amber); }
 .target .desc { color: var(--fg-dim); font-size: 10.5px; }
 .target .stat {
   display: flex; gap: 8px; font-size: 10px;
@@ -746,10 +748,204 @@ table.term td.col-title {
   border-top: 1px dashed var(--phos-ghost);
   padding-top: 4px; margin-top: 2px;
 }
-.target.urgent .countdown { color: var(--amber); }
 .target .phase {
   font-size: 9.5px; letter-spacing: 0.14em;
   color: var(--fg-dim);
+}
+/* Hits clickable en watchlist (mismo patrón que en SOURCES) */
+.target .stat .hits-link {
+  display: inline; padding: 0; margin: 0;
+  font: inherit; color: inherit; background: transparent;
+  border: 0; border-bottom: 1px dashed var(--phos-fade);
+  cursor: pointer;
+}
+.target .stat .hits-link:hover,
+.target .stat .hits-link:focus { color: var(--phos); border-bottom-color: var(--phos); outline: none; }
+
+/* ===== Alarma roja: tile urgente del watchlist =========================
+   Pulso simultáneo del fondo + borde sin tocar el color del texto.
+   Texto se mantiene a 100% de contraste por encima del bg pulsante.
+   ===================================================================== */
+.target.urgent {
+  border-color: var(--alarm-red);
+  animation: alarmTile 1.6s ease-in-out infinite;
+  position: relative;
+}
+.target.urgent .name { color: var(--alarm-red-bright); text-shadow: 0 0 6px var(--alarm-red-glow); }
+.target.urgent .countdown { color: var(--alarm-red-bright); font-weight: 500; }
+.target.urgent .stat .hits-link { border-bottom-color: var(--alarm-red); }
+.target.urgent .stat .hits-link:hover { color: var(--alarm-red-bright); border-bottom-color: var(--alarm-red-bright); }
+
+@keyframes alarmTile {
+  0%, 100% { background-color: var(--bg-panel); border-color: var(--alarm-red); box-shadow: 0 0 0 0 transparent; }
+  50%      { background-color: var(--alarm-red-bg); border-color: var(--alarm-red-bright); box-shadow: 0 0 16px -4px var(--alarm-red-glow); }
+}
+@keyframes alarmDot {
+  0%, 100% { color: var(--alarm-red);        text-shadow: 0 0 6px var(--alarm-red-glow); }
+  50%      { color: var(--alarm-red-bright); text-shadow: 0 0 14px var(--alarm-red); }
+}
+@keyframes alarmText {
+  0%, 100% { color: var(--alarm-red);        text-shadow: 0 0 4px var(--alarm-red-glow); }
+  50%      { color: var(--alarm-red-bright); text-shadow: 0 0 10px var(--alarm-red); }
+}
+
+/* ===== Bell de alarma en la status bar ===============================
+   Se muestra solo si DATA.meta.targets_urgent > 0. Pulso sincronizado
+   con los tiles. Si hay un único urgente, muestra `🔔 NAME · CIERRA EN N`;
+   si hay varios, `🔔 N URGENTES`. Click → modal con los items urgentes.
+   ===================================================================== */
+.statusbar .item.alarm {
+  cursor: pointer;
+  color: var(--alarm-red);
+  animation: alarmText 1.6s ease-in-out infinite;
+  border: 1px solid var(--alarm-red);
+  padding: 1px 8px;
+  letter-spacing: 0.18em;
+  margin-left: 4px;
+}
+.statusbar .item.alarm .bell {
+  display: inline-block;
+  margin-right: 6px;
+  animation: bellShake 1.6s ease-in-out infinite;
+  transform-origin: 50% 0%;
+}
+.statusbar .item.alarm:hover { background: var(--alarm-red-bg); }
+@keyframes bellShake {
+  0%, 100% { transform: rotate(0deg); }
+  20%      { transform: rotate(-14deg); }
+  40%      { transform: rotate(12deg); }
+  60%      { transform: rotate(-8deg); }
+  80%      { transform: rotate(4deg); }
+}
+
+/* ===== Modal terminal (<dialog>) ========================================
+   Open via `dlg.showModal()`; close via ESC / click en backdrop / botón ×.
+   Estética CRT: marco ASCII con corners, borde phosphor, scanlines.
+   ===================================================================== */
+.term-modal {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--fg);
+  max-width: 920px;
+  width: calc(100vw - 64px);
+  max-height: calc(100vh - 64px);
+  font-family: var(--mono);
+}
+.term-modal::backdrop {
+  background: rgba(4, 7, 4, 0.78);
+  backdrop-filter: blur(2px);
+}
+.term-modal[open] { animation: modalIn 180ms ease-out; }
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+.term-modal-frame {
+  border: 1px solid var(--phos-dim);
+  background: var(--bg-panel);
+  box-shadow: 0 0 0 1px var(--bg), 0 0 32px -8px rgba(57, 255, 20, 0.35);
+  display: flex; flex-direction: column;
+  max-height: calc(100vh - 64px);
+}
+.term-modal-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px dashed var(--phos-fade);
+  background: var(--bg-well);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+.term-modal-head .corner {
+  color: var(--phos-dim);
+  font-family: var(--mono);
+  user-select: none;
+}
+.term-modal-head .corner.left { margin-right: -4px; }
+.term-modal-head .corner.right { margin-left: auto; }
+.term-modal-title {
+  color: var(--phos);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.term-modal-meta {
+  color: var(--fg-dim);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+.term-modal-close {
+  background: transparent;
+  border: 0;
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+.term-modal-close:hover { color: var(--alarm-red); }
+
+.term-modal-body {
+  overflow-y: auto;
+  padding: 14px 18px;
+  flex: 1 1 auto;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.term-modal-body .card {
+  /* Anular el ancho cardado del feed para que el contenido ocupe todo
+     el modal-body y la card pinte sus chips/grid sin estrecheces. */
+  width: 100%;
+}
+.term-modal-empty {
+  text-align: center;
+  padding: 36px 0;
+  color: var(--fg-dim);
+  letter-spacing: 0.18em;
+  font-size: 12px;
+}
+.term-modal-foot {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 8px 14px 10px;
+  border-top: 1px dashed var(--phos-fade);
+  background: var(--bg-well);
+  color: var(--fg-faint);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+}
+.term-modal-foot .hint { color: var(--phos-dim); }
+.term-modal-foot .bracket {
+  font-family: var(--mono);
+  color: var(--phos-fade);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  user-select: none;
+}
+
+/* Scrollbar discreto */
+.term-modal-body::-webkit-scrollbar { width: 8px; }
+.term-modal-body::-webkit-scrollbar-track { background: var(--bg-well); }
+.term-modal-body::-webkit-scrollbar-thumb { background: var(--phos-fade); }
+.term-modal-body::-webkit-scrollbar-thumb:hover { background: var(--phos-dim); }
+
+@media (max-width: 600px) {
+  .term-modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    margin: 0;
+  }
+  .term-modal-frame { max-height: 100vh; height: 100vh; }
+  .term-modal-foot .bracket { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .target.urgent { animation: none; background-color: var(--alarm-red-bg); }
+  .target.urgent::before { animation: none; }
+  .statusbar .item.alarm { animation: none; }
+  .statusbar .item.alarm .bell { animation: none; }
+  .term-modal[open] { animation: none; }
 }
 
 /* =========================================================================

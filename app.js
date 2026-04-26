@@ -103,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initTweaks();
   initScrollEffects();
   initCollapsibleSections();
+  bindTerminalModal();
 });
 
 /* ---- Mobile pre-paint --------------------------------------------------
@@ -226,6 +227,64 @@ function renderInlineMarkdown(s) {
   return out;
 }
 
+/* ---- Terminal modal ------------------------------------------------- */
+
+/* Abre el <dialog> con los items pasados, reutilizando cardHTML() para
+   que la representación sea idéntica al daily feed. Acepta un title +
+   meta corto para el header del modal. */
+function openTerminalModal({ title, meta = '', items }) {
+  const dlg = $('#term-modal');
+  if (!dlg) return;
+  $('#term-modal-title').textContent = title;
+  $('#term-modal-meta').textContent = meta;
+
+  const body = $('#term-modal-body');
+  if (!items || items.length === 0) {
+    body.innerHTML = `<div class="term-modal-empty">› NO MATCHING RECORDS</div>`;
+  } else {
+    // Más recientes primero — coherente con el daily feed.
+    const ordered = items.slice().sort((a, b) =>
+      (b.first_seen_at || '').localeCompare(a.first_seen_at || '')
+    );
+    body.innerHTML = ordered.map((it, i) => cardHTML(it, i)).join('');
+    // Misma interactividad que en el feed: head abre/cierra el body, los
+    // botones de copy paran propagación. La primera card empieza abierta.
+    $$('.card', body).forEach((c, idx) => {
+      c.querySelector('.head').addEventListener('click', () => c.classList.toggle('open'));
+      c.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', e => {
+        e.stopPropagation();
+        navigator.clipboard?.writeText(b.dataset.copy);
+        b.classList.add('copied');
+        const orig = b.textContent;
+        b.textContent = '✓ COPIED';
+        setTimeout(() => { b.classList.remove('copied'); b.textContent = orig; }, 1200);
+      }));
+      c.querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.stopPropagation()));
+      if (idx === 0) c.classList.add('open');
+    });
+  }
+
+  if (!dlg.open) dlg.showModal();
+  body.scrollTop = 0;
+}
+
+/* Click en el botón × o en el backdrop cierran el modal. ESC ya viene
+   gratis con <dialog>. Lo registramos una sola vez al cargar la página. */
+function bindTerminalModal() {
+  const dlg = $('#term-modal');
+  if (!dlg) return;
+  dlg.querySelector('.term-modal-close')?.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => {
+    // El click en el propio dialog (no en el frame interno) implica click
+    // en el backdrop — porque el frame es .term-modal-frame, hijo directo.
+    const rect = dlg.getBoundingClientRect();
+    const inDialog =
+      e.clientX >= rect.left && e.clientX <= rect.right &&
+      e.clientY >= rect.top  && e.clientY <= rect.bottom;
+    if (!inDialog) dlg.close();
+  });
+}
+
 /* ---- count-up animation --------------------------------------------- */
 function countUp(el, target, dur=1400) {
   const start = performance.now();
@@ -249,6 +308,32 @@ function renderStatusBar() {
     weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'UTC',
   }).replace('.', '').toUpperCase();
   const nextStr = `${dayShort} ${next.toISOString().slice(11, 16)} UTC`;
+
+  // Bell de alarma: sale solo si hay targets urgentes (deadline ≤7 días).
+  // Caso 1 urgente: muestra el nombre + countdown ("🔔 CANAL II · CIERRA EN 2D").
+  // Caso N urgentes: contador genérico ("🔔 N URGENTES").
+  // Click → modal con los items del urgente más próximo (o el primero alfa
+  // si hay varios y queremos no decidir por el usuario).
+  const urgentTargets = (DATA.targets || []).filter(t => t.urgent);
+  let alarmHTML = '';
+  if (urgentTargets.length === 1) {
+    const t = urgentTargets[0];
+    const txt = t.days_until <= 0 ? 'CIERRA HOY'
+              : t.days_until === 1 ? 'CIERRA MAÑANA'
+              : `CIERRA EN ${t.days_until}D`;
+    alarmHTML = `
+      <span class="item alarm" id="alarm-bell" data-target-id="${escapeHTML(t.id)}" title="Ver convocatoria urgente">
+        <span class="bell">🔔</span><span class="val">${escapeHTML(t.name.toUpperCase())} · ${escapeHTML(txt)}</span>
+      </span>`;
+  } else if (urgentTargets.length > 1) {
+    // Ordenamos por días restantes para usar el más urgente al hacer click.
+    urgentTargets.sort((a, b) => (a.days_until ?? 99) - (b.days_until ?? 99));
+    alarmHTML = `
+      <span class="item alarm" id="alarm-bell" data-target-id="${escapeHTML(urgentTargets[0].id)}" title="Ir a la sección de watchlist">
+        <span class="bell">🔔</span><span class="val">${urgentTargets.length} URGENTES</span>
+      </span>`;
+  }
+
   $('#statusbar').innerHTML = `
     <span class="item"><span class="dot"></span><span class="val">SYSTEM ONLINE</span></span>
     <span class="sep">│</span>
@@ -257,9 +342,26 @@ function renderStatusBar() {
     <span class="item"><span class="label">NEXT RUN</span><span class="val">${nextStr}</span></span>
     <span class="sep">│</span>
     <span class="item"><span class="label">SOURCES</span><span class="val ${m.sources_online === m.sources_total ? '' : 'amber'}">${m.sources_online}/${m.sources_total} OK</span></span>
+    ${alarmHTML ? '<span class="sep">│</span>' + alarmHTML : ''}
     <span class="sep">│</span>
     <span class="item right"><span class="label">UTC</span><span class="val" id="utc-clock">${new Date().toISOString().slice(11,19)}</span></span>
   `;
+
+  // Click en el bell:
+  // - 1 urgente: abre el modal con los items de ese target.
+  // - N urgentes: scroll a la sección 06 (watchlist) — los tiles urgentes
+  //   están al principio (orden aplicado por renderWatchlist) y el usuario
+  //   elige cuál inspeccionar.
+  $('#alarm-bell')?.addEventListener('click', (e) => {
+    if (urgentTargets.length === 1) {
+      openTargetModal(urgentTargets[0].id);
+    } else {
+      const wl = $('#watchlist')?.closest('section');
+      if (wl?.classList.contains('collapsed')) wl.classList.remove('collapsed');
+      wl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+
   setInterval(() => {
     const e = $('#utc-clock');
     if (e) e.textContent = new Date().toISOString().slice(11, 19);
@@ -748,26 +850,22 @@ function renderSources() {
   $$('#src-tbody .hits-link').forEach(b => {
     b.addEventListener('click', (e) => {
       e.stopPropagation();
-      filterHistoricalBySource(b.dataset.source);
+      openSourceModal(b.dataset.source);
     });
   });
 }
 
-/* Filtra la sección 03 (Historical DB) por una fuente y desplaza la
-   página hasta ahí. Disparado desde el número de HITS en la sección 05. */
-function filterHistoricalBySource(name) {
-  const sel = $('#f-source');
-  if (!sel) return;
-  sel.value = name;
-  syncFilter();
-  drawTable();
-  // Si en móvil la sección está colapsada, la abrimos para que el filtro
-  // sea visible tras el scroll.
-  const histSection = $('#cmdbar')?.closest('section');
-  if (histSection?.classList.contains('collapsed')) {
-    histSection.classList.remove('collapsed');
-  }
-  histSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+/* Abre el modal con todos los items de una fuente concreta. Reemplaza el
+   antiguo filter+scroll a la sección 03: el contexto se mantiene y el
+   usuario puede volver al estado anterior cerrando con ESC. */
+function openSourceModal(name) {
+  const items = DATA.items.filter(it => it.source === name);
+  const lbl = SOURCE_LABEL[name] || name.toUpperCase();
+  openTerminalModal({
+    title: `SOURCE · ${lbl}`,
+    meta: `${items.length} ITEM${items.length === 1 ? '' : 'S'}`,
+    items,
+  });
 }
 
 /* ---- 6. Watchlist (organismos vigilados, calculados en backend) -----
@@ -812,16 +910,51 @@ function renderWatchlist() {
     const fase = (t.latest_phase && t.latest_phase !== 'convocatoria' && t.latest_phase !== 'otro')
       ? `<div class="phase">⛓ ${escapeHTML(FASE_LABEL[t.latest_phase] || t.latest_phase.toUpperCase())}</div>`
       : '';
+    // HITS clickable solo si hay >0; mantiene mismo patrón que SOURCES.
+    const hitsCell = t.hits > 0
+      ? `<button type="button" class="hits-link" data-target-id="${escapeHTML(t.id)}" title="Ver items de ${escapeHTML(t.name)}"><b>${t.hits}</b></button>`
+      : `<b>${t.hits}</b>`;
     return `
-    <div class="target ${cls}">
+    <div class="target ${cls}" data-target-id="${escapeHTML(t.id)}">
       <div class="id">${escapeHTML(t.id)}</div>
       <div class="name">${escapeHTML(t.name)}</div>
       <div class="desc">${escapeHTML(t.desc)}</div>
-      <div class="stat">HITS <b>${t.hits}</b> · ${stateLabel}</div>
+      <div class="stat">HITS ${hitsCell} · ${stateLabel}</div>
       ${countdown}
       ${fase}
     </div>`;
   }).join('');
+
+  $$('#watchlist .hits-link').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openTargetModal(b.dataset.targetId);
+    });
+  });
+}
+
+/* Abre el modal con los items que matchean un organismo del watchlist.
+   Usa `target.item_ids` (pre-computado en el backend) para evitar
+   replicar la lógica de normalización + match. */
+function openTargetModal(targetId) {
+  const t = (DATA.targets || []).find(x => x.id === targetId);
+  if (!t) return;
+  const ids = new Set(t.item_ids || []);
+  const items = DATA.items.filter(it => ids.has(it.id_hash));
+  const meta = [
+    `${items.length} ITEM${items.length === 1 ? '' : 'S'}`,
+    t.urgent ? 'URGENT' : (t.active ? 'ACTIVE' : 'COLD'),
+    t.days_until !== null && t.days_until !== undefined
+      ? (t.days_until <= 0 ? 'CIERRA HOY'
+         : t.days_until === 1 ? 'CIERRA MAÑANA'
+         : `CIERRA EN ${t.days_until}D`)
+      : null,
+  ].filter(Boolean).join(' · ');
+  openTerminalModal({
+    title: `TARGET · ${t.name}`,
+    meta,
+    items,
+  });
 }
 
 /* ---- 7. Subscribe terminal ------------------------------------------ */

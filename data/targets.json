@@ -8,7 +8,18 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "propuesta_nombramiento"
+    "latest_phase": "propuesta_nombramiento",
+    "item_ids": [
+      "7c7cf06753cdc77c",
+      "540d6a651569c4aa",
+      "411450784ca4823f",
+      "9d201f30c6517fda",
+      "a4c428e5fbcf4f82",
+      "1aafe2e00198889c",
+      "4f7002c8a5b3ff9e",
+      "477665a57d787814",
+      "07fd6d40b3f62811"
+    ]
   },
   {
     "id": "T-02",
@@ -19,7 +30,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-03",
@@ -30,7 +42,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-04",
@@ -41,7 +54,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-05",
@@ -52,7 +66,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-06",
@@ -63,7 +78,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-07",
@@ -74,7 +90,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-08",
@@ -85,7 +102,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-09",
@@ -96,7 +114,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-10",
@@ -107,7 +126,11 @@
     "nearest_deadline": "2026-04-28",
     "days_until": 2,
     "urgent": true,
-    "latest_phase": "convocatoria"
+    "latest_phase": "convocatoria",
+    "item_ids": [
+      "511a52df34c5193f",
+      "ab2b2dbb861bc605"
+    ]
   },
   {
     "id": "T-11",
@@ -118,7 +141,10 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "otro"
+    "latest_phase": "otro",
+    "item_ids": [
+      "7cf7d0f72e19707b"
+    ]
   },
   {
     "id": "T-12",
@@ -129,7 +155,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-13",
@@ -140,7 +167,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-14",
@@ -151,7 +179,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-15",
@@ -162,7 +191,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-16",
@@ -173,7 +203,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-17",
@@ -184,7 +215,11 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "otro"
+    "latest_phase": "otro",
+    "item_ids": [
+      "cb0b6886f2e07b79",
+      "7bd05641a1793b83"
+    ]
   },
   {
     "id": "T-18",
@@ -195,7 +230,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-19",
@@ -206,7 +242,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-20",
@@ -217,7 +254,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-21",
@@ -228,7 +266,8 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-22",
@@ -239,6 +278,7 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null
+    "latest_phase": null,
+    "item_ids": []
   }
 ]
