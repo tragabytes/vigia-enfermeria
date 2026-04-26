@@ -811,16 +811,19 @@ table.term td.col-title {
 
 /* Campana SVG ────────────────────────────────────────────────────────
    Inline en el pill del header y en los tiles urgent del watchlist.
-   `currentColor` hereda del padre para integrarse con el pulso del pill,
-   y un drop-shadow pulsante añade el resplandor rojo independiente.
+   `currentColor` hereda del padre para integrarse con el pulso del pill;
+   los tamaños van en `em` para escalar con la letra del contenedor (no
+   tiene la misma altura una etiqueta del header ~11px que un countdown
+   de tile ~10px). El drop-shadow también va en em para no saturar
+   contextos chicos.
    ───────────────────────────────────────────────────────────────── */
 .bell-svg {
-  width: 14px;
-  height: 14px;
+  width: 1.1em;
+  height: 1.1em;
   flex-shrink: 0;
   color: var(--alarm-red);
-  vertical-align: -3px;
-  filter: drop-shadow(0 0 2px var(--alarm-red-glow));
+  vertical-align: -0.18em;
+  filter: drop-shadow(0 0 0.15em var(--alarm-red-glow));
 }
 .bell-svg.bell-alarm {
   animation: bellGlow 1.6s ease-in-out infinite;
@@ -828,15 +831,11 @@ table.term td.col-title {
 .target.urgent .bell-svg { color: var(--alarm-red-bright); }
 .statusbar .item.alarm .bell-svg { color: inherit; }
 @keyframes bellGlow {
-  0%, 100% {
-    filter: drop-shadow(0 0 1px var(--alarm-red-glow));
-  }
-  50% {
-    filter: drop-shadow(0 0 7px var(--alarm-red));
-  }
+  0%, 100% { filter: drop-shadow(0 0 0.08em var(--alarm-red-glow)); }
+  50%      { filter: drop-shadow(0 0 0.55em var(--alarm-red)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bell-svg.bell-alarm { animation: none; filter: drop-shadow(0 0 4px var(--alarm-red-glow)); }
+  .bell-svg.bell-alarm { animation: none; filter: drop-shadow(0 0 0.3em var(--alarm-red-glow)); }
 }
 /* Pulso del pill: color, borde y un fondo tenue van y vienen al unísono.
    Sin movimiento — solo intensidad, como una luz que palpita. */
