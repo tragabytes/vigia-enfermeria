@@ -44,15 +44,18 @@ jobs:
         # los campos del último probe. Si el `--probe` posterior funciona
         # bien, sobrescribirá este snapshot con datos vivos. Si falla
         # (continue-on-error: true), al menos no degradamos la sección.
+        #
+        # Usamos `git show FETCH_HEAD:path > file` en vez de `git checkout`
+        # para NO tocar el índice (rompería el `git checkout -B _state_tmp`
+        # de los pasos siguientes con "local changes would be overwritten").
         run: |
           mkdir -p docs/data
           if git fetch origin gh-pages --depth=1 2>/dev/null && \
-             git checkout FETCH_HEAD -- data/sources_status.json 2>/dev/null && \
-             [ -f data/sources_status.json ]; then
-            mv data/sources_status.json docs/data/sources_status.json
-            rmdir data 2>/dev/null || true
+             git show FETCH_HEAD:data/sources_status.json > docs/data/sources_status.json 2>/dev/null && \
+             [ -s docs/data/sources_status.json ]; then
             echo "Snapshot sources_status.json restaurado desde gh-pages"
           else
+            rm -f docs/data/sources_status.json
             echo "Sin snapshot previo en gh-pages — el primer probe lo creará"
           fi
 
