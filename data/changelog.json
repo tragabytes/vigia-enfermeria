@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "a27fa13",
+    "kind": "fix",
+    "scope": "web",
+    "title": "tamaño de campana relativo a la letra del contenedor",
+    "body": "La campana iba a 14px fijos, demasiado grande contra el texto del"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "c46eb26",
     "kind": "feat",
     "scope": "web",
@@ -22,13 +30,5 @@
     "scope": "web",
     "title": "modal terminal + alarma roja pulsante + bell de urgentes",
     "body": "Tres mejoras de UX en el dashboard:"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "94ed7cd",
-    "kind": "fix",
-    "scope": "ci",
-    "title": "restaurar snapshot vía git show para no ensuciar el índice",
-    "body": "El step \"Restaurar último snapshot del dashboard\" usaba"
   }
 ]
