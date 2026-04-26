@@ -797,25 +797,31 @@ table.term td.col-title {
 .statusbar .item.alarm {
   cursor: pointer;
   color: var(--alarm-red);
-  animation: alarmText 1.6s ease-in-out infinite;
+  animation: alarmPill 1.6s ease-in-out infinite;
   border: 1px solid var(--alarm-red);
   padding: 1px 8px;
   letter-spacing: 0.18em;
   margin-left: 4px;
-}
-.statusbar .item.alarm .bell {
-  display: inline-block;
-  margin-right: 6px;
-  animation: bellShake 1.6s ease-in-out infinite;
-  transform-origin: 50% 0%;
+  font-weight: 500;
 }
 .statusbar .item.alarm:hover { background: var(--alarm-red-bg); }
-@keyframes bellShake {
-  0%, 100% { transform: rotate(0deg); }
-  20%      { transform: rotate(-14deg); }
-  40%      { transform: rotate(12deg); }
-  60%      { transform: rotate(-8deg); }
-  80%      { transform: rotate(4deg); }
+/* Pulso del pill: color, borde y un fondo tenue van y vienen al unísono.
+   Sin movimiento — solo intensidad, como una luz que palpita. */
+@keyframes alarmPill {
+  0%, 100% {
+    color: var(--alarm-red);
+    border-color: var(--alarm-red);
+    background-color: transparent;
+    text-shadow: 0 0 4px var(--alarm-red-glow);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    color: var(--alarm-red-bright);
+    border-color: var(--alarm-red-bright);
+    background-color: var(--alarm-red-bg);
+    text-shadow: 0 0 10px var(--alarm-red);
+    box-shadow: 0 0 12px -3px var(--alarm-red-glow);
+  }
 }
 
 /* ===== Modal terminal (<dialog>) ========================================
@@ -938,6 +944,36 @@ table.term td.col-title {
   }
   .term-modal-frame { max-height: 100vh; height: 100vh; }
   .term-modal-foot .bracket { display: none; }
+
+  /* En pantallas estrechas el header de 5 elementos
+     (corner, title, meta, close, corner) se desbordaba: el título
+     envolvía a 2 líneas, "11 ITEMS" caía a la derecha, y el botón
+     `[ × ]` se partía en dos líneas separando `[ ×` y `]`.
+     Solución: ocultar los corners ASCII (decorativos), título nowrap
+     con ellipsis si excede, meta a la izquierda del cierre, y el botón
+     × con su propia caja flex-shrink:0 al borde derecho. */
+  .term-modal-head { padding: 8px 10px; gap: 8px; flex-wrap: nowrap; }
+  .term-modal-head .corner { display: none; }
+  .term-modal-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .term-modal-meta {
+    flex-shrink: 0;
+    font-size: 9.5px;
+    margin-left: auto;
+  }
+  .term-modal-close {
+    flex-shrink: 0;
+    margin-left: 0;
+    padding: 4px 10px;
+    border: 1px dashed var(--phos-fade);
+    color: var(--phos-dim);
+  }
+  .term-modal-close:active { background: var(--alarm-red-bg); color: var(--alarm-red); }
 }
 
 @media (prefers-reduced-motion: reduce) {
