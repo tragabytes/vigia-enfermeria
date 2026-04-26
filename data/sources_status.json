@@ -1,0 +1,56 @@
+[
+  {
+    "name": "bocm",
+    "url": null,
+    "status": "unknown",
+    "code": null,
+    "detail": "",
+    "last_probe_at": "2026-04-26T11:08:20.999088+00:00",
+    "total_hits": 6
+  },
+  {
+    "name": "boe",
+    "url": null,
+    "status": "unknown",
+    "code": null,
+    "detail": "",
+    "last_probe_at": "2026-04-26T11:08:20.999088+00:00",
+    "total_hits": 2
+  },
+  {
+    "name": "canal_isabel_ii",
+    "url": null,
+    "status": "unknown",
+    "code": null,
+    "detail": "",
+    "last_probe_at": "2026-04-26T11:08:20.999088+00:00",
+    "total_hits": 1
+  },
+  {
+    "name": "codem",
+    "url": null,
+    "status": "unknown",
+    "code": null,
+    "detail": "",
+    "last_probe_at": "2026-04-26T11:08:20.999088+00:00",
+    "total_hits": 3
+  },
+  {
+    "name": "comunidad_madrid",
+    "url": null,
+    "status": "unknown",
+    "code": null,
+    "detail": "",
+    "last_probe_at": "2026-04-26T11:08:20.999088+00:00",
+    "total_hits": 11
+  },
+  {
+    "name": "datos_madrid",
+    "url": null,
+    "status": "unknown",
+    "code": null,
+    "detail": "",
+    "last_probe_at": "2026-04-26T11:08:20.999088+00:00",
+    "total_hits": 1
+  }
+]
