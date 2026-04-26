@@ -160,6 +160,22 @@ Era el mismo problema que el bug #2: el portal `sede.comunidad.madrid` también 
 
 **Acción inmediata.** Disparar `daily.yml` manualmente vía `gh workflow run daily.yml` ([run 24953550653](https://github.com/tragabytes/vigia-enfermeria/actions/runs/24953550653)) regeneró el JSON con datos vivos. Tras el push de los 4 commits a main, el siguiente cron (lunes 27/04 08:00 UTC) y futuros maintenance ya no pueden volver a degradar la sección.
 
+### ~~4-bis. Regresión SOURCES null/UNKNOWN tras `maintenance.yml` (segunda ocurrencia)~~ ✅ Blindado (2026-04-26, commits `ae58586` + `94ed7cd`)
+
+**Síntoma.** El primer run real de `maintenance.yml` con el enricher v2 reprodujo el mismo síntoma: las 6 fuentes con hits acabaron en `status=unknown`/`code=null` en `gh-pages`.
+
+**Diagnóstico.** El fix de `1dd68cb` añadió `_refresh_total_hits` para que, si el JSON existía en disco, no se degradara. Pero en CI el workflow hace checkout limpio: `docs/data/` arranca vacío y el JSON bueno solo vive en `gh-pages`. Por tanto `dashboard.export_all` veía `sources_status.json` ausente, caía al branch `else`, escribía un payload degradado, y el step "Publicar dashboard" lo subía a `gh-pages` haciendo `rm -rf data/* && cp docs/data/* data/`, pisando el bueno.
+
+**Fix triple capa** para que esta forma del bug ya no pueda escapar:
+
+1. **Código** (`vigia/dashboard.py`): cuando `probe_results=None` y el JSON tampoco existe en disco, **no escribir el fichero** y emitir `logger.warning`. Mejor que la sección quede transitoriamente vacía a que muestre datos falsos.
+2. **Workflows** (`maintenance.yml` + `daily.yml`): nuevo step "Restaurar último snapshot del dashboard" que trae `data/sources_status.json` desde `gh-pages` a `docs/data/` antes de correr Python, usando `git show FETCH_HEAD:path > file` (no `git checkout`, que ensucia el índice y rompe los `git checkout -B _state_tmp/_pages_tmp` posteriores con `local changes would be overwritten`).
+3. **Frontend** (`web/app.js`): `fetch('data/sources_status.json')` cae a `[]` con `.catch(() => [])` igual que `targets`/`changelog`. `renderSources` pinta un placeholder `NO PROBE DATA — RUN --probe TO REFRESH` en lugar de tabla rota.
+
+**Test de regresión.** `test_sin_probe_y_sin_snapshot_previo_no_escribe_degradado` en `tests/test_dashboard.py` pinea el contrato: si no hay probe ni snapshot previo, `dashboard.export_all` no crea `sources_status.json`. 194/194 tests offline pasan.
+
+**Validación end-to-end.** Tras los pushes, `daily.yml` ([run 24955464750](https://github.com/tragabytes/vigia-enfermeria/actions/runs/24955464750)) regeneró el JSON con `--probe`, y `maintenance.yml` ([run 24955590508](https://github.com/tragabytes/vigia-enfermeria/actions/runs/24955590508)) corrió sin degradar nada — las 10 fuentes (6 OK + 2 error 403 + 2 skipped) se preservaron en `gh-pages`. La cadena de degradación CI → push → gh-pages está cortada en tres puntos distintos.
+
 ---
 
 ## 🆕 Nuevas fuentes a añadir
