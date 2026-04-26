@@ -3,7 +3,7 @@
     "id": "T-01",
     "name": "SERMAS",
     "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
-    "hits": 2,
+    "hits": 4,
     "active": true
   },
   {
@@ -66,8 +66,8 @@
     "id": "T-10",
     "name": "Canal de Isabel II",
     "desc": "Canal de Isabel II — SP Mancomunado",
-    "hits": 0,
-    "active": false
+    "hits": 1,
+    "active": true
   },
   {
     "id": "T-11",

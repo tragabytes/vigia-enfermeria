@@ -1,92 +1,56 @@
 [
   {
-    "name": "administracion_gob",
-    "url": null,
-    "status": "skipped",
-    "code": null,
-    "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
-  },
-  {
-    "name": "ayuntamiento_madrid",
-    "url": "https://www.madrid.es/portales/munimadrid/oposiciones.html",
-    "status": "error",
-    "code": 403,
-    "detail": "Forbidden",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
-  },
-  {
-    "name": "boam",
-    "url": "https://www.madrid.es/boam",
-    "status": "error",
-    "code": 403,
-    "detail": "Forbidden",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
-  },
-  {
     "name": "bocm",
-    "url": "https://www.bocm.es/ultimo-bocm",
-    "status": "ok",
-    "code": 200,
+    "url": null,
+    "status": "unknown",
+    "code": null,
     "detail": "",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
+    "last_probe_at": "2026-04-26T08:14:47.897012+00:00",
+    "total_hits": 6
   },
   {
     "name": "boe",
-    "url": "https://boe.es/datosabiertos/",
-    "status": "ok",
-    "code": 200,
+    "url": null,
+    "status": "unknown",
+    "code": null,
     "detail": "",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
+    "last_probe_at": "2026-04-26T08:14:47.897012+00:00",
+    "total_hits": 2
   },
   {
     "name": "canal_isabel_ii",
-    "url": "https://convocatoriascanaldeisabelsegunda.es/puestos",
-    "status": "ok",
-    "code": 200,
+    "url": null,
+    "status": "unknown",
+    "code": null,
     "detail": "",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
+    "last_probe_at": "2026-04-26T08:14:47.897012+00:00",
+    "total_hits": 1
   },
   {
     "name": "codem",
-    "url": "https://www.codem.es/RssHyperLink.ashx?Idioma=940267a2-4160-4ee0-a17a-a3cc00a7c64c&Web=e8d948e0-b75e-4537-8e16-687622b6b7ce&Menu=e0fed1d6-aff3-4b0d-be4d-7a276dea3867&Canal=d8b9b124-8147-4727-a7a7-2d1b9184ea01",
-    "status": "ok",
-    "code": 200,
+    "url": null,
+    "status": "unknown",
+    "code": null,
     "detail": "",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
+    "last_probe_at": "2026-04-26T08:14:47.897012+00:00",
+    "total_hits": 3
   },
   {
     "name": "comunidad_madrid",
-    "url": "https://sede.comunidad.madrid",
-    "status": "ok",
-    "code": 200,
+    "url": null,
+    "status": "unknown",
+    "code": null,
     "detail": "",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
+    "last_probe_at": "2026-04-26T08:14:47.897012+00:00",
     "total_hits": 11
   },
   {
     "name": "datos_madrid",
-    "url": "https://datos.madrid.es/api/3/action/status_show",
-    "status": "ok",
-    "code": 200,
-    "detail": "",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 1
-  },
-  {
-    "name": "metro_madrid",
     "url": null,
-    "status": "skipped",
+    "status": "unknown",
     "code": null,
-    "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-04-26T07:38:42.470596+00:00",
-    "total_hits": 0
+    "detail": "",
+    "last_probe_at": "2026-04-26T08:14:47.897012+00:00",
+    "total_hits": 1
   }
 ]
