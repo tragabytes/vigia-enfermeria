@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "ae58586",
+    "kind": "fix",
+    "scope": "dashboard",
+    "title": "blindar SOURCES contra el degradado null/unknown",
+    "body": "Regresión del bug 1dd68cb: tras el run de maintenance.yml, la sección 5"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "06145c7",
     "kind": "feat",
     "scope": "enricher",
@@ -22,13 +30,5 @@
     "scope": "web",
     "title": "número HITS clickable en SOURCES filtra el feed histórico por esa fuente",
     "body": "En la sección 05 (SOURCES · TARGETS PROBED), el número de HITS de cada"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "de9b67c",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "cobertura indirecta de empresas públicas estatales (RTVE, RENFE, ADIF, AENA, Correos, Navantia, Paradores, Loterías)",
-    "body": "Añade keywords a HEALTH_ORGS (BOCM) y DEPT_KEYWORDS_FOR_BODY (BOE) para"
   }
 ]
