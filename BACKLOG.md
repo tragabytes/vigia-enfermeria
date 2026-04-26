@@ -1,6 +1,6 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-04-26.
+Pendientes para retomar más adelante. Última actualización: 2026-04-26 (segunda iteración).
 
 ---
 
@@ -48,20 +48,17 @@ Pulido de la navegación en móvil sin cambiar el contenido. Cambios aplicados e
 
 Limpieza colateral: eliminadas reglas CSS muertas de `.hero .hero-meta .right` (sobraban tras quitar el SYSTEM ONLINE) y el bloque `.bar.pre-chart` / `.donut-svg.pre-chart` que apuntaban a clases que el JS nunca añadía. Verificado vía preview en viewport mobile (375x812) y desktop (1280x800).
 
-### Pendiente: hits clickables en la tabla SOURCES
+### ~~Hits clickables en la tabla SOURCES~~ ✅ Resuelto (2026-04-26, commit `57f7835`)
 
-En la sección 05 (`SOURCES · TARGETS PROBED`) la columna **HITS** muestra el nº acumulado de hallazgos por fuente (ej. COMUNIDAD = 11). Hoy es solo informativo: no se puede pinchar para ver *cuáles* son esos 11 items.
+En la sección 05 (`SOURCES · TARGETS PROBED`), el número de **HITS** se renderiza como un `<button class="hits-link">` para fuentes con `total_hits > 0`. Al pulsarlo:
 
-**Funcionalidad deseada:** click en una fila (o en el número de HITS) → filtra la sección 03 (`HISTORICAL DATABASE`) por esa fuente y hace scroll suave hasta ella, dejando el filtro visible en la `cmdbar`. El filtro `source: [...]` ya existe en esa cmdbar; solo hay que disparar el cambio desde JS y desplazar.
+1. Se asigna el valor al `<select id="f-source">` de la `cmdbar` de la sección 03.
+2. `syncFilter() + drawTable()` re-pinta el feed histórico filtrado.
+3. `histSection.scrollIntoView({behavior:'smooth', block:'start'})` hace scroll suave hasta la sección. Si en móvil estaba colapsada, se descolapsa primero para que el filtro sea visible tras el scroll.
 
-Sketch técnico (frontend puro, no toca backend):
-- En `renderSources()`, añadir `data-source="{name}"` al `<tr>` y un handler `onclick` que:
-  1. Set del `<select>` `source:` al name de la fuente.
-  2. Re-render del feed historical aplicando el filtro.
-  3. `document.getElementById('historical-anchor').scrollIntoView({behavior:'smooth'})`.
-- Pista visual: cursor pointer + hover state en filas con `total_hits > 0`. Las filas a 0 hits no son clickables.
+Click sobre el resto de la fila mantiene el comportamiento previo (toggle del FIELD MEMO con el `detail` de la fuente). Lo que evita el solape es un `e.stopPropagation()` en el handler del botón.
 
-Coste: ~30 líneas de JS, sin dependencias. Encaja con el "FIELD MEMO" que ya promete la cabecera de la sección.
+Estética: cursor pointer y borde fósforo tenue en hover/focus, sin alterar el color verde del número. Verificado con preview en desktop (1280×800).
 
 ### Pendiente: enricher Nivel 2 — tool use + output JSON estructurado
 
@@ -142,6 +139,16 @@ Coste-beneficio: con `datos_madrid.py` ya tenemos lo más jugoso del Ayto Madrid
 
 Era el mismo problema que el bug #2: el portal `sede.comunidad.madrid` también filtraba el UA `vigia-enfermeria/1.0`. Al cambiar al UA de Firefox, el 404 desapareció. En el run de validación pasó de `0 raw items, 2 errores` a `93 raw items, 0 errores` y disparó **11 hallazgos reales** (primer "find" del sistema).
 
+### ~~4. SOURCES con `null/UNKNOWN` en producción tras maintenance~~ ✅ Resuelto (2026-04-26, commit `1dd68cb`)
+
+**Síntoma:** la sección 05 del dashboard mostraba todas las fuentes con `URL: null`, `HTTP: null`, `STATUS: UNKNOWN`. Solo la columna HITS tenía valores reales.
+
+**Diagnóstico.** El `sources_status.json` se generó en algún momento con `probe_results=None` y sin un JSON previo en `docs/data/`, cayendo al branch `else` de `_sources_payload()` que escribe entradas degradadas (todo a `null`/`unknown`). Los runs posteriores entraban al branch `elif sources_path.exists()`, leían el JSON degradado y lo reutilizaban tal cual sin regenerar — bug latente desde el commit `570f5e0`.
+
+**Fix.** Nueva función `_refresh_total_hits()` en `vigia/dashboard.py`: cuando se reutiliza el JSON existente, los `total_hits` por fuente se refrescan contra la BD y las fuentes nuevas con hits pero sin probe se añaden marcadas como `unknown`. El resto de campos del último probe (url/code/status/last_probe_at) se mantienen — el contrato "no degradar el último probe" sigue vigente, validado por `test_sin_probe_no_pisa_sources_status_existente`.
+
+**Acción inmediata.** Disparar `daily.yml` manualmente vía `gh workflow run daily.yml` ([run 24953550653](https://github.com/tragabytes/vigia-enfermeria/actions/runs/24953550653)) regeneró el JSON con datos vivos. Tras el push de los 4 commits a main, el siguiente cron (lunes 27/04 08:00 UTC) y futuros maintenance ya no pueden volver a degradar la sección.
+
 ---
 
 ## 🆕 Nuevas fuentes a añadir
@@ -169,36 +176,32 @@ Pendiente como mejora futura: parsers dedicados de portales propios con feed/API
 - Varios usan PORTALEMP: `lasrozas.portalemp.com`, `majadahonda.portalemp.com`, `colladovillalba.portalemp.com`
 - **Las Rozas portal oficial:** `https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo` — listado HTML estático que muestra solo procesos con plazo abierto (filtrado por el propio ayuntamiento). Beneficio adicional sobre BOCM: detectaríamos ANTES (sin esperar publicación oficial) y con la garantía de plazo vivo. Investigar estructura HTML para parser dedicado.
 
-### Pendiente: empresas públicas estatales (RENFE, ADIF, RTVE, Navantia, AENA, Correos…)
+### ~~Empresas públicas estatales (RENFE, ADIF, RTVE, Navantia, AENA, Correos…)~~ ✅ Cobertura indirecta (2026-04-26, commit `de9b67c`)
 
-Las grandes empresas públicas con servicio médico/SP propio convocan plazas de Enfermería del Trabajo periódicamente. Ahora mismo solo las pillaríamos si el BOE publica la convocatoria (sección 2A o 2B), pero las que tienen procesos selectivos propios (RTVE en su web, RENFE/ADIF en BOE…) merecen vigilancia explícita.
+Añadidos a `HEALTH_ORGS` (bocm.py) y `DEPT_KEYWORDS_FOR_BODY` (boe.py):
+- `rtve`, `radio y television espanola`
+- `renfe`, `renfe operadora`
+- `adif`, `administrador de infraestructuras ferroviarias`
+- `navantia`
+- `aena`
+- `correos`, `sociedad estatal correos`
+- `paradores`, `paradores de turismo`
+- `loterias y apuestas`
 
-**Mínimo viable** — añadir a `HEALTH_ORGS` (bocm.py) y `DEPT_KEYWORDS_FOR_BODY` (boe.py):
-- `"rtve"`, `"corporacion radio television espanola"`, `"radio television espanola"`
-- `"renfe"`, `"renfe operadora"`, `"renfe cercanias"`
-- `"adif"`, `"administrador de infraestructuras ferroviarias"`
-- `"navantia"`
-- `"aena"`
-- `"correos"`, `"sociedad estatal correos"`
-- `"paradores"`, `"paradores de turismo"`
-- `"loteria"`, `"loterias y apuestas del estado"` (si interesa)
+Cuando una de estas empresas aparezca como organismo emisor en BOE/BOCM, se descargará el cuerpo/PDF para buscar la especialidad. `test_organism_coverage.py` parametrizado con los nombres oficiales reales (50 → 70 casos cubiertos).
 
-Y opcionalmente como `WATCHLIST_ORGS` para que aparezcan como tiles propios en la sección 06 del dashboard.
+**Pendiente como mejora futura:**
+- Añadir las anteriores a `WATCHLIST_ORGS` para que aparezcan como tiles propios en la sección 06 del dashboard.
+- Parser dedicado del portal de RTVE: `https://convocatorias.rtve.es/puestos-ofertados`. Ofrece el listado completo de procesos de RTVE con su estado, sin depender del BOE. Misma ventaja que Las Rozas: detección temprana + garantía de plazo abierto.
 
-**Mejora siguiente** — parser dedicado del portal de RTVE: `https://convocatorias.rtve.es/puestos-ofertados`. Ofrece el listado completo de procesos de RTVE con su estado, sin depender del BOE. Misma ventaja que Las Rozas: detección temprana + garantía de plazo abierto si filtran por estado.
+### ~~Variante "enfermería de empresa" en STRONG_PATTERNS~~ ✅ Resuelto (2026-04-26, commit `f409b90`)
 
-### Pendiente: variante "enfermería de empresa" en STRONG_PATTERNS
-
-Algunos organismos —RTVE entre ellos— llaman a la especialidad **"Enfermería de Empresa"** en lugar de "Enfermería del Trabajo". Es la denominación histórica previa al MIR (en el catálogo del Ministerio siguen como sinónimos a efectos formativos), y sigue apareciendo en convocatorias del sector público estatal.
-
-**Cambio:** ampliar `STRONG_PATTERNS` en `vigia/config.py` con:
+Añadidas tres variantes a `STRONG_PATTERNS` para cubrir la denominación histórica previa al MIR (todavía en uso en RTVE y otras empresas públicas estatales):
 - `r"enfermeri[ao]\s+de\s+empresa"`
-- `r"enfermer[ao]\s+de\s+empresa"`
+- `r"enfermer[ao]\s+(?:[ao]\s+)?de\s+empresa"` — soporta "Enfermero/a de Empresa" tras `normalize()` (la `/` se vuelve espacio).
 - `r"diplomado\s+en\s+enfermeria\s+de\s+empresa"`
 
-Y añadir test en `test_extractor.py` con un título realista tipo "Convocatoria de la Corporación RTVE para plazas de Enfermería de Empresa".
-
-Riesgo: ninguno aparente. "Enfermería de empresa" es lo bastante específico como para no producir falsos positivos.
+Dos tests nuevos en `test_extractor.py` con títulos realistas tipo RTVE y RENFE.
 
 ---
 
