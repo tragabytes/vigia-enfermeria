@@ -39,11 +39,14 @@ DB_PATH = Path(__file__).parent.parent / "state" / "seen.db"
 # rebobinará automáticamente lo que esté por debajo.
 # v3 (2026-04-26): el extractor ya no trunca raw_text a 2KB y el enricher
 # inyecta hasta 12KB en el prompt + system prompt instruye al LLM a llamar
-# a fetch_url ante sospecha de truncado. Cambio de prompt → re-enriquecemos
-# para corregir falsos negativos previos (caso real: Policía Nacional
-# BOE-A-2026-795 que se marcó is_relevant=false porque el texto truncado
-# no incluía la sección de plazas T012-T016 de Enfermería en PRL).
-ENRICHMENT_VERSION = 3
+# a fetch_url ante sospecha de truncado.
+# v4 (2026-04-26): el enricher inyecta SNIPPETS dirigidos (ventanas de
+# 400 chars alrededor de cada keyword strong) en lugar de truncar el inicio.
+# Imprescindible para items BOE largos donde el listado de plazas vive a
+# partir del char 80k. Cambio de prompt → re-enriquecemos otra vez para
+# corregir el false negative de Policía Nacional que ni v3 resolvió
+# (snippets quedaban saturados por menciones genéricas de "PRL" tempranas).
+ENRICHMENT_VERSION = 4
 
 
 @dataclass

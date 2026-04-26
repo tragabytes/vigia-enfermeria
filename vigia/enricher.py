@@ -347,7 +347,28 @@ def _build_initial_user_content(item: Item) -> str:
     raw_text = ""
     if isinstance(item.extra, dict):
         raw_text = item.extra.get("raw_text", "") or ""
-    raw_section = raw_text[:MAX_TEXT_CHARS] if raw_text else "(no disponible)"
+
+    # Construcción del bloque de texto auxiliar:
+    # - Primeros ~4KB para contexto general (organismo, fechas iniciales).
+    # - Snippets dirigidos con ventanas de 400 chars alrededor de cada
+    #   palabra clave. Esto es decisivo para items BOE largos (>100KB)
+    #   donde las plazas concretas viven más allá del char 80000 — un
+    #   simple truncado al inicio nunca las ve.
+    if raw_text:
+        head = raw_text[:4000]
+        snippets = _extract_relevant_snippets(raw_text, max_snippets=6)
+        snippet_block = ""
+        if snippets:
+            snippet_block = (
+                "\n\n[Fragmentos relevantes localizados por el matcher "
+                "automático en el cuerpo descargado:]\n"
+                + "\n---\n".join(snippets)
+            )
+        # Tope total para no saturar el prompt.
+        body_section = (head + snippet_block)[:MAX_TEXT_CHARS]
+    else:
+        body_section = "(no disponible)"
+
     return (
         "Convocatoria detectada por el sistema:\n"
         f"- Fuente: {item.source}\n"
@@ -355,11 +376,128 @@ def _build_initial_user_content(item: Item) -> str:
         f"- Título: {item.titulo[:300]}\n"
         f"- URL: {item.url}\n"
         f"- Fecha de detección: {item.fecha}\n"
-        f"- Texto adicional disponible (truncado):\n{raw_section}\n\n"
+        f"- Texto adicional disponible:\n{body_section}\n\n"
         "Devuelve el JSON estructurado siguiendo el schema definido en las "
         "instrucciones del sistema. Llama a `fetch_url` solo si necesitas "
         "datos que no están arriba."
     )
+
+
+# Keywords ordenadas por prioridad: las que confirman match positivo del
+# extractor van primero (HIGH); las contextuales (WEAK / genéricas) detrás.
+# Esto importa porque en items BOE largos las menciones genéricas de
+# "Prevención de Riesgos Laborales" aparecen a lo largo del documento
+# (lactancia, gestión, etc.) y saturarían el max_snippets antes de llegar
+# a las menciones STRONG (que están en el listado de plazas, hacia el
+# final). Procesamos HIGH primero para garantizar que llegan al prompt.
+_SNIPPET_KEYWORDS_HIGH: list[str] = [
+    # Strong matches del extractor — la propia especialidad
+    "enfermería del trabajo", "enfermeria del trabajo",
+    "enfermería de empresa", "enfermeria de empresa",
+    "enfermería de salud laboral", "enfermeria de salud laboral",
+    "enfermero del trabajo", "enfermera del trabajo",
+    "enfermero de empresa", "enfermera de empresa",
+    "enfermero/a del trabajo", "enfermero/a de empresa",
+    "especialista en enfermería del trabajo",
+    "especialidad enfermería del trabajo",
+    # Categoría profesional convocada
+    "especialidad enfermería", "especialidad enfermeria",
+    "especialidad en enfermería", "especialidad en enfermeria",
+    "especialista en enfermería", "especialista en enfermeria",
+]
+_SNIPPET_KEYWORDS_LOW: list[str] = [
+    "enfermería (prevención", "enfermeria (prevencion",
+    "(prevención riesgos", "(prevencion riesgos",
+    "salud laboral",
+    "servicio de prevención", "servicio de prevencion",
+    "prevención de riesgos laborales", "prevencion de riesgos laborales",
+    "(prl)", " prl ",
+]
+
+
+def _extract_relevant_snippets(
+    text: str,
+    window: int = 400,
+    max_snippets: int = 6,
+) -> list[str]:
+    """Devuelve hasta `max_snippets` ventanas de ~`window` chars centradas
+    en cada match de las keywords. Fusiona ventanas que se solapan para no
+    duplicar contexto.
+
+    Estrategia: procesa primero las keywords HIGH (prueba directa de la
+    especialidad de Enfermería del Trabajo) hasta agotar `max_snippets`;
+    si sobra cupo, rellena con keywords LOW (contexto de PRL/salud
+    laboral). Sin esto, en items BOE largos los matches genéricos de
+    "Prevención de Riesgos Laborales" en bloques tempranos del documento
+    se comían todo el cupo antes de llegar a la sección de plazas.
+
+    Pensado para inyectar al prompt del enricher cuando el cuerpo del
+    item es demasiado largo para mandarlo entero (HTML BOE: 100-300KB).
+    """
+    if not text:
+        return []
+
+    text_lower = text.lower()
+    half = window // 2
+
+    def _find_spans(keywords: list[str]) -> list[tuple[int, int]]:
+        spans: list[tuple[int, int]] = []
+        for kw in keywords:
+            start = 0
+            while True:
+                idx = text_lower.find(kw, start)
+                if idx == -1:
+                    break
+                spans.append((idx, idx + len(kw)))
+                start = idx + 1
+                if len(spans) > 500:
+                    break
+            if len(spans) > 500:
+                break
+        return sorted(spans)
+
+    def _spans_to_windows(
+        spans: list[tuple[int, int]],
+        existing: list[tuple[int, int]],
+    ) -> list[tuple[int, int]]:
+        out = list(existing)
+        for s, e in spans:
+            ws, we = max(0, s - half), min(len(text), e + half)
+            # Fusionar con ventanas existentes que solapen (independiente
+            # del orden de inserción HIGH/LOW).
+            merged = False
+            for i, (xs, xe) in enumerate(out):
+                if ws <= xe and we >= xs:
+                    out[i] = (min(xs, ws), max(xe, we))
+                    merged = True
+                    break
+            if not merged:
+                out.append((ws, we))
+            if len(out) >= max_snippets:
+                break
+        return out
+
+    # 1. Procesar HIGH primero (tomamos hasta max_snippets matches HIGH).
+    high_windows = _spans_to_windows(_find_spans(_SNIPPET_KEYWORDS_HIGH), [])
+    # 2. Si queda cupo, rellenar con LOW.
+    final_windows = (
+        high_windows
+        if len(high_windows) >= max_snippets
+        else _spans_to_windows(_find_spans(_SNIPPET_KEYWORDS_LOW), high_windows)
+    )
+
+    if not final_windows:
+        return []
+
+    # 3. Ordenar por offset y materializar el texto.
+    final_windows.sort()
+    snippets = []
+    for ws, we in final_windows[:max_snippets]:
+        snippet = text[ws:we].replace("\n", " ").strip()
+        prefix = "…" if ws > 0 else ""
+        suffix = "…" if we < len(text) else ""
+        snippets.append(prefix + snippet + suffix)
+    return snippets
 
 
 # ---------------------------------------------------------------------------
