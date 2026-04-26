@@ -1,6 +1,6 @@
 {
   "total_items": 12,
-  "total_today": 12,
+  "total_today": 0,
   "by_category": {
     "bolsa": 4,
     "oep": 1,
@@ -10,12 +10,12 @@
   },
   "days_watching": 0,
   "first_seen_at": "2026-04-25T12:21:03.294822",
-  "last_run_at": "2026-04-25T21:42:39.177735+00:00",
+  "last_run_at": "2026-04-26T07:38:42.470596+00:00",
   "next_run_at": "2026-04-27T08:00:00+00:00",
   "sources_online": 8,
   "sources_total": 10,
   "targets_active": 2,
   "targets_total": 22,
   "version": "0.2.0",
-  "commit": "1300d13"
+  "commit": "e8fb0ed"
 }

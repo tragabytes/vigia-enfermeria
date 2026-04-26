@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-04-26",
+    "commit": "e8fb0ed",
+    "kind": "feat",
+    "scope": "web",
+    "title": "UX móvil — typing, glitch-in, counters/charts lazy y secciones colapsables",
+    "body": "- Hero: eliminado SYSTEM ONLINE redundante (vivía en hero-meta y status bar);"
+  },
+  {
     "date": "2026-04-25",
     "commit": "1300d13",
     "kind": "fix",
@@ -22,13 +30,5 @@
     "scope": "web",
     "title": "FIELD NOTES y diagrama actualizados con datos reales",
     "body": "- renderHowItWorks() lee DATA.changelog en lugar del array hardcoded."
-  },
-  {
-    "date": "2026-04-25",
-    "commit": "6d87cf2",
-    "kind": "feat",
-    "scope": "dashboard",
-    "title": "FIELD NOTES dinámico desde git log",
-    "body": "vigia/dashboard.py:"
   }
 ]
