@@ -32,6 +32,7 @@ from vigia.sources.boam import BOAMSource
 from vigia.sources.bocm import BOCMSource
 from vigia.sources.boe import BOESource
 from vigia.sources.canal_isabel_ii import CanalIsabelIISource
+from vigia.sources.ciemat import CIEMATSource
 from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
 from vigia.sources.datos_madrid import DatosMadridSource
@@ -55,6 +56,7 @@ SOURCE_REGISTRY = {
     "administracion_gob": AdministracionGobSource,
     "codem": CODEMSource,
     "datos_madrid": DatosMadridSource,
+    "ciemat": CIEMATSource,
 }
 
 

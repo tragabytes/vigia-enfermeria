@@ -228,6 +228,7 @@ SOURCES_ENABLED: list[str] = [
     "administracion_gob",
     "codem",
     "datos_madrid",
+    "ciemat",
 ]
 
 

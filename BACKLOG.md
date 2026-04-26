@@ -112,6 +112,28 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 **Migración hacia Nivel 3 (futuro).** Si en el futuro queremos vincular item existente con su corrección/anexo (timeline de la convocatoria), entonces Claude Agent SDK con loop. No bloqueante hoy.
 
+### Pendiente: parsers propios para OPIs estatales (CIEMAT, IAC, INIA, ISCIII…)
+
+CIEMAT publica plazas en su web propia (`ciemat.es/ofertas-de-empleo/-/ofertas/oferta/<id>`) que no monitorizamos directamente. Las convocatorias en BOE bajo "Ministerio de Ciencia, Innovación y Universidades" son OPIs conjuntas y a veces el HTML del item no da pista en los primeros KB. Pillamos el caso por departamento + plan B (anexos PDF) cuando aplica, pero un parser dedicado al portal CIEMAT detecta antes y cubre plazas que solo viven ahí.
+
+Mismo patrón aplica a otros Organismos Públicos de Investigación con servicio de prevención propio:
+
+- **CIEMAT** — Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas. Portal: `ciemat.es/ofertas-de-empleo`. Ya en watchlist (T-23).
+- **IAC** — Instituto de Astrofísica de Canarias. Portal: `iac.es/es/empleo`.
+- **INIA** — Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria (ahora INIA-CSIC). Portal: `inia.es` (a investigar URL exacta de empleo).
+- **ISCIII** — Instituto de Salud Carlos III. Portal: `isciii.es/Personal/Paginas/EmpleoPublico.aspx`.
+- **IEO** — Instituto Español de Oceanografía. Portal: `ieo.es/empleo` (ahora dependiente del CSIC).
+- **CSIC** — Consejo Superior de Investigaciones Científicas (paraguas de varios). Portal: `csic.es/es/empleo`.
+
+Patrón de implementación (similar a `vigia/sources/canal_isabel_ii.py`):
+1. Una clase Source por organismo, con `name`, `probe_url`, `fetch(since_date)`.
+2. Listar las ofertas activas del portal (HTML render server-side; CSS selectors a investigar).
+3. Para cada oferta, descargar la página de detalle y devolver `RawItem(title, url, text)`.
+4. El extractor + enricher v2 ya hacen el resto (matcher + estructurado).
+5. Añadir cada uno a `WATCHLIST_ORGS` con su id (T-27, T-28…) y patterns.
+
+Coste: ~1-2h por parser, x6 organismos = 6-12h totales si se quieren todos. Priorización razonable: **CIEMAT primero** (caso real motivador), **ISCIII segundo** (instituto sanitario, mayor probabilidad de plazas de Enfermería del Trabajo en su SP), el resto por orden de tamaño/relevancia. Validar primero el portal HTML de CIEMAT — si está renderizado vía JS-only (como `administracion.gob.es`), habría que delegar al BOE/BOCM y abandonar este parser.
+
 ### Pendiente: backend de suscripción Telegram
 
 Sigue siendo un sprint aparte. El formulario `/subscribe` del dashboard necesita un Cloudflare Worker que:
