@@ -52,6 +52,12 @@ STRONG_PATTERNS: list[str] = [
     # la "a"/"o" intercalada como opcional.
     r"enfermer[ao]\s+(?:[ao]\s+)?del\s+trabajo",
     r"enfermer[ao]\s+(?:[ao]\s+)?de\s+trabajo",
+    # "Enfermería de Empresa" — denominación histórica previa al MIR, sigue en
+    # uso en RTVE y otras empresas públicas estatales. A efectos formativos es
+    # sinónimo de Enfermería del Trabajo en el catálogo del Ministerio.
+    r"enfermeri[ao]\s+de\s+empresa",
+    r"enfermer[ao]\s+(?:[ao]\s+)?de\s+empresa",
+    r"diplomado\s+en\s+enfermeria\s+de\s+empresa",
 ]
 
 # Match débil: solo si ADEMÁS aparece "enfermer" en el mismo fragmento (100 chars)

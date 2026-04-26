@@ -133,6 +133,23 @@ class TestCasosHistoricos:
         assert item is not None
         assert item.categoria == "oep"
 
+    def test_enfermeria_de_empresa_rtve(self):
+        """Variante histórica 'Enfermería de Empresa' (RTVE y otras empresas
+        públicas estatales). Es sinónimo formativo de Enfermería del Trabajo."""
+        item = extract(_raw(
+            "Convocatoria de la Corporación RTVE para plazas de Enfermería de Empresa."
+        ))
+        assert item is not None
+        assert item.categoria == "oposicion"
+
+    def test_enfermero_a_de_empresa(self):
+        """Variante 'Enfermero/a de Empresa' — tras normalize la '/' se vuelve espacio."""
+        item = extract(_raw(
+            "Proceso selectivo para Enfermero/a de Empresa, RENFE Operadora."
+        ))
+        assert item is not None
+        assert item.categoria == "oposicion"
+
 
 # ---------------------------------------------------------------------------
 # Falsos positivos (NO deben ser detectados)
