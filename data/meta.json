@@ -15,7 +15,7 @@
   },
   "days_watching": 0,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-04-26T16:30:33.226937+00:00",
+  "last_run_at": "2026-04-26T19:44:54.677330+00:00",
   "next_run_at": "2026-04-27T08:00:00+00:00",
   "sources_online": 8,
   "sources_total": 10,
@@ -23,5 +23,5 @@
   "targets_urgent": 1,
   "targets_total": 26,
   "version": "0.2.0",
-  "commit": "f6b650a"
+  "commit": "4b6630f"
 }

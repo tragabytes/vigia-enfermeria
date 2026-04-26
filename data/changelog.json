@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "4b6630f",
+    "kind": "feat",
+    "scope": "boe",
+    "title": "plan B — extracción de PDFs anexos para cazar OPIs conjuntas",
+    "body": "Cuando el HTML del item BOE no contiene match pero el departamento es"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "f6b650a",
     "kind": "fix",
     "scope": "enricher",
@@ -22,13 +30,5 @@
     "scope": "enricher",
     "title": "elevar ventana de raw_text a 12KB + hint anti-truncado",
     "body": "Diagnóstico tras el backfill `--since 2026-01-01`:"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "422f783",
-    "kind": "feat",
-    "scope": "boe",
-    "title": "cobertura de ministerios estatales con servicio de PRL propio",
-    "body": "Diagnóstico: la convocatoria BOE-A-2026-795 (Policía Nacional, 14/01/2026)"
   }
 ]
