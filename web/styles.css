@@ -584,6 +584,21 @@ table.term td.col-title {
 .sources-tbl td.col-code { width: 64px; color: var(--phos); }
 .sources-tbl td.col-status { width: 100px; }
 .sources-tbl td.col-hits { width: 80px; text-align: right; color: var(--phos); font-variant-numeric: tabular-nums; }
+.sources-tbl .hits-link {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--phos);
+  font: inherit;
+  padding: 0 6px;
+  cursor: pointer;
+  letter-spacing: 0;
+}
+.sources-tbl .hits-link:hover,
+.sources-tbl .hits-link:focus-visible {
+  border-color: var(--phos-dim);
+  background: rgba(57, 255, 20, 0.06);
+  outline: none;
+}
 .sources-tbl td.col-probe { width: 130px; color: var(--fg-dim); font-size: 11px; }
 .status-pill {
   display: inline-block;

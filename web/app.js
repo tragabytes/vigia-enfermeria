@@ -565,17 +565,21 @@ function renderIntel() {
 /* ---- 5. Sources status ---------------------------------------------- */
 function renderSources() {
   const tbody = $('#src-tbody');
-  tbody.innerHTML = DATA.sources.map(s => `
+  tbody.innerHTML = DATA.sources.map(s => {
+    const hitsCell = s.total_hits > 0
+      ? `<button type="button" class="hits-link" data-source="${s.name}" title="Filter Historical DB by ${SOURCE_LABEL[s.name] || s.name}">${s.total_hits}</button>`
+      : s.total_hits;
+    return `
     <tr data-name="${s.name}">
       <td class="col-name">${SOURCE_LABEL[s.name] || s.name.toUpperCase()}</td>
       <td class="col-url">${s.url}</td>
       <td class="col-probe">${fmtDate(s.last_probe_at)} ${fmtTime(s.last_probe_at)}</td>
       <td class="col-code">${s.code}</td>
       <td class="col-status"><span class="status-pill ${s.status}">${s.status.toUpperCase()}</span></td>
-      <td class="col-hits">${s.total_hits}</td>
+      <td class="col-hits">${hitsCell}</td>
       <td class="col-arrow">▾</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
   $$('#src-tbody tr').forEach(tr => {
     tr.addEventListener('click', () => {
       const next = tr.nextElementSibling;
@@ -588,6 +592,29 @@ function renderSources() {
       tr.after(det);
     });
   });
+  $$('#src-tbody .hits-link').forEach(b => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      filterHistoricalBySource(b.dataset.source);
+    });
+  });
+}
+
+/* Filtra la sección 03 (Historical DB) por una fuente y desplaza la
+   página hasta ahí. Disparado desde el número de HITS en la sección 05. */
+function filterHistoricalBySource(name) {
+  const sel = $('#f-source');
+  if (!sel) return;
+  sel.value = name;
+  syncFilter();
+  drawTable();
+  // Si en móvil la sección está colapsada, la abrimos para que el filtro
+  // sea visible tras el scroll.
+  const histSection = $('#cmdbar')?.closest('section');
+  if (histSection?.classList.contains('collapsed')) {
+    histSection.classList.remove('collapsed');
+  }
+  histSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ---- 6. Watchlist (organismos vigilados, calculados en backend) ----- */
