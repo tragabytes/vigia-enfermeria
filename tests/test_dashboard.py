@@ -154,18 +154,35 @@ class TestSourcesStatusJson:
         assert by_name["boam"]["total_hits"] == 0  # sin items
         assert by_name["boam"]["code"] == 403
 
-    def test_sin_probe_devuelve_solo_contadores(self, tmp_path):
+    def test_sin_probe_y_sin_snapshot_previo_no_escribe_degradado(self, tmp_path):
+        """Regresión del bug null/unknown en SOURCES (2026-04-26):
+        si el caller no pasa probe_results y NO existe sources_status.json
+        en disco (caso típico en CI con checkout fresco), `export_all` debe
+        ABSTENERSE de escribir el fichero — un payload de `unknown/null`
+        pisaría al bueno publicado en gh-pages cuando el siguiente push
+        haga `rm -rf data/* && cp docs/data/* data/`.
+
+        El fix correcto exige que el workflow CI traiga el JSON desde
+        gh-pages a `docs/data/` antes del export. Si no lo hace, mejor
+        dejar la sección transitoriamente vacía que mostrar todas las
+        fuentes como caídas.
+        """
         storage = Storage(db_path=tmp_path / "seen.db")
         _seed(storage, [_item("a", source="boe"), _item("b", source="bocm")])
-        dashboard.export_all(storage, tmp_path / "out")
+        out = tmp_path / "out"
+        dashboard.export_all(storage, out)
         storage.close()
 
-        data = json.loads(
-            (tmp_path / "out" / "sources_status.json").read_text(encoding="utf-8")
-        )
-        by_name = {r["name"]: r for r in data}
-        assert by_name["boe"]["total_hits"] == 1
-        assert by_name["boe"]["status"] == "unknown"
+        # El fichero NO debe haberse creado.
+        assert not (out / "sources_status.json").exists(), \
+            "export_all no debe escribir sources_status.json degradado"
+
+        # meta.json sí se escribe (con sources_online=0 — honesto: no hay
+        # probe data) y el resto de salidas tampoco se ven afectadas.
+        assert (out / "meta.json").exists()
+        meta = json.loads((out / "meta.json").read_text(encoding="utf-8"))
+        # No mentimos: sin probe, ninguna fuente cuenta como online.
+        assert meta["sources_online"] == 0
 
     def test_fuente_con_hits_pero_sin_probe_se_incluye(self, tmp_path):
         """Si probe_results no contiene una fuente que sí tiene hits en BD,
@@ -307,10 +324,25 @@ class TestMetaJson:
 
 
 class TestExportAll:
-    def test_genera_los_tres_ficheros(self, tmp_path):
+    def test_genera_items_y_meta_sin_probe(self, tmp_path):
+        """Sin probe_results y sin snapshot previo, items.json y meta.json
+        se generan; sources_status.json NO (defensa contra el degradado)."""
         storage = Storage(db_path=tmp_path / "seen.db")
         _seed(storage, [_item("x")])
         result = dashboard.export_all(storage, tmp_path / "out")
+        storage.close()
+
+        assert result["items"].exists()
+        assert result["meta"].exists()
+        # sources_status.json no se crea cuando no hay probe ni snapshot.
+        assert not result["sources"].exists()
+
+    def test_genera_sources_si_hay_probe(self, tmp_path):
+        storage = Storage(db_path=tmp_path / "seen.db")
+        _seed(storage, [_item("x", source="boe")])
+        probe = [{"name": "boe", "url": "https://boe.es", "status": "ok",
+                  "code": 200, "detail": ""}]
+        result = dashboard.export_all(storage, tmp_path / "out", probe_results=probe)
         storage.close()
 
         assert result["items"].exists()

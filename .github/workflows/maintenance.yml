@@ -36,6 +36,26 @@ jobs:
             exit 1
           fi
 
+      - name: Restaurar último snapshot del dashboard
+        # CRÍTICO: traer `sources_status.json` desde gh-pages antes del export.
+        # Sin esto, dashboard.export_all ve el fichero ausente y se abstiene
+        # de escribirlo (defensa post regresión null/unknown). El step de
+        # publicación hace `rm -rf data/*` y dejaría gh-pages sin
+        # sources_status.json. Restaurándolo aquí, el export entra al branch
+        # `elif sources_path.exists()`, preserva los campos del último probe
+        # y refresca los total_hits.
+        run: |
+          mkdir -p docs/data
+          if git fetch origin gh-pages --depth=1 2>/dev/null && \
+             git checkout FETCH_HEAD -- data/sources_status.json 2>/dev/null && \
+             [ -f data/sources_status.json ]; then
+            mv data/sources_status.json docs/data/sources_status.json
+            rmdir data 2>/dev/null || true
+            echo "Snapshot sources_status.json restaurado desde gh-pages"
+          else
+            echo "Sin snapshot previo en gh-pages — el export omitirá sources_status.json"
+          fi
+
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:

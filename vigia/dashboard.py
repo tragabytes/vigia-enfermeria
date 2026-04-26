@@ -73,8 +73,13 @@ def export_all(
     #   más informativo. Pero sí refrescamos `total_hits` con datos vivos de
     #   la BD: el resto de campos (url/code/status/last_probe_at) se quedan
     #   congelados al último --probe real, los hits sí cambian cada run.
-    # - Si tampoco existe el fichero, generamos uno mínimo a partir de los
-    #   hits agregados.
+    # - Si tampoco existe el fichero EN DISCO, NO lo regeneramos como
+    #   degradado: en CI cada run hace checkout fresh y el sources_status.json
+    #   bueno vive en gh-pages. Si el workflow no lo trae a `docs/data/`
+    #   antes del export, escribir un payload de "unknown/null" aquí pisaría
+    #   el bueno cuando se publique. La sección queda transitoriamente
+    #   vacía hasta el siguiente `--probe`, lo cual es preferible a mostrar
+    #   todas las fuentes como caídas (regresión histórica del bug 1dd68cb).
     if probe_results is not None:
         sources_payload = _sources_payload(storage, probe_results, now)
         _write_json(sources_path, sources_payload)
@@ -83,8 +88,17 @@ def export_all(
         sources_payload = _refresh_total_hits(storage, sources_payload, now)
         _write_json(sources_path, sources_payload)
     else:
+        logger.warning(
+            "dashboard: sources_status.json no existe en %s y no hay "
+            "probe_results — se omite su generación para no escribir un "
+            "snapshot degradado. El próximo `--probe` lo regenerará. "
+            "Si esto pasa en CI, asegúrate de que el workflow haga fetch "
+            "del JSON desde gh-pages antes de exportar.",
+            sources_path,
+        )
+        # Generamos payload en memoria SOLO para alimentar `_meta_payload`
+        # (sources_online/sources_total). No lo persistimos.
         sources_payload = _sources_payload(storage, None, now)
-        _write_json(sources_path, sources_payload)
 
     targets_payload = _targets_payload(storage, now)
     changelog_payload = _changelog_payload()

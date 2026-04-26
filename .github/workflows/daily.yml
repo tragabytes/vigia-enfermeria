@@ -37,6 +37,25 @@ jobs:
             echo "BD de estado restaurada" || \
             echo "Sin estado previo — se creará nueva BD"
 
+      - name: Restaurar último snapshot del dashboard
+        # Trae `sources_status.json` desde gh-pages para que el primer
+        # `dashboard.export_all` (sin probe_results) entre al branch
+        # `elif sources_path.exists()` y refresque total_hits sin perder
+        # los campos del último probe. Si el `--probe` posterior funciona
+        # bien, sobrescribirá este snapshot con datos vivos. Si falla
+        # (continue-on-error: true), al menos no degradamos la sección.
+        run: |
+          mkdir -p docs/data
+          if git fetch origin gh-pages --depth=1 2>/dev/null && \
+             git checkout FETCH_HEAD -- data/sources_status.json 2>/dev/null && \
+             [ -f data/sources_status.json ]; then
+            mv data/sources_status.json docs/data/sources_status.json
+            rmdir data 2>/dev/null || true
+            echo "Snapshot sources_status.json restaurado desde gh-pages"
+          else
+            echo "Sin snapshot previo en gh-pages — el primer probe lo creará"
+          fi
+
       - name: Configurar Python
         uses: actions/setup-python@v5
         with:

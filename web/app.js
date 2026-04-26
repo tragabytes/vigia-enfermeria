@@ -58,8 +58,14 @@ let DATA = { items: [], sources: [], meta: {}, targets: [], changelog: [] };
 /* ---- bootstrap ------------------------------------------------------- */
 async function loadData() {
   const items   = await fetch('data/items.json').then(r => r.json());
-  const sources = await fetch('data/sources_status.json').then(r => r.json());
   const meta    = await fetch('data/meta.json').then(r => r.json());
+  // sources_status.json puede faltar transitoriamente (el backend ahora
+  // se abstiene de escribirlo cuando no hay probe ni snapshot previo,
+  // para no degradar la sección con "unknown/null"). Fallback a [] y
+  // renderSources() pinta un placeholder.
+  const sources = await fetch('data/sources_status.json')
+    .then(r => r.ok ? r.json() : [])
+    .catch(() => []);
   // targets.json y changelog.json son opcionales (versión vieja del backend
   // no los genera). Fallback a [] para no romper el render.
   const targets = await fetch('data/targets.json')
@@ -706,6 +712,12 @@ function renderIntel() {
 /* ---- 5. Sources status ---------------------------------------------- */
 function renderSources() {
   const tbody = $('#src-tbody');
+  if (!DATA.sources || DATA.sources.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;text-align:center;color:var(--fg-dim);letter-spacing:.18em;">
+      › NO PROBE DATA — RUN <code>--probe</code> TO REFRESH
+    </td></tr>`;
+    return;
+  }
   tbody.innerHTML = DATA.sources.map(s => {
     const hitsCell = s.total_hits > 0
       ? `<button type="button" class="hits-link" data-source="${s.name}" title="Filter Historical DB by ${SOURCE_LABEL[s.name] || s.name}">${s.total_hits}</button>`
