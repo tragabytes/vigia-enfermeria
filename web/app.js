@@ -309,11 +309,11 @@ function renderStatusBar() {
   }).replace('.', '').toUpperCase();
   const nextStr = `${dayShort} ${next.toISOString().slice(11, 16)} UTC`;
 
-  // Bell de alarma: sale solo si hay targets urgentes (deadline ≤7 días).
-  // Caso 1 urgente: muestra el nombre + countdown ("🔔 CANAL II · CIERRA EN 2D").
-  // Caso N urgentes: contador genérico ("🔔 N URGENTES").
-  // Click → modal con los items del urgente más próximo (o el primero alfa
-  // si hay varios y queremos no decidir por el usuario).
+  // Alarma de urgentes: sale solo si hay targets urgentes (deadline ≤7 días).
+  // Caso 1 urgente: muestra el nombre + countdown ("URGENT · CANAL II · CIERRA EN 2D").
+  // Caso N urgentes: contador genérico ("N URGENTES").
+  // Click → modal del urgente más próximo / scroll a sección 06 si hay varios.
+  // Estética: pulso rojo en todo el pill (sin icono, sin shake).
   const urgentTargets = (DATA.targets || []).filter(t => t.urgent);
   let alarmHTML = '';
   if (urgentTargets.length === 1) {
@@ -323,14 +323,14 @@ function renderStatusBar() {
               : `CIERRA EN ${t.days_until}D`;
     alarmHTML = `
       <span class="item alarm" id="alarm-bell" data-target-id="${escapeHTML(t.id)}" title="Ver convocatoria urgente">
-        <span class="bell">🔔</span><span class="val">${escapeHTML(t.name.toUpperCase())} · ${escapeHTML(txt)}</span>
+        <span class="val">URGENT · ${escapeHTML(t.name.toUpperCase())} · ${escapeHTML(txt)}</span>
       </span>`;
   } else if (urgentTargets.length > 1) {
     // Ordenamos por días restantes para usar el más urgente al hacer click.
     urgentTargets.sort((a, b) => (a.days_until ?? 99) - (b.days_until ?? 99));
     alarmHTML = `
       <span class="item alarm" id="alarm-bell" data-target-id="${escapeHTML(urgentTargets[0].id)}" title="Ir a la sección de watchlist">
-        <span class="bell">🔔</span><span class="val">${urgentTargets.length} URGENTES</span>
+        <span class="val">${urgentTargets.length} URGENTES</span>
       </span>`;
   }
 
