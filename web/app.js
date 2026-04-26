@@ -51,6 +51,11 @@ async function loadData() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // En móvil ocultamos las secciones (excepto hero) ANTES del fetch para
+  // que no haya un flash entre render y observe. El observer las irá
+  // dejando visibles a medida que el usuario haga scroll.
+  prepGlitchMobile();
+
   try {
     await loadData();
   } catch (err) {
@@ -69,7 +74,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderHowItWorks();
   renderFooter();
   initTweaks();
+  initScrollEffects();
+  initCollapsibleSections();
 });
+
+/* ---- Mobile pre-paint --------------------------------------------------
+   Marcamos secciones como .pre-glitch antes del fetch. El CSS de
+   .pre-glitch solo aplica en ≤900px, así que en desktop esto es un
+   no-op visual. */
+function prepGlitchMobile() {
+  if (!window.matchMedia('(max-width: 900px)').matches) return;
+  document.querySelectorAll('.shell > section:not(.hero)').forEach(s => {
+    s.classList.add('pre-glitch');
+  });
+}
 
 /* ---- helpers --------------------------------------------------------- */
 const $  = (s, r=document) => r.querySelector(s);
@@ -154,6 +172,8 @@ function renderStatusBar() {
 function renderHero() {
   const ascii = $('#ascii-logo'); if (ascii) ascii.textContent = '';
   if (!$('#hero-meta')) return;
+  // Hero meta: NODE / BUILD / HEAD. El indicador "SYSTEM ONLINE" vivía
+  // aquí Y en la status bar — redundante. Lo dejamos solo arriba.
   $('#hero-meta').innerHTML = `
     <span class="glyph">[▮]</span>
     <span>NODE</span><span class="v">vigía-01</span>
@@ -161,9 +181,11 @@ function renderHero() {
     <span>BUILD</span><span class="v">${DATA.meta.version}</span>
     <span class="sep">/</span>
     <span>HEAD</span><span class="v">${DATA.meta.commit}</span>
-    <span class="right"><span class="dot"></span>SYSTEM ONLINE</span>
   `;
-  $('#hero-title').innerHTML = `<span class="bracket">/</span>&nbsp;vigía-enfermería&nbsp;<span class="cursor">▮</span>`;
+  // Título: arrancamos vacío y disparamos la animación de typing.
+  $('#hero-title').innerHTML = `<span class="bracket">/</span>&nbsp;<span id="title-text"></span><span class="cursor">▮</span>`;
+  typeTitle();
+
   $('#hero-tagline').innerHTML = `
     <span class="prefix">$ ./vigía --whoami</span><br>
     Automated surveillance of Spanish public-sector job postings for
@@ -171,6 +193,39 @@ function renderHero() {
     bulletins daily, hashes findings, enriches with Claude Haiku, dispatches
     to Telegram. Built with paranoia. Public log.
   `;
+}
+
+/* Typing del título con un typo intencional y corrección, tipo terminal.
+   Secuencia: teclea "vigía-enfermenía", pausa breve, borra los 3 últimos
+   caracteres ("nía") y corrige a "ría" para llegar a "vigía-enfermería". */
+function typeTitle() {
+  const target = 'vigía-enfermería';
+  const wrong  = 'vigía-enfermenía';     // typo en la última sílaba: nía → ría
+  const keep   = 'vigía-enferme';        // hasta donde retrocede el cursor
+  const el = document.getElementById('title-text');
+  if (!el) return;
+
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const TYPE_MS = 75;
+  const PAUSE_AFTER_TYPO = 380;
+  const BACK_MS = 55;
+
+  (async () => {
+    for (let i = 1; i <= wrong.length; i++) {
+      el.textContent = wrong.slice(0, i);
+      await sleep(TYPE_MS);
+    }
+    await sleep(PAUSE_AFTER_TYPO);
+    while (el.textContent.length > keep.length) {
+      el.textContent = el.textContent.slice(0, -1);
+      await sleep(BACK_MS);
+    }
+    await sleep(160);
+    while (el.textContent.length < target.length) {
+      el.textContent = target.slice(0, el.textContent.length + 1);
+      await sleep(TYPE_MS);
+    }
+  })();
 }
 
 /* ---- 1c. Counters ---------------------------------------------------- */
@@ -188,7 +243,9 @@ function renderCounters() {
       <div class="delta ${c.deltaAmber?'amber':''}">› ${c.delta}</div>
     </div>
   `).join('');
-  $$('[data-counter]').forEach(el => countUp(el, +el.dataset.counter));
+  // El countUp se dispara desde initScrollEffects: en desktop al instante
+  // (los counters están en viewport al cargar), en móvil cuando el counter
+  // entra en viewport. Por eso aquí solo dejamos el "0" inicial.
 }
 
 /* ---- 2. Daily feed --------------------------------------------------- */
@@ -449,9 +506,9 @@ function renderIntel() {
       <div class="num">${v}</div>
     </div>
   `).join('');
-  requestAnimationFrame(() => {
-    $$('#bars .fill').forEach(f => f.style.width = f.dataset.w + '%');
-  });
+  // Las bars arrancan con width=0 (CSS .bar-row .fill). El target se
+  // aplica desde initScrollEffects (rAF inmediato en desktop, lazy en
+  // móvil), y la transition CSS hace el resto.
 
   // 4b. donut by category
   const byCat = {};
@@ -459,16 +516,22 @@ function renderIntel() {
   const totalCat = Object.values(byCat).reduce((a,b)=>a+b,0);
   const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
 
-  // SVG donut
+  // SVG donut. En móvil arrancamos con dasharray="0 C" (segmentos
+  // invisibles) para que el observer dispare el sweep al hacer scroll.
+  // En desktop usamos el valor final: render estático, sin animación,
+  // como antes.
+  const isMobile = window.matchMedia('(max-width: 900px)').matches;
   const cx = 70, cy = 70, r = 55, sw = 18;
   const C = 2 * Math.PI * r;
   let offset = 0;
   const segs = cats.map(([cat, n]) => {
     const frac = n / totalCat;
     const len = frac * C;
-    const seg = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+    const initialDash = isMobile ? `0 ${C}` : `${len} ${C}`;
+    const seg = `<circle class="donut-seg" cx="${cx}" cy="${cy}" r="${r}" fill="none"
         stroke="${CAT_COLOR[cat] || '#39ff14'}" stroke-width="${sw}"
-        stroke-dasharray="${len} ${C}"
+        stroke-dasharray="${initialDash}"
+        data-target-dasharray="${len} ${C}"
         stroke-dashoffset="${-offset}"
         transform="rotate(-90 ${cx} ${cy})"
         style="filter: drop-shadow(0 0 3px ${CAT_COLOR[cat] || '#39ff14'}88)" />`;
@@ -701,6 +764,96 @@ function renderFooter() {
     <span>HEAD <span class="commit">${DATA.meta.commit}</span></span>
     <span class="right">© ${new Date().getUTCFullYear()} · NO COOKIES · NO TRACKERS · STATIC HTML</span>
   `;
+}
+
+/* ---- Scroll-driven effects ----------------------------------------------
+   En móvil (≤900px) las secciones nacen ocultas (.pre-glitch) y un
+   IntersectionObserver les pone .glitch-in cuando entran al viewport.
+   También diferimos el countUp de los counters y la animación de
+   bars/donut hasta que cada bloque sea visible. En desktop (o con IO no
+   soportado o reduced-motion) disparamos todo al instante: las
+   transitions CSS existentes hacen el resto.
+   ---------------------------------------------------------------------- */
+function initScrollEffects() {
+  const isMobile = window.matchMedia('(max-width: 900px)').matches;
+  const supportsIO = 'IntersectionObserver' in window;
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!isMobile || !supportsIO || reduced) {
+    // Fuera de la ruta lazy: limpiamos cualquier .pre-glitch que hayamos
+    // dejado puesto en prepGlitchMobile y aplicamos estado final ya.
+    document.querySelectorAll('.shell > section.pre-glitch').forEach(s => {
+      s.classList.remove('pre-glitch');
+    });
+    fireAllAnimationsNow();
+    return;
+  }
+
+  // ----- Mobile: glitch-in para secciones -------------------------------
+  const sectionObs = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      e.target.classList.remove('pre-glitch');
+      e.target.classList.add('glitch-in');
+      obs.unobserve(e.target);
+    });
+  }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.shell > section.pre-glitch').forEach(s => sectionObs.observe(s));
+
+  // ----- Mobile: counters lazy -----------------------------------------
+  const counterObs = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      countUp(e.target, +e.target.dataset.counter);
+      obs.unobserve(e.target);
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll('[data-counter]').forEach(el => counterObs.observe(el));
+
+  // ----- Mobile: charts lazy (bars + donut) ----------------------------
+  const chartObs = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      animateChartPanel(e.target);
+      obs.unobserve(e.target);
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.intel .panel').forEach(p => chartObs.observe(p));
+}
+
+function fireAllAnimationsNow() {
+  document.querySelectorAll('[data-counter]').forEach(el => countUp(el, +el.dataset.counter));
+  document.querySelectorAll('.intel .panel').forEach(animateChartPanel);
+}
+
+/* Aplica el estado final (target) a un panel de Intelligence. Envuelto en
+   rAF para garantizar que el browser pinta el estado inicial (width=0,
+   dasharray="0 C") antes de la mutación, así la transition CSS dispara
+   en lugar de saltarse. */
+function animateChartPanel(panel) {
+  requestAnimationFrame(() => {
+    panel.querySelectorAll('.bar-row .fill[data-w]').forEach(f => {
+      f.style.width = f.dataset.w + '%';
+    });
+    panel.querySelectorAll('circle[data-target-dasharray]').forEach(c => {
+      c.setAttribute('stroke-dasharray', c.dataset.targetDasharray);
+    });
+  });
+}
+
+/* ---- Collapsible sections (móvil) -----------------------------------
+   Cada section-title se vuelve clickable y pliega/despliega el resto
+   de la sección. El handler se añade siempre, pero el CSS asociado
+   (.collapsed, cursor:pointer, chevron ▾) sólo aplica en ≤900px, así
+   que en desktop clickar es un no-op visual. */
+function initCollapsibleSections() {
+  document.querySelectorAll('.shell > section .section-title').forEach(t => {
+    t.addEventListener('click', (e) => {
+      // No interferir con clicks sobre links/inputs internos.
+      if (e.target.closest('a, button, input, select')) return;
+      t.parentElement.classList.toggle('collapsed');
+    });
+  });
 }
 
 /* ---- Tweaks panel --------------------------------------------------- */

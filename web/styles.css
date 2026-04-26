@@ -194,8 +194,6 @@ body[data-flicker="on"] .flickerable { animation: flicker 6s infinite; }
 .hero .hero-meta .glyph { color: var(--phos); }
 .hero .hero-meta .v { color: var(--phos); }
 .hero .hero-meta .sep { color: var(--fg-faint); }
-.hero .hero-meta .right { margin-left: auto; color: var(--phos); display: inline-flex; gap: 8px; align-items: center; }
-.hero .hero-meta .right .dot { width: 7px; height: 7px; background: var(--phos); box-shadow: 0 0 8px var(--phos); display: inline-block; animation: pulse 2s infinite; }
 .hero h1.title {
   font-family: var(--mono);
   font-weight: 700;
@@ -866,6 +864,57 @@ footer.foot .commit { color: var(--amber); }
   .cmdbar .seg input.q { flex: 1 1 auto; min-width: 0; width: auto; }
   .cmdbar .seg input[type="date"] { width: 110px !important; min-width: 0; }
   .cmdbar .clear { margin-left: 0; }
+
+  /* ----- Mobile: secciones colapsables ----------------------------------
+     Cada <section> tiene un .section-title clickable que pliega el resto
+     del contenido bajo demanda. Útil cuando la página es muy larga.
+  ----------------------------------------------------------------------- */
+  .shell > section .section-title { cursor: pointer; user-select: none; }
+  .shell > section .section-title::after {
+    content: '▾';
+    margin-left: auto;
+    color: var(--phos);
+    font-size: 14px;
+    transition: transform .2s;
+  }
+  .shell > section.collapsed .section-title::after { transform: rotate(-90deg); }
+  .shell > section.collapsed > *:not(.section-title) {
+    display: none;
+  }
+
+  /* ----- Mobile: animación glitch al entrar en viewport ----------------
+     Las secciones nacen con .pre-glitch (invisible y sin pointer-events).
+     Cuando el IntersectionObserver les pone .glitch-in, disparamos un
+     keyframe corto que simula interferencia de CRT (offset horizontal +
+     leve hue-shift). Solo en móvil para no saturar el desktop.
+  ----------------------------------------------------------------------- */
+  .shell > section.pre-glitch { opacity: 0; pointer-events: none; }
+  .shell > section.glitch-in {
+    animation: section-glitch 700ms steps(8, end) both;
+  }
+  @keyframes section-glitch {
+    0%   { opacity: 0; transform: translateX(-3px); filter: hue-rotate(120deg) brightness(1.4); clip-path: inset(40% 0 40% 0); }
+    20%  { opacity: 0.55; transform: translateX(2px); filter: hue-rotate(0deg) brightness(1.1); clip-path: inset(10% 0 60% 0); }
+    40%  { opacity: 0.85; transform: translateX(-1px); filter: hue-rotate(15deg); clip-path: inset(0 0 0 0); }
+    60%  { opacity: 0.95; transform: translateX(1px); filter: none; }
+    100% { opacity: 1; transform: translateX(0); filter: none; clip-path: inset(0 0 0 0); }
+  }
+}
+
+/* Donut: cuando JS cambia el dasharray de "0 C" al valor final, esta
+   transición dibuja el sweep. Las bars usan el transition que ya tiene
+   .bar-row .fill (width: 0 → target). Fuera del @media porque solo se
+   activa cuando JS modifica el atributo (en móvil); en desktop el
+   render arranca con el dasharray final, así que no hay transición. */
+#donut circle[data-target-dasharray] {
+  transition: stroke-dasharray 0.9s cubic-bezier(.2, .7, .2, 1);
+}
+
+/* Reduce motion: respetar preferencias del usuario */
+@media (prefers-reduced-motion: reduce) {
+  .shell > section.glitch-in { animation: none; }
+  .bar-row .fill { transition: none; }
+  #donut circle[data-target-dasharray] { transition: none; }
 }
 
 /* High-density (toggle) */

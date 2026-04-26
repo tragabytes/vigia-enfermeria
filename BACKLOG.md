@@ -1,6 +1,6 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-04-25.
+Pendientes para retomar más adelante. Última actualización: 2026-04-26.
 
 ---
 
@@ -34,6 +34,19 @@ Ajustes aplicados sobre el diseño original:
 - Mini-renderer de Markdown inline en el AI summary (`**bold**`, `*italic*`, `` `code` ``, saltos) — anti-XSS.
 - Eliminado el panel ACTIVITY HEATMAP + sparkline (sintético, no real).
 - Fix `dashboard.export_all`: `--maintenance` ya no degrada `sources_status.json`.
+
+### ~~Optimización UX móvil del dashboard~~ ✅ Resuelto (2026-04-26)
+
+Pulido de la navegación en móvil sin cambiar el contenido. Cambios aplicados en `web/app.js` y `web/styles.css`:
+
+- **Doble "SYSTEM ONLINE" eliminado.** El indicador vivía a la vez en la status bar superior y en el `hero-meta` (esquina derecha). Se quita del hero — la status bar es la fuente única.
+- **Animación de typing en el título.** En PC y móvil el `<h1>` arranca vacío y se va escribiendo char a char, con un typo intencional (`vigía-enfermenía`) que se corrige a `vigía-enfermería` simulando un humano tecleando. El cursor `▮` parpadea durante todo el proceso.
+- **Counters lazy en móvil.** `countUp` se dispara con un `IntersectionObserver` cuando cada `[data-counter]` entra al viewport, en vez de animarse de golpe al cargar. En desktop se mantiene el comportamiento original (los counters están en viewport al cargar y disparan al instante).
+- **Glitch-in de secciones al hacer scroll.** En ≤900px, las secciones 02-08 nacen con `opacity:0` (`prepGlitchMobile()` antes del fetch para evitar flash) y un IO les pone `.glitch-in` cuando entran al viewport. La animación es un keyframe de ~700ms con offset horizontal, hue-shift y `clip-path` que simula interferencia CRT. En desktop, sin IO, o con `prefers-reduced-motion`, se quitan las clases y se anima todo al instante via `fireAllAnimationsNow()`.
+- **Bars + donut lazy en móvil.** Las `bar-row .fill` arrancan con `width:0` (CSS) y el donut con `stroke-dasharray="0 C"` solo en móvil. Cuando el panel `.intel` intersecta, JS aplica los target values y las transitions CSS hacen el sweep. En desktop el donut se renderiza directamente con su valor final (sin animación, comportamiento previo preservado).
+- **Secciones colapsables en móvil.** Cada `.section-title` es clickable: toggle de `.collapsed` esconde el contenido y rota un chevron `▾`. El handler se añade siempre, pero el CSS asociado vive dentro del `@media (max-width: 900px)`, así que en desktop clickar es un no-op visual.
+
+Limpieza colateral: eliminadas reglas CSS muertas de `.hero .hero-meta .right` (sobraban tras quitar el SYSTEM ONLINE) y el bloque `.bar.pre-chart` / `.donut-svg.pre-chart` que apuntaban a clases que el JS nunca añadía. Verificado vía preview en viewport mobile (375x812) y desktop (1280x800).
 
 ### Pendiente: hits clickables en la tabla SOURCES
 
