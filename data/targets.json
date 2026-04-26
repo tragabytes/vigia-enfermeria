@@ -141,7 +141,7 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "otro",
+    "latest_phase": "convocatoria",
     "item_ids": [
       "7cf7d0f72e19707b"
     ]
@@ -215,7 +215,7 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "convocatoria",
+    "latest_phase": "otro",
     "item_ids": [
       "cb0b6886f2e07b79",
       "7bd05641a1793b83"
@@ -297,13 +297,15 @@
     "id": "T-24",
     "name": "Policía Nacional",
     "desc": "Cuerpo Nacional de Policía — Servicio de Prevención y Sanitario",
-    "hits": 0,
+    "hits": 1,
     "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "convocatoria",
+    "item_ids": [
+      "961becb796a4c975"
+    ]
   },
   {
     "id": "T-25",

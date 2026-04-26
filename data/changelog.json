@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "f6b650a",
+    "kind": "fix",
+    "scope": "enricher",
+    "title": "pre-fetchear body completo en enrich_pending",
+    "body": "Diagnóstico del v4 (snippets HIGH/LOW priorizados): tras correr"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "5942fc6",
     "kind": "fix",
     "scope": "enricher",
@@ -22,13 +30,5 @@
     "scope": "boe",
     "title": "cobertura de ministerios estatales con servicio de PRL propio",
     "body": "Diagnóstico: la convocatoria BOE-A-2026-795 (Policía Nacional, 14/01/2026)"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "a27fa13",
-    "kind": "fix",
-    "scope": "web",
-    "title": "tamaño de campana relativo a la letra del contenedor",
-    "body": "La campana iba a 14px fijos, demasiado grande contra el texto del"
   }
 ]
