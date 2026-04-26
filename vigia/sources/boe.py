@@ -52,6 +52,20 @@ DEPT_KEYWORDS_FOR_BODY = [
     "fabrica nacional de moneda",
     "emt",
     "empresa municipal de transportes",
+    # Empresas públicas estatales con servicio médico/SP propio
+    "rtve",
+    "radio y television espanola",
+    "renfe",
+    "renfe operadora",
+    "adif",
+    "administrador de infraestructuras ferroviarias",
+    "navantia",
+    "aena",
+    "correos",
+    "sociedad estatal correos",
+    "paradores",
+    "paradores de turismo",
+    "loterias y apuestas",
 ]
 
 # Para el match rápido en título antes de descargar body

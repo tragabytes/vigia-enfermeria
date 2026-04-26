@@ -56,6 +56,21 @@ HEALTH_ORGS = [
     "fnmt",
     "empresa municipal de transportes",
     "emt",
+    # Empresas públicas estatales con servicio médico/SP propio: convocan
+    # plazas de Enfermería del Trabajo / de Empresa periódicamente.
+    "rtve",
+    "radio y television espanola",
+    "renfe",
+    "renfe operadora",
+    "adif",
+    "administrador de infraestructuras ferroviarias",
+    "navantia",
+    "aena",
+    "correos",
+    "sociedad estatal correos",
+    "paradores",
+    "paradores de turismo",
+    "loterias y apuestas",
     # Grandes ayuntamientos de la Comunidad de Madrid (>100k hab.)
     "ayuntamiento de mostoles",
     "ayuntamiento de alcala de henares",

@@ -58,6 +58,17 @@ from vigia.sources.boe import DEPT_KEYWORDS_FOR_BODY
         "Ayuntamiento de Arroyomolinos",
         "Ayuntamiento de Navalcarnero",
         "Ayuntamiento de Villaviciosa de Odón",
+        # Empresas públicas estatales
+        "Corporación de Radio y Televisión Española, S.A.",
+        "RTVE",
+        "RENFE-Operadora",
+        "RENFE Operadora E.P.E.",
+        "ADIF — Administrador de Infraestructuras Ferroviarias",
+        "Navantia, S.A., S.M.E.",
+        "AENA, S.M.E., S.A.",
+        "Sociedad Estatal Correos y Telégrafos, S.A.",
+        "Paradores de Turismo de España, S.M.E., S.A.",
+        "Sociedad Estatal Loterías y Apuestas del Estado",
     ],
 )
 def test_organismo_dispara_descarga_bocm(organismo_real: str) -> None:
@@ -87,6 +98,16 @@ def test_organismo_dispara_descarga_bocm(organismo_real: str) -> None:
         "CIEMAT",
         "Canal de Isabel II",
         "Metro de Madrid",
+        # Empresas públicas estatales
+        "Corporación de Radio y Televisión Española, S.A.",
+        "RTVE",
+        "RENFE-Operadora",
+        "ADIF — Administrador de Infraestructuras Ferroviarias",
+        "Navantia, S.A., S.M.E.",
+        "AENA, S.M.E., S.A.",
+        "Sociedad Estatal Correos y Telégrafos, S.A.",
+        "Paradores de Turismo de España, S.M.E., S.A.",
+        "Sociedad Estatal Loterías y Apuestas del Estado",
     ],
 )
 def test_departamento_dispara_descarga_boe(departamento_real: str) -> None:
