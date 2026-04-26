@@ -459,9 +459,11 @@ class TestExportAll:
         path = tmp_path / "out" / "targets.json"
         assert path.exists()
         targets = json.loads(path.read_text(encoding="utf-8"))
-        assert len(targets) == 22
+        # La lista crece según se añaden organismos; validamos rango y
+        # que las anclas T-01 (SERMAS) y T-26 (Penitenciarias) sigan vivas.
+        assert len(targets) >= 22
         ids = {t["id"] for t in targets}
-        assert "T-01" in ids and "T-22" in ids
+        assert "T-01" in ids and "T-26" in ids
 
 
 class TestTargetsPayload:
@@ -560,7 +562,7 @@ class TestTargetsPayload:
         meta = json.loads(
             (tmp_path / "out" / "meta.json").read_text(encoding="utf-8")
         )
-        assert meta["targets_total"] == 22
+        assert meta["targets_total"] >= 22
         assert meta["targets_active"] == 1
 
     def test_active_por_deadline_real_supera_heuristica_de_fecha(self, tmp_path):

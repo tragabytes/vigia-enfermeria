@@ -192,6 +192,19 @@ WATCHLIST_ORGS: list[dict] = [
      "desc": "Delegaciones del Gobierno — concurso de traslados",
      "patterns": ["politica territorial", "delegaciones del gobierno",
                   "delegacion del gobierno"]},
+    {"id": "T-23", "name": "CIEMAT",
+     "desc": "Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas",
+     "patterns": ["ciemat"]},
+    {"id": "T-24", "name": "Policía Nacional",
+     "desc": "Cuerpo Nacional de Policía — Servicio de Prevención y Sanitario",
+     "patterns": ["policia nacional", "cuerpo nacional de policia",
+                  "direccion general de la policia"]},
+    {"id": "T-25", "name": "Guardia Civil",
+     "desc": "Cuerpo de la Guardia Civil — Servicio de Sanidad",
+     "patterns": ["guardia civil"]},
+    {"id": "T-26", "name": "Instituciones Penitenciarias",
+     "desc": "Secretaría General de Instituciones Penitenciarias",
+     "patterns": ["instituciones penitenciarias"]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se

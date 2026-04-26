@@ -66,6 +66,42 @@ DEPT_KEYWORDS_FOR_BODY = [
     "paradores",
     "paradores de turismo",
     "loterias y apuestas",
+    # Ministerios estatales con servicio de prevención de riesgos laborales propio.
+    # Sus convocatorias suelen englobar varias especialidades de "personal
+    # facultativo y técnico" sin mencionar "enfermería" en el título — por eso
+    # necesitamos descargar el cuerpo HTML para inspeccionarlas.
+    # Ej. real perdido (BOE-A-2026-795, Policía Nacional, 14/01/2026) que
+    # listaba 5 plazas T012-T016 de Enfermería en PRL.
+    "ministerio del interior",
+    "direccion general de la policia",
+    "policia nacional",
+    "cuerpo nacional de policia",
+    "guardia civil",
+    "direccion general de la guardia civil",
+    "instituciones penitenciarias",
+    "secretaria general de instituciones penitenciarias",
+    "ministerio de defensa",
+    "subsecretaria de defensa",
+    "ministerio de ciencia",
+    "ministerio de ciencia innovacion y universidades",
+    "ministerio de transportes",
+    "ministerio para la transicion ecologica",
+    "ministerio de transicion ecologica",
+    "ministerio de hacienda",
+    "ministerio de inclusion",
+    "ministerio de trabajo y economia social",
+    "ministerio de la presidencia",
+    "ministerio de agricultura",
+    "ministerio de cultura",
+    "ministerio de educacion",
+    "ministerio de justicia",
+    "ministerio de asuntos exteriores",
+    "ministerio de igualdad",
+    "ministerio de derechos sociales",
+    "ministerio de industria",
+    "ministerio de economia",
+    "ministerio de vivienda",
+    "ministerio de juventud",
 ]
 
 # Para el match rápido en título antes de descargar body
