@@ -1,6 +1,22 @@
 [
   {
     "date": "2026-04-26",
+    "commit": "d83ce28",
+    "kind": "feat",
+    "scope": "extractor",
+    "title": "variantes ATS/DUE + 5 tareas pendientes documentadas",
+    "body": "`STRONG_PATTERNS` y `WEAK_CONTEXT_PATTERNS` aceptan la denominación"
+  },
+  {
+    "date": "2026-04-26",
+    "commit": "b8d47f3",
+    "kind": "feat",
+    "scope": "sources",
+    "title": "parser propio CIEMAT con extracción de PDFs anexos",
+    "body": "Tras descartar el plan B para BOE (los HTML BOE no enlazan PDFs externos"
+  },
+  {
+    "date": "2026-04-26",
     "commit": "4b6630f",
     "kind": "feat",
     "scope": "boe",
@@ -14,21 +30,5 @@
     "scope": "enricher",
     "title": "pre-fetchear body completo en enrich_pending",
     "body": "Diagnóstico del v4 (snippets HIGH/LOW priorizados): tras correr"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "5942fc6",
-    "kind": "fix",
-    "scope": "enricher",
-    "title": "snippets dirigidos por prioridad (HIGH/LOW) anti falso-negativo",
-    "body": "El v3 (commit 592288f) elevó MAX_TEXT_CHARS a 12KB y pasó el body"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "592288f",
-    "kind": "fix",
-    "scope": "enricher",
-    "title": "elevar ventana de raw_text a 12KB + hint anti-truncado",
-    "body": "Diagnóstico tras el backfill `--since 2026-01-01`:"
   }
 ]

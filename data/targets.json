@@ -124,7 +124,7 @@
     "hits": 2,
     "active": true,
     "nearest_deadline": "2026-04-28",
-    "days_until": 2,
+    "days_until": 1,
     "urgent": true,
     "latest_phase": "convocatoria",
     "item_ids": [
@@ -285,13 +285,15 @@
     "id": "T-23",
     "name": "CIEMAT",
     "desc": "Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas",
-    "hits": 0,
-    "active": false,
+    "hits": 1,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "convocatoria",
+    "item_ids": [
+      "cfa64389ffa0260b"
+    ]
   },
   {
     "id": "T-24",

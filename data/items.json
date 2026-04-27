@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "cfa64389ffa0260b",
+    "source": "ciemat",
+    "url": "https://www.ciemat.es/ofertas-de-empleo/-/ofertas/oferta/2380",
+    "titulo": "CONCURSO ESPECIFICO I - 2026 PERSONAL FUNCIONARIO DEL CIEMAT",
+    "fecha": "2026-04-24",
+    "categoria": "traslado",
+    "first_seen_at": "2026-04-27T10:15:38.946430",
+    "summary": "Concurso Específico I-2026 CIEMAT para personal funcionario (A1), concurso de méritos/traslados. Perfil Salud Laboral incluye 'Especialidad de Enfermería del trabajo'. Publicado 24/04/2026. Nº de plazas y plazo de solicitud no especificados en la documentación disponible.",
+    "is_relevant": true,
+    "relevance_reason": "El catálogo de perfiles formativos del Concurso Específico I-2026 del CIEMAT incluye explícitamente 'Especialidad de Enfermería del trabajo' dentro del bloque SALUD LABORAL Y PREVENCIÓN DE RIESGOS LABORALES, lo que indica que hay puestos en el servicio de prevención que requieren o valoran esta especialidad.",
+    "process_type": "concurso_traslados",
+    "organismo": "CIEMAT (Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas)",
+    "centro": null,
+    "plazas": null,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-04-24",
+    "tasas_eur": null,
+    "url_bases": "https://www.ciemat.es/doc/ficheros_oe/2380CIEMATPerfiles_formativos_2025Ff0EmLM.pdf",
+    "url_inscripcion": "https://www.ciemat.es/ofertas-de-empleo/-/ofertas/oferta/2380",
+    "requisitos_clave": [
+      "Personal funcionario del CIEMAT (concurso de traslados interno)",
+      "Titulación grupo A1",
+      "Conocimientos en Salud Laboral / Prevención de Riesgos Laborales (incluye Enfermería del Trabajo como especialidad valorable)"
+    ],
+    "fase": "convocatoria",
+    "next_action": "Consultar la convocatoria en ciemat.es/ofertas-de-empleo/oferta/2380 para verificar plazas concretas y plazo de presentación de solicitudes.",
+    "confidence": 0.62,
+    "enriched_at": "2026-04-27T10:15:59.566170+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "961becb796a4c975",
     "source": "boe",
     "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-795",
