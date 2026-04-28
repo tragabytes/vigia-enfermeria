@@ -1,6 +1,6 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-04-28.
+Pendientes para retomar más adelante. Última actualización: 2026-04-28 (segunda iteración).
 
 ---
 
@@ -112,19 +112,24 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 **Migración hacia Nivel 3 (futuro).** Si en el futuro queremos vincular item existente con su corrección/anexo (timeline de la convocatoria), entonces Claude Agent SDK con loop. No bloqueante hoy.
 
-### Pendiente: bug — fecha `published` siempre = `detected` en items de Comunidad de Madrid
+### ~~Bug — fecha `published` siempre = `detected` en items de Comunidad de Madrid~~ ✅ Resuelto en código (2026-04-28)
 
-**Síntoma observado en producción (2026-04-26):** todos los items de la sección 03 (Historical DB) procedentes de `comunidad_madrid` muestran `published = 2026-04-26` (idéntica al `detected`), aunque sean bolsas de 2024 / 2025 etiquetadas explícitamente con esos años en el título.
+**Síntoma original (2026-04-26):** los 11 items de `comunidad_madrid` mostraban `published = 2026-04-26` aunque fueran bolsas de 2024/2025 etiquetadas con esos años en el título.
 
-**Diagnóstico.** En [`vigia/sources/comunidad_madrid.py:121`](vigia/sources/comunidad_madrid.py:121), `pub_date = date.today()` es el fallback cuando el regex `Apertura.*?(\d{2}/\d{2}/\d{4})` no matchea. Las bolsas en estado "Subsanación", "En tramitación" o cerradas no muestran "Apertura de plazo" en el bloque `div.estado` — solo lo hacen las que tienen plazo abierto. Resultado: el sistema asume que se publicaron hoy.
+**Causa raíz.** [`vigia/sources/comunidad_madrid.py:121`](vigia/sources/comunidad_madrid.py:121) usaba `pub_date = date.today()` como fallback cuando el regex `Apertura.*?(\d{2}/\d{2}/\d{4})` no matchaba. Tras inspección del HTML real (28/04/2026), el listado solo expone fecha en `div.estado` para items "En plazo" (`Inicio: DD/MM/YYYY | Fin: DD/MM/YYYY`). Los estados "En tramitación" / "Plazo indefinido" / "Finalizado" — que son la inmensa mayoría — no traen fecha en el listado.
 
-**Fix propuesto (1-2h):**
-1. Probar regex adicionales sobre el `div.estado`: "Fin de plazo", "Resolución de", "Última actualización", "Fecha BOCM".
-2. Bajar el detalle del item (link relativo bajo el título) y buscar fecha de publicación oficial ahí.
-3. Como último fallback: extraer el año de `(YYYY)` que aparece en muchos títulos ("Bolsa única (2024). Subsanación") y usar `date(YYYY, 1, 1)` para indicar "no exacta, año conocido".
-4. Añadir test que use HTML de respuesta real con cada uno de los estados.
+**Fix aplicado.** Cascada de fallbacks ordenada por fiabilidad descendente, implementada en `_resolve_pub_date`:
 
-Validar el fix también contra los 11 items históricos en BD: corregir su `fecha` con un script de mantenimiento puntual.
+1. **Listado** — regex ampliado a `(?:Apertura|Inicio)\D*?(\d{2}/\d{2}/\d{4})` para cubrir el formato "En plazo".
+2. **Detalle** — fetch de la página individual del item:
+    - `.fecha-actualizacion` ("Última actualización: DD/MM/YYYY") como señal preferente.
+    - Último `.hito-fecha` (el más antiguo del calendario de actuaciones) como respaldo cuando la página no tiene actualización.
+3. **Título** — año `(YYYY)` entre paréntesis → `date(YYYY, 1, 1)` (rango admitido 2000..año actual+1).
+4. **`date.today()` con `logger.warning`** — red de seguridad final que preserva el comportamiento previo de "no perder items" pero deja rastro en logs.
+
+17 tests nuevos en `tests/test_comunidad_madrid_dates.py` cubren los cuatro niveles de la cascada y los HTML reales observados. **241/241 tests offline pasan.**
+
+**Pendiente menor — corregir las 11 fechas históricas en BD.** Los items existentes en `state/seen.db` siguen con `fecha = 2026-04-26`. El fix solo corrige items futuros. Falta un script de mantenimiento (`vigia/maintenance.py:recalcular_fechas_comunidad_madrid`) que itere los items con `source='comunidad_madrid'`, vuelva a aplicar la cascada (haciendo fetch del detalle) y persista la fecha real vía `Storage.update_fecha(id_hash, fecha)`. Tarea acotada: ~30 min de implementación + ejecución manual del workflow `maintenance.yml` con la nueva flag.
 
 ---
 
