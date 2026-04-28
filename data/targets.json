@@ -124,7 +124,7 @@
     "hits": 2,
     "active": true,
     "nearest_deadline": "2026-04-28",
-    "days_until": 1,
+    "days_until": 0,
     "urgent": true,
     "latest_phase": "convocatoria",
     "item_ids": [

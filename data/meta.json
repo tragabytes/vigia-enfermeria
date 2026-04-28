@@ -1,6 +1,6 @@
 {
   "total_items": 26,
-  "total_today": 1,
+  "total_today": 0,
   "total_relevant": 23,
   "total_irrelevant": 3,
   "total_enriched": 25,
@@ -10,12 +10,12 @@
     "nombramiento": 2,
     "oep": 1,
     "oposicion": 9,
-    "otro": 6,
-    "traslado": 4
+    "otro": 7,
+    "traslado": 3
   },
   "days_watching": 1,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-04-27T10:16:03.994490+00:00",
+  "last_run_at": "2026-04-28T06:52:27.219228+00:00",
   "next_run_at": "2026-04-28T08:00:00+00:00",
   "sources_online": 8,
   "sources_total": 11,
@@ -23,5 +23,5 @@
   "targets_urgent": 1,
   "targets_total": 26,
   "version": "0.2.0",
-  "commit": "d83ce28"
+  "commit": "5283d7e"
 }

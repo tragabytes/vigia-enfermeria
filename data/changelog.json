@@ -1,34 +1,34 @@
 [
   {
+    "date": "2026-04-28",
+    "commit": "5283d7e",
+    "kind": "feat",
+    "scope": "maintenance",
+    "title": "recalcular fechas históricas de Comunidad de Madrid",
+    "body": "Cierra el pendiente del fix anterior: los 11 items históricos de"
+  },
+  {
+    "date": "2026-04-28",
+    "commit": "345a010",
+    "kind": "fix",
+    "scope": "comunidad_madrid",
+    "title": "resolver fecha de publicación con cascada de 4 fallbacks",
+    "body": "Antes, cuando el listado del buscador no exponía \"Apertura: DD/MM/YYYY\", la"
+  },
+  {
+    "date": "2026-04-28",
+    "commit": "9b8ccd1",
+    "kind": "fix",
+    "scope": "notifier",
+    "title": "cambiar a parse_mode HTML para evitar 400 con URLs con guiones bajos",
+    "body": "El cron del 27/04/2026 detectó la nueva convocatoria del CIEMAT pero la"
+  },
+  {
     "date": "2026-04-26",
     "commit": "d83ce28",
     "kind": "feat",
     "scope": "extractor",
     "title": "variantes ATS/DUE + 5 tareas pendientes documentadas",
     "body": "`STRONG_PATTERNS` y `WEAK_CONTEXT_PATTERNS` aceptan la denominación"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "b8d47f3",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "parser propio CIEMAT con extracción de PDFs anexos",
-    "body": "Tras descartar el plan B para BOE (los HTML BOE no enlazan PDFs externos"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "4b6630f",
-    "kind": "feat",
-    "scope": "boe",
-    "title": "plan B — extracción de PDFs anexos para cazar OPIs conjuntas",
-    "body": "Cuando el HTML del item BOE no contiene match pero el departamento es"
-  },
-  {
-    "date": "2026-04-26",
-    "commit": "f6b650a",
-    "kind": "fix",
-    "scope": "enricher",
-    "title": "pre-fetchear body completo en enrich_pending",
-    "body": "Diagnóstico del v4 (snippets HIGH/LOW priorizados): tras correr"
   }
 ]
