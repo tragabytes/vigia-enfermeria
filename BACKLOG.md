@@ -145,25 +145,25 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 ---
 
-### Pendiente: parsers de universidades públicas de Madrid (UAM, UCM, UPM, URJC, UC3M, UAH)
+### 🟡 Parsers de universidades públicas de Madrid — UCM implementada (2026-04-28)
 
-Las universidades públicas convocan plazas para sus servicios de prevención y unidades sanitarias. Casos reales que perdemos:
+Las universidades públicas convocan plazas para sus servicios de prevención y unidades sanitarias. Casos reales detectados:
 
 - **UAM** — [Pruebas selectivas ingreso Escala Especial Superior de Servicios — Enfermero (nov 2024)](https://www.uam.es/uam/ptgas/concursos-oposiciones-bolsas/pruebas-selectivas-ingreso-escala-especial-superior-de-servicios-enfermero-noviembre-2024)
 - **UCM** — [Orden 4 DU — Enfermería del Trabajo](https://www.ucm.es/orden-4-du-enfermeria-del-trabajo)
-- **UPM** — algo reciente (URL exacta a investigar)
-- **URJC, UC3M, UAH** — añadir por completitud
+- **UPM** — pendiente investigar URL.
+- **URJC, UC3M, UAH** — pendientes (ver notas de research abajo).
 
-Estructura típica: cada universidad tiene una sección "Concursos / Oposiciones / Bolsas" en su portal de PTGAS / RR.HH. donde lista las convocatorias activas. Cada plaza enlaza a PDF de bases.
+**Implementado (UCM, commit 2026-04-28):** `vigia/sources/universidades_madrid.py` con arquitectura genérica `UNI_CONFIGS` — añadir una nueva universidad consiste en aportar `UniConfig(code, nombre, base_url, listing_url, item_css)` sin tocar la clase Source. Listado UCM `https://www.ucm.es/convocatorias-vigentes-pas` parseado con `div.wg_txt li, div.wg_txt p`. Soporta dos formatos de fecha del portal: `DD/MM/YYYY` y "DD de mes de YYYY". Watchlist tile T-27 añadido. 21 tests con HTML real recortado del portal. La fuente se añade a `SOURCES_ENABLED` y al `SOURCE_REGISTRY` de `main.py`.
 
-**Trabajo:**
-1. Investigar selectores HTML de cada portal universitario.
-2. Crear `vigia/sources/universidades_madrid.py` (un solo módulo con varias URLs base) o uno por universidad.
-3. Extraer listado + detalle + PDFs de bases (whitelist anti-SSRF por universidad).
-4. Añadir cada universidad a `WATCHLIST_ORGS` (T-27 UAM, T-28 UCM, etc.).
-5. Tests con mocks.
+**Notas técnicas del research preliminar de las 5 universidades restantes (2026-04-28, parcialmente verificado):**
+- **UC3M** (`https://www.uc3m.es/ss/Satellite/UC3MInstitucional/es/PortadaMiniSiteB/1371212611989/Portal_de_Empleo`): HTTP 200 confirmado. Estructura del listado pendiente de inspección detallada.
+- **UAH**: home `/es/empleo-publico/index.html` accesible. Subsecciones reales `PAS/funcionario/`, `PAS/laboral/`, `PAS/bolsa-de-empleo/` por verificar (Joomla — listado puede no ser HTML puro).
+- **URJC**: `https://www.urjc.es/empleo-publico` accesible (Joomla com_k2). Estructura no estándar: convocatorias mezcladas en bloques `<p>` con enlaces a PDFs de `sede.urjc.es`. Parser más laborioso; quizás merece la pena delegar a la cobertura indirecta vía BOE 2A.
+- **UAM**: portal público de convocatorias no localizado. Existe `https://portalempleado.uam.es` pero requiere autenticación. Investigar si hay endpoint público antes de descartar.
+- **UPM**: portal de empleo público no encontrado. Parece que solo expone licitaciones (sede). Probablemente fuera de scope.
 
-Estimación: 1-2h por universidad.
+Próxima iteración: añadir UC3M (más viable) y UAH (subsecciones). UAM/UPM/URJC quedan en stand-by hasta confirmar viabilidad del parser HTTP simple.
 
 ---
 

@@ -37,6 +37,7 @@ from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
 from vigia.sources.datos_madrid import DatosMadridSource
 from vigia.sources.metro_madrid import MetroMadridSource
+from vigia.sources.universidades_madrid import UniversidadesMadridSource
 from vigia.storage import Storage
 
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ SOURCE_REGISTRY = {
     "codem": CODEMSource,
     "datos_madrid": DatosMadridSource,
     "ciemat": CIEMATSource,
+    "universidades_madrid": UniversidadesMadridSource,
 }
 
 

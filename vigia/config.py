@@ -220,6 +220,9 @@ WATCHLIST_ORGS: list[dict] = [
     {"id": "T-26", "name": "Instituciones Penitenciarias",
      "desc": "Secretaría General de Instituciones Penitenciarias",
      "patterns": ["instituciones penitenciarias"]},
+    {"id": "T-27", "name": "UCM",
+     "desc": "Universidad Complutense de Madrid — PTGAS / Servicio de Prevención",
+     "patterns": ["universidad complutense", "complutense de madrid", "ucm"]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se
@@ -244,6 +247,7 @@ SOURCES_ENABLED: list[str] = [
     "codem",
     "datos_madrid",
     "ciemat",
+    "universidades_madrid",
 ]
 
 
