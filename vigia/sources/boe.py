@@ -62,6 +62,8 @@ DEPT_KEYWORDS_FOR_BODY = [
     "consejeria de sanidad",
     "sermas",
     "ciemat",
+    "isciii",
+    "instituto de salud carlos iii",
     "canal de isabel",
     "metro de madrid",
     "ministerio de sanidad",

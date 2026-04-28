@@ -129,7 +129,7 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 17 tests nuevos en `tests/test_comunidad_madrid_dates.py` cubren los cuatro niveles de la cascada y los HTML reales observados. **241/241 tests offline pasan.**
 
-**Recálculo de fechas históricas implementado (2026-04-28).** Nueva función `maintenance.recalcular_fechas_comunidad_madrid(storage)` que itera items con `source='comunidad_madrid'`, aplica la cascada `detalle → año del título → today()` y persiste la fecha real vía `Storage.update_fecha(id_hash, fecha)`. Cableada en `_run_maintenance` para que la próxima ejecución del workflow `maintenance.yml` corrija los 11 items históricos automáticamente — idempotente: re-ejecuciones no tocan lo ya bien fechado. 3 tests nuevos en `test_maintenance.py`. **Pendiente:** disparar `gh workflow run maintenance.yml` para aplicarlo en producción.
+**Recálculo de fechas históricas implementado (2026-04-28).** Nueva función `maintenance.recalcular_fechas_comunidad_madrid(storage)` que itera items con `source='comunidad_madrid'`, aplica la cascada `detalle → año del título → today()` y persiste la fecha real vía `Storage.update_fecha(id_hash, fecha)`. Cableada en `_run_maintenance` para que la próxima ejecución del workflow `maintenance.yml` corrija los 11 items históricos automáticamente — idempotente: re-ejecuciones no tocan lo ya bien fechado. 3 tests nuevos en `test_maintenance.py`. **Aplicado en producción (2026-04-28, run [25038352118](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25038352118))**: 11/11 fechas recalculadas en un único pase (rango real 2022-01-01 .. 2026-03-26 en lugar del incorrecto 2026-04-26 uniforme). Run posterior [25072512322](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25072512322) confirmó idempotencia: `0/11` actualizadas, sin warnings.
 
 ---
 
@@ -318,7 +318,7 @@ Mismo patrón aplica a otros Organismos Públicos de Investigación con servicio
 - **CIEMAT** — Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas. Portal: `ciemat.es/ofertas-de-empleo`. Ya en watchlist (T-23).
 - **IAC** — Instituto de Astrofísica de Canarias. Portal: `iac.es/es/empleo`.
 - **INIA** — Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria (ahora INIA-CSIC). Portal: `inia.es` (a investigar URL exacta de empleo).
-- **ISCIII** — Instituto de Salud Carlos III. Portal: `isciii.es/Personal/Paginas/EmpleoPublico.aspx`.
+- **ISCIII** — Instituto de Salud Carlos III. **Investigado 2026-04-28: portal sin listado dinámico viable; cobertura por keywords cerrada (ver bloque dedicado abajo).**
 - **IEO** — Instituto Español de Oceanografía. Portal: `ieo.es/empleo` (ahora dependiente del CSIC).
 - **CSIC** — Consejo Superior de Investigaciones Científicas (paraguas de varios). Portal: `csic.es/es/empleo`.
 
@@ -330,6 +330,28 @@ Patrón de implementación (similar a `vigia/sources/canal_isabel_ii.py`):
 5. Añadir cada uno a `WATCHLIST_ORGS` con su id (T-27, T-28…) y patterns.
 
 Coste: ~1-2h por parser, x6 organismos = 6-12h totales si se quieren todos. Priorización razonable: **CIEMAT primero** (caso real motivador), **ISCIII segundo** (instituto sanitario, mayor probabilidad de plazas de Enfermería del Trabajo en su SP), el resto por orden de tamaño/relevancia. Validar primero el portal HTML de CIEMAT — si está renderizado vía JS-only (como `administracion.gob.es`), habría que delegar al BOE/BOCM y abandonar este parser.
+
+### 🟡 ISCIII — research 2026-04-28: parser propio descartado, cobertura por keywords cerrada
+
+**URL del backlog original (`isciii.es/Personal/Paginas/EmpleoPublico.aspx`) → HTTP 404.** Tras inspeccionar la home (HTTP 200, 312KB), las únicas vías de empleo expuestas son tres páginas estáticas bajo `/bolsa-empleo/`:
+
+- `https://www.isciii.es/bolsa-empleo/proceso-selectivo` — describe UNA convocatoria viva (publicada 19/07/2023). 3 documentos enlazados (bases, FAQ, anexo III). Sin actualizaciones recientes.
+- `https://www.isciii.es/bolsa-empleo/listado-valoracion-meritos` — fase 1 de la bolsa. **27 PDFs**, fechas hasta marzo 2026.
+- `https://www.isciii.es/bolsa-empleo/valoracion-tecnica` — fase 2 de la bolsa. **64 PDFs** con códigos opacos `SGPY-XXX-26-M3-DDCP` (proyectos de investigación), fechas hasta marzo 2026.
+
+**Sede electrónica `sede.isciii.gob.es`** (HTTP 200) descartada: solo expone catálogo de procedimientos administrativos genéricos (instancias, recursos potestativos, quejas). Sin tablón de anuncios ni sección de empleo.
+
+**Por qué no parser propio.** El portal NO tiene listado dinámico de convocatorias en formato `[título → URL detalle]`. Las dos páginas de fases activas son flujos administrativos donde se publican muchas resoluciones cada quincena, todas con códigos opacos que no revelan el perfil profesional sin abrir el PDF. Un parser hash-watcher detectaría docenas de cambios al mes, casi todos irrelevantes para Enfermería del Trabajo. El enricher v2 podría leer cada PDF, pero coste/beneficio negativo: 91 documentos × Sonnet ≈ ruido caro.
+
+**Lo que sí se ha hecho (cobertura indirecta cerrada).** Añadidas `"isciii"` y `"instituto de salud carlos iii"` a:
+- `DEPT_KEYWORDS_FOR_BODY` en `vigia/sources/boe.py` — fuerza descarga del HTML del item BOE para inspeccionar plazas concretas, igual que CIEMAT.
+- `HEALTH_ORGS` en `vigia/sources/bocm.py` — fuerza descarga del PDF del BOCM cuando el ISCIII aparece como organismo emisor.
+
+`tests/test_organism_coverage.py` parametrizado con "Instituto de Salud Carlos III" e "ISCIII" en ambos sets. **300/300 tests offline pasan**. Las plazas estructurales de Enfermería del Trabajo del Servicio de Prevención del ISCIII llegan vía BOE (Ministerio de Ciencia e Innovación, OPIs conjuntas) y ahora tenemos garantía de inspección del cuerpo.
+
+**Parser hash-watcher implementado (2026-04-28).** [`vigia/sources/isciii.py`](vigia/sources/isciii.py) monitoriza SOLO `https://www.isciii.es/bolsa-empleo/proceso-selectivo` (no las dos páginas de fase, demasiado ruidosas). Cada run descarga la página, extrae el cuerpo principal limpio (quitando nav/header/footer), calcula `sha1(body)[:10]` e incorpora ese hash al título del RawItem como `[snapshot <hash>]`. Como `id_hash = sha256(source|url|titulo)`, snapshots distintos generan items distintos en BD; snapshots repetidos los descarta `filter_new` aguas abajo. El extractor decide si el contenido menciona Enfermería del Trabajo: si lo hace, entra al pipeline (matcher + enricher v2); si no, se descarta silenciosamente como cualquier otro item irrelevante.
+
+Sin persistencia adicional (no tabla `isciii_state`): el truco de incorporar el hash al título reutiliza la deduplicación natural del sistema. Coste por run: 1 GET ~225KB. Watchlist tile T-38. 12 tests en [test_isciii.py](tests/test_isciii.py) cubren limpieza del cuerpo, idempotencia, snapshot distinto cuando cambia el contenido, errores HTTP/red/body vacío y fallback de fecha. Validado smoke contra portal real (28/04/2026, 06:51): probe HTTP 200, fecha extraída `2023-07-19`, snapshot `01070353ed`, 748 chars de cuerpo (banner cookies + menú fases + convocatoria + anexos). Hoy no menciona Enfermería → extractor lo descarta sin emitir nada al pipeline.
 
 ### Pendiente: backend de suscripción Telegram
 

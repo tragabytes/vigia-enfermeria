@@ -36,6 +36,7 @@ from vigia.sources.ciemat import CIEMATSource
 from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
 from vigia.sources.datos_madrid import DatosMadridSource
+from vigia.sources.isciii import ISCIIISource
 from vigia.sources.metro_madrid import MetroMadridSource
 from vigia.sources.sap_successfactors import SapSuccessfactorsSource
 from vigia.sources.universidades_madrid import UniversidadesMadridSource
@@ -59,6 +60,7 @@ SOURCE_REGISTRY = {
     "codem": CODEMSource,
     "datos_madrid": DatosMadridSource,
     "ciemat": CIEMATSource,
+    "isciii": ISCIIISource,
     "universidades_madrid": UniversidadesMadridSource,
     "sap_successfactors": SapSuccessfactorsSource,
 }

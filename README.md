@@ -143,6 +143,7 @@ python -m pytest tests/ -v
 | Ayuntamiento de Madrid | Stub (Akamai) | Cubierto por BOE 2B + datos.madrid.es |
 | datos.madrid.es | API CKAN | OEPs y procesos selectivos del Ayto. (no geo-bloqueado) |
 | CIEMAT | Listado HTML + extracción de PDFs anexos del propio dominio | Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas (cobertura directa; el HTML BOE de OPIs conjuntas no detalla las plazas) |
+| ISCIII | Hash-watcher de `bolsa-empleo/proceso-selectivo` (snapshot incorporado al título para reusar la deduplicación natural) | Instituto de Salud Carlos III — Servicio de Prevención. El portal no tiene listado dinámico; se monitoriza la única página estable, complementada con keywords ISCIII en BOE/BOCM. |
 | Universidades públicas Madrid | Listados HTML server-side de portales PTGAS | UCM (`convocatorias-vigentes-pas`), UAH (3 listados PAS funcionario/laboral/bolsa), UAM (2 listados funcionario/laboral). UC3M, URJC, UPM pendientes — ver BACKLOG. |
 | Empresas públicas SAP SuccessFactors | Endpoint común `/search/` con HTML server-side y `<tr.data-row>` / `<div.job>` | RENFE (`empleo.renfe.com`), Correos (`empleo.correos.com`), Navantia (`empleo.navantia.es`). |
 | Metro de Madrid | Stub (WAF) | Cubierto por BOE/BOCM |
@@ -175,6 +176,7 @@ vigia/
     ayuntamiento_madrid.py
     datos_madrid.py  # API CKAN del Ayto. Madrid
     ciemat.py        # listado web + extracción de PDFs anexos
+    isciii.py        # hash-watcher de proceso-selectivo (bolsa de empleo)
     metro_madrid.py
     administracion_gob.py
 tests/

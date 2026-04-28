@@ -253,6 +253,9 @@ WATCHLIST_ORGS: list[dict] = [
     {"id": "T-37", "name": "SELAE Loterías",
      "desc": "Sociedad Estatal Loterías y Apuestas — cobertura indirecta BOE/BOCM (Akamai bloquea parser directo)",
      "patterns": ["loterias y apuestas", "selae"]},
+    {"id": "T-38", "name": "ISCIII",
+     "desc": "Instituto de Salud Carlos III — Servicio de Prevención (parser hash-watcher de proceso-selectivo + cobertura BOE/BOCM)",
+     "patterns": ["isciii", "instituto de salud carlos iii"]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se
@@ -277,6 +280,7 @@ SOURCES_ENABLED: list[str] = [
     "codem",
     "datos_madrid",
     "ciemat",
+    "isciii",
     "universidades_madrid",
     "sap_successfactors",
 ]

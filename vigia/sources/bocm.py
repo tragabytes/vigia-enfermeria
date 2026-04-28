@@ -48,6 +48,9 @@ HEALTH_ORGS = [
     "hospital",
     "gerencia",
     "agencia sanitaria",
+    # Organismos Públicos de Investigación con servicio de prevención propio
+    "isciii",
+    "instituto de salud carlos iii",
     # Empresas públicas con servicio de prevención propio
     "canal de isabel",
     "metro de madrid",

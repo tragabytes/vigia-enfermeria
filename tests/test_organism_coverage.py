@@ -24,6 +24,9 @@ from vigia.sources.boe import DEPT_KEYWORDS_FOR_BODY
         "Servicio Madrileño de Salud",
         "Hospital Universitario La Paz",
         "Gerencia de Atención Primaria",
+        # OPIs con servicio de prevención propio
+        "Instituto de Salud Carlos III",
+        "ISCIII",
         # Empresas públicas
         "Canal de Isabel II",
         "Metro de Madrid",
@@ -96,6 +99,8 @@ def test_organismo_dispara_descarga_bocm(organismo_real: str) -> None:
         "Consejería de Sanidad",
         "SERMAS",
         "CIEMAT",
+        "Instituto de Salud Carlos III",
+        "ISCIII",
         "Canal de Isabel II",
         "Metro de Madrid",
         # Empresas públicas estatales
