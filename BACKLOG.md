@@ -181,31 +181,48 @@ Esta es una página estática del portal `www.comunidad.madrid` (NO `sede.comuni
 
 ---
 
-### Pendiente: investigación profunda del problema de IP geo-bloqueada
+### ~~Investigación profunda del problema de IP geo-bloqueada~~ ✅ Resuelto como research (2026-04-28)
 
-**Estado.** Hoy `BOAM`, `ayuntamiento_madrid` y `metro_madrid` son fuentes degradadas porque `madrid.es` y `metromadrid.es` filtran las IPs de los runners de GitHub Actions (Azure US/EU). Tenemos workaround parcial (`datos_madrid.py` vía API CKAN), pero:
+**Validación experimental** desde IP residencial española (Orange Sevilla, AS12479) con UA Firefox 121 y headers de navegador real.
 
-- BOAM: no vemos las disposiciones diarias del Boletín del Ayuntamiento.
-- Ayuntamiento Madrid: solo cobertura indirecta vía BOE / datos.madrid.
-- Metro Madrid: contrata por portal propio que no vemos en absoluto. **Plazas perdidas comprobadas.**
+#### `madrid.es` (BOAM + ayuntamiento_madrid) — **NO es IP geo, es Akamai Bot Manager**
 
-**Esto no debería quedar así.** Opciones a investigar a fondo:
+Sigue devolviendo HTTP 403 desde la IP española. El cuerpo del 403 expone el origen del bloqueo:
 
-1. **Self-host en VPS español.** Hetzner Helsinki / Contabo Madrid (~3-5€/mes) o Raspberry Pi en casa con conexión doméstica. Ventaja: IP española real, sin tonterías. Desventaja: salir de GitHub Actions implica gestionar cron, persistencia BD, SSH, monitoreo.
+```
+Reference #18.b5f31402.1777385094.8ef59e8
+https://errors.edgesuite.net/...
+```
 
-2. **Proxy en región Madrid solo para fuentes geo-bloqueadas.** fly.io con `regions=mad`, o Vercel Edge Functions con `region: ['mad1']`, o un Cloudflare Worker corriendo en datacenter cercano. El cron seguiría en GitHub Actions; solo redirigiría las requests a `madrid.es` / `metromadrid.es` a través del proxy. Ventaja: cero migración. Desventaja: latencia añadida + posible coste si supera free tier.
+Y el header `Server-Timing: ak_p; desc="..."` confirma **Akamai**. `errors.edgesuite.net` es la URL de error de Akamai. Por tanto el filtro inspecciona **TLS fingerprint (JA3/JA4), HTTP/2 frame ordering, headers exactos del navegador y opcionalmente cookies/JS challenge** — no la IP de origen sola. La home raíz `https://www.madrid.es/` también devuelve 403; está toda la propiedad detrás del mismo Bot Manager. `datos.madrid.es` no comparte la configuración Akamai (HTTP 200 sin más), por eso ya funcionaba.
 
-3. **Servicio comercial de proxies residenciales.** Bright Data / Smartproxy con IP rotativa española. Desventaja: caro (~$10-30/mes) + ético cuestionable + a veces detectado igualmente.
+Para superarlo haría falta:
+- `curl-impersonate` (TLS fingerprint Chrome/Firefox), no garantizado contra Akamai.
+- Navegador real headless (Playwright/Chromium), runtime caro en GitHub Actions.
 
-4. **Tor exit node en España.** Free pero detectable y poco fiable.
+**Veredicto: descartar parser directo de `madrid.es`.** El ROI es bajo: las plazas relevantes acaban en **BOE sección 2B** (Administración Local — `"administracion local"` ya en `DEPT_KEYWORDS_FOR_BODY`) y en **`datos.madrid.es`** (API CKAN del Ayuntamiento, ya monitorizada para OEPs y procesos selectivos). La cobertura indirecta es suficiente.
 
-**Decisión a tomar:**
-- Si vamos por 1: dimensionar VPS, decidir si copiamos todo el stack o solo movemos cron + BD a allí dejando el dashboard publicado a gh-pages.
-- Si vamos por 2: probar fly.io primero (free tier amplio, region MAD disponible). Mock-up de proxy con un pequeño script que reciba URL + auth token y reenvíe.
+#### `metromadrid.es` — **F5/BIG-IP WAF, IP-sensitive con white-list de rutas**
 
-**Validar primero:** ¿es realmente la IP el factor único, o también el UA / cookies / TLS fingerprint? Ya validamos UA Firefox y headers básicos. Para confirmar 100%: probar la URL desde casa (IP española residencial) con curl + Firefox UA y ver si pasa. Si SÍ pasa, IP es el único filtro y opciones 1/2 son válidas. Si NO pasa, hay protección JS-only o TLS fingerprinting y necesitamos navegador real headless (Playwright) — eso es otro nivel de complejidad.
+Comportamiento mixto desde IP residencial española:
 
-Prioridad: **alta**. Cada plaza perdida en Metro/BOAM es señal directa de fallo.
+- **Detalles individuales** `https://www.metromadrid.es/es/oferta-empleo/<slug>` → **HTTP 200** (108KB de HTML real).
+- **Listados, sitemap, robots.txt, RSS, home `/es`** → "Request Rejected" 245B (firma F5 BIG-IP). Bloqueados deliberadamente.
+
+El WAF tiene una lista blanca de rutas finales conocidas pero bloquea cualquier endpoint que pueda enumerar páginas. Wayback Machine tampoco tiene snapshots útiles de los listados (`archived_snapshots: {}`). Google/Bing site search tampoco devuelven slugs en SERPs sin JS.
+
+**Veredicto: no invertir en proxy fly.io / VPS español solo para Metro Madrid.** Aunque desbloquearía los detalles, no podemos descubrir slugs nuevos sin pasar por el listado, así que el proxy no resuelve el problema real (descubrimiento). Las plazas estructurales de Metro Madrid (S.A. pública) sí acaban en BOCM y BOE, y `"metro de madrid"` ya está en `HEALTH_ORGS` (bocm.py) y `DEPT_KEYWORDS_FOR_BODY` (boe.py) para forzar descarga de PDF — la convocatoria con bases acabará apareciendo. Lo que se sigue perdiendo: ofertas puntuales o de bolsa publicadas exclusivamente en su portal sin pasar por boletín. Trabajo abierto futuro: investigar feeds externos (InfoEmpleo, LinkedIn API) como descubridor alternativo, no como parser directo.
+
+#### Conclusión técnica global
+
+| Fuente | Bloqueo | Soluble con IP española | Soluble con browser real | Cobertura indirecta actual |
+|---|---|---|---|---|
+| `madrid.es/boam` | Akamai Bot Manager | ❌ | ⚠️ no garantizado | BOE 2B + datos.madrid.es ✅ |
+| `madrid.es/oposiciones.html` | Akamai Bot Manager | ❌ | ⚠️ no garantizado | BOE 2B + datos.madrid.es ✅ |
+| `metromadrid.es` (detalle) | F5/BIG-IP geo | ✅ | ✅ | BOE 2B + BOCM con keyword forzada |
+| `metromadrid.es` (listado) | F5/BIG-IP estricto | ❌ | ⚠️ depende | — |
+
+Tarea cerrada. No se invierte en infraestructura proxy/VPS/Playwright porque el coste-beneficio no compensa: la cobertura indirecta vía BOE/BOCM/datos.madrid.es captura la mayoría de plazas que terminaríamos viendo desde los portales nativos. Si en el futuro se detecta una pérdida sistemática de ofertas concretas de Metro Madrid (no estructurales) que justifique el coste, se puede reabrir la línea de feeds externos (InfoEmpleo / LinkedIn) como alternativa al parser directo.
 
 ---
 
