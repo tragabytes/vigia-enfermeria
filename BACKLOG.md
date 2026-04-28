@@ -1,6 +1,6 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-04-26 (segunda iteración).
+Pendientes para retomar más adelante. Última actualización: 2026-04-28.
 
 ---
 
@@ -214,22 +214,28 @@ Caso real motivador: [BOE-A-2022-23854](https://www.boe.es/diario_boe/txt.php?id
 
 ---
 
-### Pendiente: revisar pickup de CIEMAT tras cron del 27/04/2026
+### ~~Pickup de CIEMAT tras cron del 27/04/2026~~ 🟡 Parcialmente resuelto (2026-04-27, run [24989135333](https://github.com/tragabytes/vigia-enfermeria/actions/runs/24989135333))
 
-Tras commit `b8d47f3` (parser CIEMAT con extracción de PDFs anexos), el siguiente cron del lunes **27/04/2026 a las 08:00 UTC** debería:
+El cron del 27/04 corrió a las 10:12 UTC y validó las 4 expectativas en BD/dashboard:
 
-1. Ejecutar el parser nuevo `vigia/sources/ciemat.py` por primera vez en producción.
-2. Detectar la oferta `2380` (Concurso Específico I 2026 — Personal Funcionario CIEMAT) cuyo PDF de perfiles formativos contiene "Especialidad de Enfermería del trabajo".
-3. Pasarla por extractor + enricher v2 → JSON estructurado con plazas, organismo, deadline.
-4. Notificar por Telegram + sumar 1 hit al tile `T-23 CIEMAT` del watchlist.
+1. ✅ Parser nuevo ejecutado: `CIEMAT listado: 2 ofertas en rango`.
+2. ✅ Match en PDF: `CIEMAT [2380]: match en https://www.ciemat.es/doc/ficheros_oe/2380CIEMATPerfiles_formativos_2025Ff0EmLM.pdf`.
+3. ✅ Extractor + enricher v2: `Match fuerte [ciemat]: CONCURSO ESPECIFICO I - 2026 PERSONAL FUNCIONARIO DEL CIEMAT` + `Enricher v2: 1/1 items enriquecidos (0 fallidos)`.
+4. ❌ **Notificación Telegram falló** — ver bug #5 abajo. El item está en el dashboard pero el usuario no recibió aviso por chat.
 
-**Cosas que validar el lunes** cuando llegue la notificación / refrescando el dashboard:
-- ¿El item aparece en el feed con `is_relevant=true` y la oferta etiquetada como CIEMAT?
-- ¿El enricher extrajo deadline/plazas correctamente del PDF (puede que el PDF no tenga esos campos explícitos)?
-- ¿El tile T-23 CIEMAT del watchlist pasa a `hits=1` y `active=true` (o `urgent` si plazo ≤7 días)?
-- ¿La fuente `ciemat` en la sección 5 del dashboard reporta `status=ok` con hits=1?
+### ~~5. Notificación Telegram falla con `Bad Request: can't parse entities` cuando la URL contiene `_`~~ ✅ Resuelto (2026-04-28, commit `9b8ccd1`)
 
-Si algo no encaja: ajustar selectores, prompt del enricher, o la lista PDF host whitelist según lo observado.
+**Síntoma.** Run del 27/04 (CIEMAT 2380) reportó `status=400 body={"ok":false,"error_code":400,"description":"Bad Request: can't parse entities: Can't find end of the entity starting at byte offset 1263"}` en ambos chat_ids destinatarios. Item nuevo correctamente detectado, enriquecido y publicado en `gh-pages`, pero entrega Telegram silenciada.
+
+**Diagnóstico.** El `url_bases` apuntaba al PDF de perfiles formativos del CIEMAT: `https://www.ciemat.es/doc/ficheros_oe/2380CIEMATPerfiles_formativos_2025Ff0EmLM.pdf`. La URL contiene varios `_`. El notifier usaba `parse_mode: "Markdown"` (v1), donde `_` empareja para itálica; con número impar de pares en el mensaje completo, Telegram no encuentra el cierre de entidad y rechaza el envío. El `_escape()` aplicaba a títulos/summary/categoría pero NO a las URLs (escaparlas las habría roto como hipervínculos clickables).
+
+**Fix.** Migrado `vigia/notifier.py` a `parse_mode: "HTML"`:
+- `_escape()` ahora escapa solo `& < >` (los `_` pasan intactos).
+- Negritas/cursivas con `<b>...</b>` / `<i>...</i>` en lugar de `*...*` / `_..._`.
+- URLs siguen sin envoltura — Telegram las autodetecta como links en HTML mode igual que en Markdown.
+- 224/224 tests offline pasan.
+
+**Pendiente menor.** El item del CIEMAT `2380` ya está marcado como `seen` en la rama `state`, por lo que el próximo cron no lo re-emitirá. El usuario lo ve directamente en el dashboard. Si en el futuro pasa otra vez con un item importante, se puede borrar su `id_hash` de la BD remota para forzar re-notificación.
 
 ### Pendiente: parsers propios para OPIs estatales (CIEMAT, IAC, INIA, ISCIII…)
 
