@@ -91,7 +91,7 @@ def send_test(message: str = "✅ vigia-enfermeria: conexión OK") -> None:
 
 def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date) -> str:
     fecha_str = today.strftime("%d/%m/%Y")
-    lines: list[str] = [f"🔔 *Vigilancia Enfermería del Trabajo — {fecha_str}*\n"]
+    lines: list[str] = [f"🔔 <b>Vigilancia Enfermería del Trabajo — {fecha_str}</b>\n"]
 
     if items:
         for item in items:
@@ -101,7 +101,9 @@ def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date
         lines.append("Sin novedades hoy.\n")
 
     for source_name, err_msg in errors:
-        lines.append(f"⚠️ Fuente *{_escape(source_name)}* no respondió: {_escape(err_msg)}")
+        lines.append(
+            f"⚠️ Fuente <b>{_escape(source_name)}</b> no respondió: {_escape(err_msg)}"
+        )
 
     lines.append("")
     lines.append(f"🛰️ Panel completo: {DASHBOARD_URL}")
@@ -117,11 +119,11 @@ def _format_item(item: Item, today: date) -> list[str]:
     degrada al del enricher v1 (header + título + categoría + summary + url).
     """
     block: list[str] = []
-    header = f"🟢 *NUEVO en {item.source.upper()}*"
+    header = f"🟢 <b>NUEVO en {_escape(item.source.upper())}</b>"
     if item.organismo:
         header += f" — {_escape(item.organismo)}"
     block.append(header)
-    block.append(f"*{_escape(item.titulo)}*")
+    block.append(f"<b>{_escape(item.titulo)}</b>")
 
     # Línea de proceso: tipo · plazas · tasa
     proc_bits: list[str] = []
@@ -138,7 +140,7 @@ def _format_item(item: Item, today: date) -> list[str]:
     if item.deadline_inscripcion:
         countdown = _format_countdown(item.deadline_inscripcion, today)
         if countdown:
-            block.append(f"⏰ {countdown}")
+            block.append(f"⏰ {_escape(countdown)}")
 
     # Fase del proceso si no es la inicial (evita ruido en convocatorias nuevas)
     if item.fase and item.fase not in ("convocatoria", "otro"):
@@ -151,12 +153,14 @@ def _format_item(item: Item, today: date) -> list[str]:
 
     # Summary (si existe; solo cuando aporta más allá del título)
     if item.summary:
-        block.append(f"_{_escape(item.summary)}_")
+        block.append(f"<i>{_escape(item.summary)}</i>")
 
-    # Enlaces — anuncio principal siempre; bases si difieren del anuncio
-    block.append(f"🔗 {item.url}")
+    # Enlaces — anuncio principal siempre; bases si difieren del anuncio.
+    # Telegram autodetecta URLs crudas en HTML mode, pero los caracteres
+    # especiales del HTML (& < >) deben escaparse en el atributo y el texto.
+    block.append(f"🔗 {_escape(item.url)}")
     if item.url_bases and item.url_bases != item.url:
-        block.append(f"📎 Bases: {item.url_bases}")
+        block.append(f"📎 Bases: {_escape(item.url_bases)}")
 
     # Categoría legacy al final como tag (consume poco y mantiene continuidad
     # con el layout previo)
@@ -189,10 +193,17 @@ def _format_eur(amount: float) -> str:
 
 
 def _escape(text: str) -> str:
-    """Escapa caracteres especiales para Markdown v1 de Telegram."""
-    for ch in ("_", "*", "`", "["):
-        text = text.replace(ch, f"\\{ch}")
-    return text
+    """Escapa caracteres especiales para parse_mode HTML de Telegram.
+
+    Telegram HTML reconoce solo `< > &` como caracteres reservados; el
+    resto (incluido `_` que rompía Markdown v1 cuando aparecía en URLs
+    de PDFs anexos) pasa intacto y no dispara `can't parse entities`.
+    """
+    return (
+        text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    )
 
 
 def _split(text: str) -> list[str]:
@@ -220,7 +231,7 @@ def _send_chunk(text: str) -> None:
             json={
                 "chat_id": chat_id,
                 "text": text,
-                "parse_mode": "Markdown",
+                "parse_mode": "HTML",
                 "disable_web_page_preview": True,
             },
             headers={"User-Agent": USER_AGENT},
