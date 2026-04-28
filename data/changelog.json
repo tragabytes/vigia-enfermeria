@@ -1,34 +1,34 @@
 [
   {
     "date": "2026-04-28",
-    "commit": "5283d7e",
+    "commit": "33794f0",
     "kind": "feat",
-    "scope": "maintenance",
-    "title": "recalcular fechas históricas de Comunidad de Madrid",
-    "body": "Cierra el pendiente del fix anterior: los 11 items históricos de"
+    "scope": "sources",
+    "title": "parser SAP SuccessFactors común (RENFE, Correos, Navantia)",
+    "body": "Tres empresas públicas estatales comparten plataforma SAP SuccessFactors"
   },
   {
     "date": "2026-04-28",
-    "commit": "345a010",
+    "commit": "29a639b",
     "kind": "fix",
-    "scope": "comunidad_madrid",
-    "title": "resolver fecha de publicación con cascada de 4 fallbacks",
-    "body": "Antes, cuando el listado del buscador no exponía \"Apertura: DD/MM/YYYY\", la"
+    "scope": "sources",
+    "title": "convertir BOAM y ayuntamiento_madrid en stubs (Akamai)",
+    "body": "Tras el research del 2026-04-28 que confirmó que `madrid.es` está"
   },
   {
     "date": "2026-04-28",
-    "commit": "9b8ccd1",
-    "kind": "fix",
-    "scope": "notifier",
-    "title": "cambiar a parse_mode HTML para evitar 400 con URLs con guiones bajos",
-    "body": "El cron del 27/04/2026 detectó la nueva convocatoria del CIEMAT pero la"
+    "commit": "5d768ac",
+    "kind": "feat",
+    "scope": "sources",
+    "title": "añadir UAH y UAM al parser de universidades + URL sintética",
+    "body": "Segunda iteración del parser de universidades públicas. La arquitectura"
   },
   {
-    "date": "2026-04-26",
-    "commit": "d83ce28",
+    "date": "2026-04-28",
+    "commit": "da6f243",
     "kind": "feat",
-    "scope": "extractor",
-    "title": "variantes ATS/DUE + 5 tareas pendientes documentadas",
-    "body": "`STRONG_PATTERNS` y `WEAK_CONTEXT_PATTERNS` aceptan la denominación"
+    "scope": "sources",
+    "title": "parser universidades públicas de Madrid (UCM)",
+    "body": "Nueva fuente `universidades_madrid` con arquitectura genérica `UNI_CONFIGS`:"
   }
 ]
