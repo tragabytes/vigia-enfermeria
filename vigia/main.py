@@ -33,6 +33,7 @@ from vigia.sources.bocm import BOCMSource
 from vigia.sources.boe import BOESource
 from vigia.sources.canal_isabel_ii import CanalIsabelIISource
 from vigia.sources.ciemat import CIEMATSource
+from vigia.sources.cm_ficha_enfermeria import ComunidadMadridFichaEnfermeriaSource
 from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
 from vigia.sources.datos_madrid import DatosMadridSource
@@ -54,6 +55,7 @@ SOURCE_REGISTRY = {
     "boam": BOAMSource,
     "ayuntamiento_madrid": AyuntamientoMadridSource,
     "comunidad_madrid": ComunidadMadridSource,
+    "cm_ficha_enfermeria": ComunidadMadridFichaEnfermeriaSource,
     "metro_madrid": MetroMadridSource,
     "canal_isabel_ii": CanalIsabelIISource,
     "administracion_gob": AdministracionGobSource,

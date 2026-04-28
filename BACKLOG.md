@@ -217,17 +217,19 @@ Los items donde se cae a `today()` por falta de fecha en el listado (4 casos en 
 
 ---
 
-### Pendiente: tracking de proceso específico en Comunidad de Madrid
+### ~~Tracking de proceso específico en Comunidad de Madrid~~ ✅ Resuelto (2026-04-28)
 
-**URL en seguimiento manual del usuario:** [https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo](https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo)
+**URL monitorizada:** [https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo](https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo)
 
-Esta es una página estática del portal `www.comunidad.madrid` (NO `sede.comunidad.madrid` que es lo que monitorizamos hoy). Es una "ficha de proceso" que describe la categoría profesional Diplomado en Enfermería del Trabajo y enlaza a las convocatorias activas cuando existen.
+Implementado en [`vigia/sources/cm_ficha_enfermeria.py`](vigia/sources/cm_ficha_enfermeria.py) como hash-watcher con la misma técnica que el parser ISCIII (snapshot del cuerpo en el título → reusa la deduplicación natural). Diferencias respecto a ISCIII:
 
-**¿El sistema avisará si sale algo nuevo?**
-- *Probablemente sí* indirectamente: cuando se publique una convocatoria concreta (bolsa, oposición, traslados) para esta categoría, aparecerá en el buscador `sede.comunidad.madrid/buscador?t=enfermeria` que ya monitorizamos via `comunidad_madrid.py`.
-- *Pero no garantizado*: si la "ficha del proceso" se actualiza ANTES de que la convocatoria salga (cambio de fecha previsto, novedad informativa), no lo detectaríamos. La ficha tiene su propio ciclo de vida.
+- **Selector preciso** del cuerpo: `article.node--type-main-information` (Drupal). 3071 chars limpios sin nav/header/footer.
+- **El cuerpo SÍ menciona "Enfermería del Trabajo"** repetidamente, así que el extractor matchea cada snapshot que se emita → cada cambio sustantivo de la ficha **genera alerta real al usuario** (no es solo silencioso como ISCIII). Verificado end-to-end: matchea como `categoria=oposicion`.
+- **Fecha por cascada**: `max(/docs/assets/YYYY/MM/DD/)` → texto "Última actualización: DD mes YYYY" (parser de meses en castellano) → today() con warning. La fecha de assets es la más fiable: cuando el tribunal publica un PDF nuevo (admitidos, plantilla correctora, etc.) queda con esa marca.
 
-**Tarea:** añadir un parser específico que monitorice la URL del proceso (HTTP GET periódico, hash del cuerpo o detección de cambios en `<time>` / sección de convocatorias). Si cambia, generar un `RawItem` con marcador "ACTUALIZACIÓN DE FICHA". Patrón mínimo, ~1h.
+15 tests en [`tests/test_cm_ficha_enfermeria.py`](tests/test_cm_ficha_enfermeria.py) cubren limpieza del cuerpo, las dos cascadas de fecha (con tres formatos cada una), idempotencia, snapshot distinto al cambiar contenido, matcheo del extractor sobre el RawItem, y errores HTTP/red/body vacío. Smoke contra portal real (28/04/2026 22:00): probe HTTP 200, snapshot `0306a40cfa`, fecha `2026-03-25` (coincide con "Última actualización: 25 marzo 2026"), texto 3071 chars. **327/327 tests offline pasan.**
+
+Sin tile de watchlist nuevo: la cobertura ya queda en T-01 SERMAS (la ficha es de la categoría profesional, no de un organismo distinto).
 
 ---
 

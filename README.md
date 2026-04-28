@@ -138,6 +138,7 @@ python -m pytest tests/ -v
 | BOCM | XML sumario + descarga PDF | Comunidad de Madrid |
 | BOAM | Stub (Akamai) | Cubierto por BOE 2B + datos.madrid.es |
 | Comunidad de Madrid | Web sede.comunidad.madrid | Portal propio de empleo |
+| CM Ficha Enfermería del Trabajo | Hash-watcher de `comunidad.madrid/empleo/diplomado-enfermeria-trabajo` | Ficha de proceso por categoría profesional (suele actualizarse antes que la convocatoria salga al buscador). Cuerpo limpio del `<article>`, fecha extraída de paths `/docs/assets/YYYY/MM/DD/` |
 | Canal de Isabel II | Tabla web /puestos | Canal Isabel II directamente |
 | CODEM | RSS feed (Empleo + Actualidad) | Colegio de Enfermería de Madrid |
 | Ayuntamiento de Madrid | Stub (Akamai) | Cubierto por BOE 2B + datos.madrid.es |
@@ -177,6 +178,7 @@ vigia/
     datos_madrid.py  # API CKAN del Ayto. Madrid
     ciemat.py        # listado web + extracción de PDFs anexos
     isciii.py        # hash-watcher de proceso-selectivo (bolsa de empleo)
+    cm_ficha_enfermeria.py  # hash-watcher de la ficha del proceso (CM)
     metro_madrid.py
     administracion_gob.py
 tests/

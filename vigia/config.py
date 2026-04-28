@@ -274,6 +274,7 @@ SOURCES_ENABLED: list[str] = [
     "boam",
     "ayuntamiento_madrid",
     "comunidad_madrid",
+    "cm_ficha_enfermeria",
     "metro_madrid",
     "canal_isabel_ii",
     "administracion_gob",
