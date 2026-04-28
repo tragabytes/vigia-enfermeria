@@ -349,7 +349,11 @@ Coste: 0 € en free tier de Cloudflare. Latencia: despreciable.
 
 Implementado con la opción A del plan: atributo `self.last_errors` en la clase base `Source`, las 7 fuentes lo rellenan junto a su `logger.warning(...)`, `_run_source()` lo devuelve como tercer elemento de la tupla y `main.py` lo extiende a la lista global `errors`. 9 tests nuevos en `test_main_errors.py` cubren el comportamiento. Validado end-to-end con un run real: BOAM y Comunidad Madrid caídos generaron mensaje en Telegram.
 
-### ~~2. BOAM y Ayuntamiento Madrid bloqueados por geolocalización~~ 🟡 Mitigado (2026-04-25, commit `69e796c`)
+### ~~2. BOAM y Ayuntamiento Madrid bloqueados~~ ✅ Convertidos a stub (2026-04-28)
+
+**Cierre definitivo tras el research del 2026-04-28.** Confirmado que no es filtro IP geo sino Akamai Bot Manager (ver sección "Investigación profunda del problema de IP geo-bloqueada"). `boam.py` y `ayuntamiento_madrid.py` se han reescrito como stubs (igual patrón que `metro_madrid.py` y `administracion_gob.py`): devuelven lista vacía sin hacer requests, evitando los HTTP 403 recurrentes que aparecían cada día en la notificación Telegram. Sin `probe_url`, la sección 5 del dashboard los marca como `skipped` con detalle "fuente sin probe_url (stub o cobertura delegada)". Cobertura intacta vía BOE 2B + datos.madrid.es.
+
+#### Histórico (mitigación previa, 2026-04-25)
 
 **Diagnóstico.** `madrid.es` filtra por **IP + UA combinados**. Solo desde IP española con UA de navegador real deja pasar. El runner de GHA (Azure US/EU) está fuera del rango admitido. Las fuentes `boam.py` y `ayuntamiento_madrid.py` (que pegan a `madrid.es/...`) siguen devolviendo 403 desde el cron.
 

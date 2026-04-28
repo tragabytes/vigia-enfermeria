@@ -136,11 +136,11 @@ python -m pytest tests/ -v
 |--------|--------|-----------|
 | BOE | API JSON oficial + body HTML inspeccionado por dept relevante | Nacional — convocatorias secciones 2A/2B/3, ministerios estatales con servicio de PRL propio (Interior, Defensa, Ciencia, Hacienda, etc.) |
 | BOCM | XML sumario + descarga PDF | Comunidad de Madrid |
-| BOAM | PDF sumario (primeras 10 pág.) | Ayuntamiento de Madrid (geo-bloqueado desde IP no española) |
+| BOAM | Stub (Akamai) | Cubierto por BOE 2B + datos.madrid.es |
 | Comunidad de Madrid | Web sede.comunidad.madrid | Portal propio de empleo |
 | Canal de Isabel II | Tabla web /puestos | Canal Isabel II directamente |
 | CODEM | RSS feed (Empleo + Actualidad) | Colegio de Enfermería de Madrid |
-| Ayuntamiento de Madrid | Web estática oposiciones | Complemento a BOAM |
+| Ayuntamiento de Madrid | Stub (Akamai) | Cubierto por BOE 2B + datos.madrid.es |
 | datos.madrid.es | API CKAN | OEPs y procesos selectivos del Ayto. (no geo-bloqueado) |
 | CIEMAT | Listado HTML + extracción de PDFs anexos del propio dominio | Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas (cobertura directa; el HTML BOE de OPIs conjuntas no detalla las plazas) |
 | Universidades públicas Madrid | Listados HTML server-side de portales PTGAS | UCM (`convocatorias-vigentes-pas`), UAH (3 listados PAS funcionario/laboral/bolsa), UAM (2 listados funcionario/laboral). UC3M, URJC, UPM pendientes — ver BACKLOG. |
