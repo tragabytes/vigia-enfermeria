@@ -223,6 +223,12 @@ WATCHLIST_ORGS: list[dict] = [
     {"id": "T-27", "name": "UCM",
      "desc": "Universidad Complutense de Madrid — PTGAS / Servicio de Prevención",
      "patterns": ["universidad complutense", "complutense de madrid", "ucm"]},
+    {"id": "T-28", "name": "UAH",
+     "desc": "Universidad de Alcalá — PTGAS / Servicio de Prevención",
+     "patterns": ["universidad de alcala", "alcala de henares", " uah "]},
+    {"id": "T-29", "name": "UAM",
+     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
+     "patterns": ["universidad autonoma de madrid", "autonoma de madrid", " uam "]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se

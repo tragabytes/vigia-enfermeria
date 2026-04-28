@@ -145,7 +145,7 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 ---
 
-### 🟡 Parsers de universidades públicas de Madrid — UCM implementada (2026-04-28)
+### 🟡 Parsers de universidades públicas de Madrid — UCM, UAH, UAM implementadas (2026-04-28)
 
 Las universidades públicas convocan plazas para sus servicios de prevención y unidades sanitarias. Casos reales detectados:
 
@@ -154,16 +154,66 @@ Las universidades públicas convocan plazas para sus servicios de prevención y 
 - **UPM** — pendiente investigar URL.
 - **URJC, UC3M, UAH** — pendientes (ver notas de research abajo).
 
-**Implementado (UCM, commit 2026-04-28):** `vigia/sources/universidades_madrid.py` con arquitectura genérica `UNI_CONFIGS` — añadir una nueva universidad consiste en aportar `UniConfig(code, nombre, base_url, listing_url, item_css)` sin tocar la clase Source. Listado UCM `https://www.ucm.es/convocatorias-vigentes-pas` parseado con `div.wg_txt li, div.wg_txt p`. Soporta dos formatos de fecha del portal: `DD/MM/YYYY` y "DD de mes de YYYY". Watchlist tile T-27 añadido. 21 tests con HTML real recortado del portal. La fuente se añade a `SOURCES_ENABLED` y al `SOURCE_REGISTRY` de `main.py`.
+**Implementado en `vigia/sources/universidades_madrid.py` (commit en `main`):** arquitectura genérica `UniConfig` + `UniListing` que permite añadir una nueva universidad como entrada de configuración sin tocar la clase Source. Filtrado fast-keyword aplicado al **texto completo del contenedor** del item (no solo al `<a>`) para soportar portales que llevan el título descriptivo en `<p>` o atributos sueltos. URL sintética `listing#sha1` cuando un portal no expone enlace por convocatoria.
 
-**Notas técnicas del research preliminar de las 5 universidades restantes (2026-04-28, parcialmente verificado):**
-- **UC3M** (`https://www.uc3m.es/ss/Satellite/UC3MInstitucional/es/PortadaMiniSiteB/1371212611989/Portal_de_Empleo`): HTTP 200 confirmado. Estructura del listado pendiente de inspección detallada.
-- **UAH**: home `/es/empleo-publico/index.html` accesible. Subsecciones reales `PAS/funcionario/`, `PAS/laboral/`, `PAS/bolsa-de-empleo/` por verificar (Joomla — listado puede no ser HTML puro).
-- **URJC**: `https://www.urjc.es/empleo-publico` accesible (Joomla com_k2). Estructura no estándar: convocatorias mezcladas en bloques `<p>` con enlaces a PDFs de `sede.urjc.es`. Parser más laborioso; quizás merece la pena delegar a la cobertura indirecta vía BOE 2A.
-- **UAM**: portal público de convocatorias no localizado. Existe `https://portalempleado.uam.es` pero requiere autenticación. Investigar si hay endpoint público antes de descartar.
-- **UPM**: portal de empleo público no encontrado. Parece que solo expone licitaciones (sede). Probablemente fuera de scope.
+#### UCM — Universidad Complutense de Madrid ✅
+- **URL**: `https://www.ucm.es/convocatorias-vigentes-pas`
+- **HTTP**: 200, sin WAF. Plataforma: CMS propio.
+- **Selector**: `div.wg_txt li, div.wg_txt p`
+- **Fechas**: "(Actualizado el DD/MM/YYYY)" (items recientes) o "(Actualizado el DD de mes de YYYY)" (históricos).
+- **Notas**: el propio listado UCM tiene una sección "OTRAS UNIVERSIDADES: UAH" que enlaza directo a PDFs del BOE; el parser los acepta con su URL real (filtro por keyword, no por host) — captura indirecta de UAH desde UCM.
 
-Próxima iteración: añadir UC3M (más viable) y UAH (subsecciones). UAM/UPM/URJC quedan en stand-by hasta confirmar viabilidad del parser HTTP simple.
+#### UAH — Universidad de Alcalá ✅
+- **URLs (3 listados)**:
+  - `https://www.uah.es/es/empleo-publico/PAS/funcionario/`
+  - `https://www.uah.es/es/empleo-publico/PAS/laboral/`
+  - `https://www.uah.es/es/empleo-publico/PAS/bolsa-de-empleo/`
+- **HTTP**: 200, sin WAF.
+- **Selector**: `ul.main-ul article` con `<h4 class="title-element"><a>` interno y `<p><strong>Resolución</strong> DD de mes de YYYY</p>` hermano.
+- **Match real**: bolsa "Enfermería del Trabajo" (B1, link a PDF `B1-Enfermeria-03.09.2020.pdf`).
+- **Limitación conocida**: en `bolsa-de-empleo/` algunos items adicionales viven dentro de un acordeón colapsado por JS — se detectan los `<article>` ya expandidos en el HTML inicial pero no los ocultos. Mejora futura: bajar también la URL del PDF cuando es accesible y extraer la fecha del filename `XX.YY.ZZZZ.pdf`.
+
+#### UAM — Universidad Autónoma de Madrid ✅
+- **URLs (2 listados)**:
+  - `https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario`
+  - `https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-laboral`
+- **HTTP**: 200, sin WAF.
+- **Selector**: `div.uam-card` (excluyendo cards con clase `uam-filters`, que es panel de filtros).
+- **Caso atípico**: UAM **no expone enlaces `<a>` por convocatoria** — solo texto plano dentro de `<p>`. Generamos URL sintética `listing_url#<sha1[:12]>(title)` para que cada item tenga URL única determinista.
+- **Match real validado end-to-end**: 7 items históricos de Enfermero/a y Titulado Medio Enfermería del Trabajo (resoluciones desde 2022 hasta enero 2026).
+- **Limitación**: los cards llevan estado (`Resuelta` / `Abierta` / `Cerrada` / `Próxima apertura`) en `<span class="uam-becas-status">`, valioso para filtrar por fase. Hoy lo conservamos en `RawItem.text` pero no se persiste estructuradamente; el enricher v2 puede recuperarlo del cuerpo. Mejora futura: extraer `state` como campo dedicado del item.
+
+#### Watchlist
+Tres tiles añadidos a `WATCHLIST_ORGS`: T-27 UCM, T-28 UAH, T-29 UAM.
+
+---
+
+### Pendientes con notas técnicas reproducibles para una próxima iteración
+
+#### UC3M — Universidad Carlos III de Madrid
+- **URL útil descubierta**: `https://www.uc3m.es/empleo/pas/novedades_empleo_publico` (HTTP 200).
+- **Plataforma**: CMS propio. Plantilla "MiniSiteB". El tradicional `Satellite/...Portal_de_Empleo` redirige a una página vacía con menú genérico.
+- **Estructura del listado**: tabla `<tr>` con columnas `[CUERPO O ESCALA, GRUPO, ESPECIALIDAD, PLAZAS, FECHA PREVISTA CONVOCATORIA, FECHA PREVISTA INICIO PLAZO PRESENTACIÓN SOLICITUDES]`. 33 filas en captura de 2026-04-28.
+- **Bloqueo**: las celdas son texto plano sin `<a>` por fila — necesitamos URL sintética igual que UAM. **Hoy ESPECIALIDAD = ADMINISTRACIÓN / BIBLIOTECA / INFORMÁTICA**, sin Enfermería. Cuando UC3M planifique una plaza de Enfermería, aparecerá en este cuadro.
+- **Implementación recomendada**: añadir entrada en `UNI_CONFIGS` con `item_css="table tr"`, filtrar `<th>` (cabecera), aceptar URL sintética con fragment basado en el contenido completo del `<tr>`.
+- **Estimación**: ~30 min con la arquitectura actual.
+
+#### URJC — Universidad Rey Juan Carlos
+- **URL**: `https://www.urjc.es/empleo-publico` (HTTP 200, ~1.1MB).
+- **Plataforma**: Joomla `com_k2`.
+- **Estructura del listado**: bloques `<p>` con texto y links a `https://sede.urjc.es/tablon-oficial/anexo/<id>/` (anexos individuales: notas, plantillas, resoluciones de cada fase del proceso).
+- **Bloqueo**: en el momento del research había un proceso de Enfermería con 7 anexos publicados, pero ninguno apuntaba al texto de la convocatoria original — todos eran fases posteriores ("Plantilla provisional segundo ejercicio. Enfermería"). Parser sería ruidoso (un único proceso genera 7+ items).
+- **Alternativa**: cobertura indirecta vía BOE 2A está activa para procesos selectivos universitarios. Confirmar que un proceso de Enfermería en URJC se publica vía BOE 2A antes de decidir.
+- **Implementación recomendada**: dedicación posterior, después de validar la hipótesis de cobertura indirecta.
+
+#### UPM — Universidad Politécnica de Madrid
+- **Estado**: portal público de convocatorias PTGAS no localizado.
+- **URLs probadas**: `/personal-administracion-servicios`, `/sfs/Rectorado/Gerencia/Servicio%20de%20Personal/...`, `/personal/empleo` → 404 o redirección a página genérica.
+- **Hipótesis**: UPM publica todo vía BOE / BOUPM (boletín interno) sin listado HTTP libre. Confirmar consultando el organigrama y la sección RR.HH. del portal principal.
+- **Acción**: requerirá research adicional con navegación manual antes de poder añadir parser.
+
+#### Mejora compartida — URL al detalle real del PDF en UAM/UAH bolsa
+Los items donde se cae a `today()` por falta de fecha en el listado (4 casos en validación end-to-end del 2026-04-28) podrían rescatarse extrayendo la fecha del filename del PDF cuando el `<a>` apunta a uno: patrón `(\d{2})\.(\d{2})\.(\d{4})\.pdf` o variantes con `_`/`-` separadores. Trabajo acotado: ~30 min y un par de tests.
 
 ---
 
