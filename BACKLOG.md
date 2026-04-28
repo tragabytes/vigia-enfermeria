@@ -129,7 +129,7 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 
 17 tests nuevos en `tests/test_comunidad_madrid_dates.py` cubren los cuatro niveles de la cascada y los HTML reales observados. **241/241 tests offline pasan.**
 
-**Pendiente menor — corregir las 11 fechas históricas en BD.** Los items existentes en `state/seen.db` siguen con `fecha = 2026-04-26`. El fix solo corrige items futuros. Falta un script de mantenimiento (`vigia/maintenance.py:recalcular_fechas_comunidad_madrid`) que itere los items con `source='comunidad_madrid'`, vuelva a aplicar la cascada (haciendo fetch del detalle) y persista la fecha real vía `Storage.update_fecha(id_hash, fecha)`. Tarea acotada: ~30 min de implementación + ejecución manual del workflow `maintenance.yml` con la nueva flag.
+**Recálculo de fechas históricas implementado (2026-04-28).** Nueva función `maintenance.recalcular_fechas_comunidad_madrid(storage)` que itera items con `source='comunidad_madrid'`, aplica la cascada `detalle → año del título → today()` y persiste la fecha real vía `Storage.update_fecha(id_hash, fecha)`. Cableada en `_run_maintenance` para que la próxima ejecución del workflow `maintenance.yml` corrija los 11 items históricos automáticamente — idempotente: re-ejecuciones no tocan lo ya bien fechado. 3 tests nuevos en `test_maintenance.py`. **Pendiente:** disparar `gh workflow run maintenance.yml` para aplicarlo en producción.
 
 ---
 

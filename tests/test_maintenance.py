@@ -160,6 +160,120 @@ class TestEnrichPending:
 
 
 # ---------------------------------------------------------------------------
+# recalcular_fechas_comunidad_madrid (BACKLOG #1)
+# ---------------------------------------------------------------------------
+
+
+def _make_cm_item(titulo: str, fecha: date, url: str = None) -> Item:
+    """Crea un Item con `source='comunidad_madrid'` para los tests de recálculo."""
+    return Item(
+        source="comunidad_madrid",
+        url=url or f"https://sede.comunidad.madrid/oferta-empleo/{abs(hash(titulo))}",
+        titulo=titulo,
+        fecha=fecha,
+        categoria="bolsa",
+    )
+
+
+class TestRecalcularFechasComunidadMadrid:
+    def test_corrige_items_con_fecha_today_a_fecha_real_del_detalle(
+        self, tmp_path, monkeypatch
+    ):
+        """Caso real BACKLOG #1: 11 items en BD con `fecha=today()` deben
+        actualizarse al `Última actualización` del detalle."""
+        from vigia.sources import comunidad_madrid
+
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_cm_item(
+            "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo (2026)",
+            fecha=date(2026, 4, 26),
+            url="https://sede.comunidad.madrid/oferta-empleo/foo",
+        ))
+        storage.save(_make_cm_item(
+            "Concurso de traslados Enfermería del Trabajo (2025)",
+            fecha=date(2026, 4, 26),
+            url="https://sede.comunidad.madrid/oferta-empleo/bar",
+        ))
+
+        detail_html = (
+            "<html><body><div class='fecha-actualizacion'>"
+            "Última actualización: 18/03/2026</div></body></html>"
+        )
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.text = detail_html
+        resp.raise_for_status = lambda: None
+        monkeypatch.setattr(comunidad_madrid.requests, "get", lambda *a, **kw: resp)
+
+        seen, updated = maintenance.recalcular_fechas_comunidad_madrid(storage)
+        assert seen == 2
+        assert updated == 2
+
+        rows = list(storage._conn.execute(
+            "SELECT fecha FROM items WHERE source='comunidad_madrid' ORDER BY url"
+        ))
+        storage.close()
+        assert all(r[0] == "2026-03-18" for r in rows)
+
+    def test_idempotente_no_actualiza_si_la_fecha_ya_es_la_buena(
+        self, tmp_path, monkeypatch
+    ):
+        """Segunda ejecución del recálculo no debe re-tocar lo ya corregido."""
+        from vigia.sources import comunidad_madrid
+
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_cm_item(
+            "Bolsa Enfermería del Trabajo", fecha=date(2026, 3, 18),
+        ))
+
+        detail_html = (
+            "<html><body><div class='fecha-actualizacion'>"
+            "Última actualización: 18/03/2026</div></body></html>"
+        )
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.text = detail_html
+        resp.raise_for_status = lambda: None
+        monkeypatch.setattr(comunidad_madrid.requests, "get", lambda *a, **kw: resp)
+
+        seen, updated = maintenance.recalcular_fechas_comunidad_madrid(storage)
+        storage.close()
+        assert seen == 1
+        assert updated == 0
+
+    def test_solo_toca_items_de_comunidad_madrid(self, tmp_path, monkeypatch):
+        """Items de otras fuentes (BOE, BOCM, CIEMAT…) deben quedar intactos."""
+        from vigia.sources import comunidad_madrid
+
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_item("Bolsa BOE", categoria="bolsa"))  # source=codem por _make_item
+        storage.save(_make_cm_item(
+            "Enfermería del Trabajo CM", fecha=date(2026, 4, 26),
+        ))
+
+        detail_html = (
+            "<html><body><div class='fecha-actualizacion'>"
+            "Última actualización: 01/01/2025</div></body></html>"
+        )
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.text = detail_html
+        resp.raise_for_status = lambda: None
+        monkeypatch.setattr(comunidad_madrid.requests, "get", lambda *a, **kw: resp)
+
+        seen, updated = maintenance.recalcular_fechas_comunidad_madrid(storage)
+        assert seen == 1  # solo cuenta los de comunidad_madrid
+        assert updated == 1
+
+        # El item de codem sigue con su fecha original (date(2026, 4, 25) en _make_item)
+        codem_fecha = storage._conn.execute(
+            "SELECT fecha FROM items WHERE source='codem'"
+        ).fetchone()[0]
+        storage.close()
+        assert codem_fecha == "2026-04-25"
+
+
+# ---------------------------------------------------------------------------
 # Flag --maintenance integrado en main.py
 # ---------------------------------------------------------------------------
 

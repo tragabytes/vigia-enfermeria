@@ -286,6 +286,17 @@ class Storage:
         )
         self._conn.commit()
 
+    def update_fecha(self, id_hash: str, fecha: date) -> None:
+        """Cambia la fecha de publicación de un item ya guardado. Lo usa la
+        tarea `recalcular_fechas_comunidad_madrid` para corregir items
+        históricos cuyo `pub_date` quedó como `today()` por el bug de regex
+        de Comunidad de Madrid (BACKLOG #1, fix 2026-04-28)."""
+        self._conn.execute(
+            "UPDATE items SET fecha = ? WHERE id_hash = ?",
+            (fecha.isoformat(), id_hash),
+        )
+        self._conn.commit()
+
     def iter_items_without_summary(self) -> list[Item]:
         """Devuelve los items en BD que aún no tienen summary.
 

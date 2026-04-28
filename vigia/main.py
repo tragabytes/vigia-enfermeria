@@ -133,6 +133,11 @@ def _run_maintenance() -> int:
     storage = Storage()
     n_recat = maintenance.reclassify_all(storage)
     logger.info("Maintenance: %d items reclasificados", n_recat)
+    n_seen, n_dates = maintenance.recalcular_fechas_comunidad_madrid(storage)
+    logger.info(
+        "Maintenance: %d/%d fechas de Comunidad Madrid recalculadas",
+        n_dates, n_seen,
+    )
     n_enriched = enricher.enrich_pending(storage)
     logger.info("Maintenance: %d items enriquecidos", n_enriched)
     try:

@@ -164,7 +164,15 @@ class ComunidadMadridSource(Source):
         d = _date_from_listing(estado_text)
         if d is not None:
             return d
+        return self.resolve_pub_date_from_detail(item_url, title)
 
+    def resolve_pub_date_from_detail(self, item_url: str, title: str) -> date:
+        """Cascada sin paso de listado, expuesta para `maintenance.py`.
+
+        Cuando el item ya está en BD y solo tenemos url + título (no hay
+        `div.estado` que rescatar del listado), aplicamos directamente:
+        detalle → título → today() con warning.
+        """
         d = self._fetch_detail_date(item_url)
         if d is not None:
             return d
