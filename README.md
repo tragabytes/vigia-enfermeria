@@ -144,6 +144,7 @@ python -m pytest tests/ -v
 | datos.madrid.es | API CKAN | OEPs y procesos selectivos del Ayto. (no geo-bloqueado) |
 | CIEMAT | Listado HTML + extracción de PDFs anexos del propio dominio | Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas (cobertura directa; el HTML BOE de OPIs conjuntas no detalla las plazas) |
 | Universidades públicas Madrid | Listados HTML server-side de portales PTGAS | UCM (`convocatorias-vigentes-pas`), UAH (3 listados PAS funcionario/laboral/bolsa), UAM (2 listados funcionario/laboral). UC3M, URJC, UPM pendientes — ver BACKLOG. |
+| Empresas públicas SAP SuccessFactors | Endpoint común `/search/` con HTML server-side y `<tr.data-row>` / `<div.job>` | RENFE (`empleo.renfe.com`), Correos (`empleo.correos.com`), Navantia (`empleo.navantia.es`). |
 | Metro de Madrid | Stub (WAF) | Cubierto por BOE/BOCM |
 | administracion.gob.es | Stub (JS-only) | Cubierto por BOE/BOCM |
 

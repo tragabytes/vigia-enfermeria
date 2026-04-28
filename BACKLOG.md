@@ -426,7 +426,27 @@ Pendiente como mejora futura: parsers dedicados de portales propios con feed/API
 - Varios usan PORTALEMP: `lasrozas.portalemp.com`, `majadahonda.portalemp.com`, `colladovillalba.portalemp.com`
 - **Las Rozas portal oficial:** `https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo` — listado HTML estático que muestra solo procesos con plazo abierto (filtrado por el propio ayuntamiento). Beneficio adicional sobre BOCM: detectaríamos ANTES (sin esperar publicación oficial) y con la garantía de plazo vivo. Investigar estructura HTML para parser dedicado.
 
-### ~~Empresas públicas estatales (RENFE, ADIF, RTVE, Navantia, AENA, Correos…)~~ ✅ Cobertura indirecta (2026-04-26, commit `de9b67c`)
+### ~~Empresas públicas estatales — parsers propios SAP SuccessFactors~~ 🟡 RENFE, Correos, Navantia ✅ / ADIF, AENA, RTVE, Paradores, SELAE ❌ (2026-04-28)
+
+**Implementado en `vigia/sources/sap_successfactors.py`**: parser único para los 3 portales que comparten plataforma SAP SuccessFactors Career Site Builder, detectada al inspeccionar `/platform/js/search/search.js` en sus respuestas. Endpoint `/search/?startrow=N&num=10` devuelve HTML server-side completo con `<tr class="data-row">` (Correos) o `<div class="job">` (RENFE), `<a class="jobTitle-link">` y `<span class="jobDate">DD mes YYYY</span>` español. Soporta paginación hasta 5 páginas (volumen real ≤1 página).
+
+**Lección aprendida del research**: SAP SuccessFactors hace búsqueda OR amplia con `?q=`, devolviendo TODAS las ofertas aunque ninguna mencione el término. Validado con RENFE `?q=prevención` → 6 puestos no relacionados. Por eso descargamos listado completo y filtramos con `FAST_KEYWORDS` aplicado al título.
+
+**Watchlist**: T-30 RENFE, T-31 ADIF, T-32 AENA, T-33 Correos, T-34 Navantia, T-35 Paradores, T-36 RTVE, T-37 SELAE Loterías. Las 5 sin parser propio quedan cubiertas indirectamente vía BOE/BOCM (keywords ya en `DEPT_KEYWORDS_FOR_BODY` y `HEALTH_ORGS`).
+
+#### Empresas NO implementadas como parser propio — notas técnicas reproducibles
+
+**ADIF** (`https://www.adif.es/empleo-publico`): HTTP 403 con `Reference #...errors.edgesuite.net` y `Server-Timing: ak_p` → mismo Akamai Bot Manager que `madrid.es`. NO factible sin browser real. Cobertura indirecta vía BOE 2A.
+
+**SELAE Loterías** (`https://www.selae.es/es/empleo`): HTTP 403 con misma firma Akamai. Idéntico veredicto que ADIF.
+
+**AENA** (`https://empleo.aena.es/empleo/`): HTTP 200 pero body_text=929 — SPA/landing sin contenido server-side. **NO es SAP SuccessFactors** (`/search/` da 404). Sistema custom propio. Para implementar parser haría falta inspeccionar el bundle JS y descubrir el endpoint API real (probable AJAX a `/api/...` con JSON). Trabajo: 1-2h de research adicional. Cobertura indirecta vigente vía BOE 2B + AENA en `DEPT_KEYWORDS_FOR_BODY`.
+
+**RTVE** (`https://convocatorias.rtve.es/puestos-ofertados`): HTTP 200 pero **body_text=0** — SPA absoluta donde la respuesta inicial es el shell vacío de React/Vue, todo el contenido se hidrata client-side desde una API que no aparece en el HTML inicial. Endpoints triviales `/api/puestos`, `/data.json`, etc. devuelven el mismo shell (10402B). Para implementar haría falta abrir DevTools y rastrear la primera request XHR/fetch al cargar la página. Cobertura indirecta vía BOE 2A + RTVE en `DEPT_KEYWORDS_FOR_BODY` ("Convocatorias RTVE" suele publicarse en BOE como "Resolución de la Corporación de Radio y Televisión Española").
+
+**Paradores** (`https://www.paradores.es/es/ofertas`): HTTP 200, 216KB de body, pero `/es/ofertas` es un listado de **ofertas turísticas** (descuentos en estancias), NO empleo. La home no expone link directo a portal de empleo público. Hipótesis: Paradores S.M.E. publica todas las plazas vía BOE como cualquier S.M.E. estatal sin web propia de empleo. Confirmar antes de descartar definitivamente.
+
+#### Histórico (cobertura indirecta previa, 2026-04-26)
 
 Añadidos a `HEALTH_ORGS` (bocm.py) y `DEPT_KEYWORDS_FOR_BODY` (boe.py):
 - `rtve`, `radio y television espanola`

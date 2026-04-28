@@ -229,6 +229,30 @@ WATCHLIST_ORGS: list[dict] = [
     {"id": "T-29", "name": "UAM",
      "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
      "patterns": ["universidad autonoma de madrid", "autonoma de madrid", " uam "]},
+    {"id": "T-30", "name": "RENFE",
+     "desc": "Renfe Operadora — Servicio de Prevención (parser propio SAP SuccessFactors)",
+     "patterns": ["renfe", "renfe operadora"]},
+    {"id": "T-31", "name": "ADIF",
+     "desc": "Administrador de Infraestructuras Ferroviarias — cobertura indirecta BOE/BOCM (Akamai bloquea parser directo)",
+     "patterns": ["adif", "administrador de infraestructuras ferroviarias"]},
+    {"id": "T-32", "name": "AENA",
+     "desc": "AENA — cobertura indirecta BOE/BOCM (portal SPA sin endpoint público)",
+     "patterns": [" aena ", "aeropuertos espanoles"]},
+    {"id": "T-33", "name": "Correos",
+     "desc": "Sociedad Estatal Correos y Telégrafos — Servicio de Prevención (parser propio SAP SuccessFactors)",
+     "patterns": ["correos", "sociedad estatal correos"]},
+    {"id": "T-34", "name": "Navantia",
+     "desc": "Navantia — Servicio de Prevención (parser propio SAP SuccessFactors)",
+     "patterns": ["navantia"]},
+    {"id": "T-35", "name": "Paradores",
+     "desc": "Paradores de Turismo — cobertura indirecta BOE/BOCM (sin portal público de empleo)",
+     "patterns": ["paradores", "paradores de turismo"]},
+    {"id": "T-36", "name": "RTVE",
+     "desc": "Radio Televisión Española — cobertura indirecta BOE/BOCM (SPA absoluta sin endpoint público)",
+     "patterns": ["rtve", "radio television espanola", "radio y television espanola"]},
+    {"id": "T-37", "name": "SELAE Loterías",
+     "desc": "Sociedad Estatal Loterías y Apuestas — cobertura indirecta BOE/BOCM (Akamai bloquea parser directo)",
+     "patterns": ["loterias y apuestas", "selae"]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se
@@ -254,6 +278,7 @@ SOURCES_ENABLED: list[str] = [
     "datos_madrid",
     "ciemat",
     "universidades_madrid",
+    "sap_successfactors",
 ]
 
 
