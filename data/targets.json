@@ -123,9 +123,9 @@
     "desc": "Canal de Isabel II — SP Mancomunado",
     "hits": 2,
     "active": true,
-    "nearest_deadline": "2026-04-28",
-    "days_until": 0,
-    "urgent": true,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
     "latest_phase": "convocatoria",
     "item_ids": [
       "511a52df34c5193f",
@@ -349,13 +349,16 @@
     "id": "T-28",
     "name": "UAH",
     "desc": "Universidad de Alcalá — PTGAS / Servicio de Prevención",
-    "hits": 0,
-    "active": false,
+    "hits": 2,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "otro",
+    "item_ids": [
+      "ffbe29dae00deb98",
+      "06be5b56b6377631"
+    ]
   },
   {
     "id": "T-29",
@@ -457,6 +460,18 @@
     "id": "T-37",
     "name": "SELAE Loterías",
     "desc": "Sociedad Estatal Loterías y Apuestas — cobertura indirecta BOE/BOCM (Akamai bloquea parser directo)",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-38",
+    "name": "ISCIII",
+    "desc": "Instituto de Salud Carlos III — Servicio de Prevención (parser hash-watcher de proceso-selectivo + cobertura BOE/BOCM)",
     "hits": 0,
     "active": false,
     "nearest_deadline": null,

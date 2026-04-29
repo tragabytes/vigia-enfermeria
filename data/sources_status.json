@@ -5,25 +5,25 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 0
   },
   {
     "name": "ayuntamiento_madrid",
-    "url": "https://www.madrid.es/portales/munimadrid/oposiciones.html",
-    "status": "error",
-    "code": 403,
-    "detail": "Forbidden",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "url": null,
+    "status": "skipped",
+    "code": null,
+    "detail": "fuente sin probe_url (stub o cobertura delegada)",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 0
   },
   {
     "name": "boam",
-    "url": "https://www.madrid.es/boam",
-    "status": "error",
-    "code": 403,
-    "detail": "Forbidden",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "url": null,
+    "status": "skipped",
+    "code": null,
+    "detail": "fuente sin probe_url (stub o cobertura delegada)",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 6
   },
   {
@@ -41,7 +41,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 3
   },
   {
@@ -50,7 +50,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 1
   },
   {
@@ -59,7 +59,16 @@
     "status": "error",
     "code": null,
     "detail": "HTTPSConnectionPool(host='www.ciemat.es', port=443): Max retries exceeded with url: /ofertas-de-empleo (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016)')))",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
+    "total_hits": 1
+  },
+  {
+    "name": "cm_ficha_enfermeria",
+    "url": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +77,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 3
   },
   {
@@ -77,7 +86,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 11
   },
   {
@@ -86,8 +95,17 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 1
+  },
+  {
+    "name": "isciii",
+    "url": "https://www.isciii.es/bolsa-empleo/proceso-selectivo",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
+    "total_hits": 0
   },
   {
     "name": "metro_madrid",
@@ -95,7 +113,25 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-04-28T10:19:50.661173+00:00",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
     "total_hits": 0
+  },
+  {
+    "name": "sap_successfactors",
+    "url": "https://empleo.renfe.com/search/",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
+    "total_hits": 0
+  },
+  {
+    "name": "universidades_madrid",
+    "url": "https://www.ucm.es/convocatorias-vigentes-pas",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-04-29T10:13:30.538973+00:00",
+    "total_hits": 2
   }
 ]

@@ -1,6 +1,22 @@
 [
   {
     "date": "2026-04-28",
+    "commit": "b7f5f00",
+    "kind": "feat",
+    "scope": "sources",
+    "title": "hash-watcher de la ficha CM Enfermería del Trabajo",
+    "body": "Nueva fuente cm_ficha_enfermeria que monitoriza"
+  },
+  {
+    "date": "2026-04-28",
+    "commit": "1681b60",
+    "kind": "feat",
+    "scope": "sources",
+    "title": "parser hash-watcher ISCIII + cobertura keywords BOE/BOCM",
+    "body": "- vigia/sources/isciii.py: monitoriza proceso-selectivo de la bolsa de"
+  },
+  {
+    "date": "2026-04-28",
     "commit": "33794f0",
     "kind": "feat",
     "scope": "sources",
@@ -14,21 +30,5 @@
     "scope": "sources",
     "title": "convertir BOAM y ayuntamiento_madrid en stubs (Akamai)",
     "body": "Tras el research del 2026-04-28 que confirmó que `madrid.es` está"
-  },
-  {
-    "date": "2026-04-28",
-    "commit": "5d768ac",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "añadir UAH y UAM al parser de universidades + URL sintética",
-    "body": "Segunda iteración del parser de universidades públicas. La arquitectura"
-  },
-  {
-    "date": "2026-04-28",
-    "commit": "da6f243",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "parser universidades públicas de Madrid (UCM)",
-    "body": "Nueva fuente `universidades_madrid` con arquitectura genérica `UNI_CONFIGS`:"
   }
 ]
