@@ -67,14 +67,10 @@ from typing import Optional
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
-
-# Keywords rápidas para descartar ruido del listado antes de cualquier fetch
-# adicional. Coinciden con las del resto de fuentes (FAST_KEYWORDS).
-FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 # Meses en español para parsear "Actualizado el 15 de septiembre de 2024"
 # y "Resolución 27 de octubre de 2025".
