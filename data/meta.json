@@ -15,13 +15,13 @@
   },
   "days_watching": 9,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-05-05T14:36:43.783344+00:00",
+  "last_run_at": "2026-05-05T15:50:29.230557+00:00",
   "next_run_at": "2026-05-06T08:00:00+00:00",
   "sources_online": 14,
   "sources_total": 15,
   "targets_active": 4,
   "targets_urgent": 0,
-  "targets_total": 38,
+  "targets_total": 39,
   "version": "0.2.0",
-  "commit": "c4d082a"
+  "commit": "86dfe9a"
 }

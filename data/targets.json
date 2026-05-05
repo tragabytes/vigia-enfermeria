@@ -479,5 +479,17 @@
     "urgent": false,
     "latest_phase": null,
     "item_ids": []
+  },
+  {
+    "id": "T-39",
+    "name": "EGOA Sanidad y Consumo",
+    "desc": "Escala de Gestión de Organismos Autónomos, esp. Sanidad y Consumo (Min. Sanidad) — incluye Área de Enfermería abierta a Diplomatura/Grado en Enfermería",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
   }
 ]

@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-05-05",
+    "commit": "86dfe9a",
+    "kind": "feat",
+    "scope": "extractor",
+    "title": "capturar EGOA Sanidad y Consumo del Min. de Sanidad",
+    "body": "La Escala de Gestión de Organismos Autónomos especialidad Sanidad y"
+  },
+  {
+    "date": "2026-05-05",
     "commit": "c4d082a",
     "kind": "fix",
     "scope": "comunidad_madrid",
@@ -22,13 +30,5 @@
     "scope": "sources",
     "title": "parser hash-watcher ISCIII + cobertura keywords BOE/BOCM",
     "body": "- vigia/sources/isciii.py: monitoriza proceso-selectivo de la bolsa de"
-  },
-  {
-    "date": "2026-04-28",
-    "commit": "33794f0",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "parser SAP SuccessFactors común (RENFE, Correos, Navantia)",
-    "body": "Tres empresas públicas estatales comparten plataforma SAP SuccessFactors"
   }
 ]
