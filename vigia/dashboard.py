@@ -50,7 +50,7 @@ def export_all(
     :param out_dir:        directorio destino (se crea si no existe)
     :param probe_results:  salida de Source.probe() para cada fuente; si es
                            None, se rellena con el campo correspondiente vacío.
-    :param last_run_at:    timestamp del run actual; si None, datetime.utcnow().
+    :param last_run_at:    timestamp del run actual; si None, datetime.now(timezone.utc).
     :return: dict con las rutas escritas {"items": ..., "sources": ..., "meta": ...}
     """
     out_dir = Path(out_dir)

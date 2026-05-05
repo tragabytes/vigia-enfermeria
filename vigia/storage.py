@@ -26,7 +26,7 @@ import json
 import logging
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
@@ -100,7 +100,11 @@ class Item:
         if not self.id_hash:
             self.id_hash = _make_hash(self.source, self.url, self.titulo)
         if self.first_seen_at is None:
-            self.first_seen_at = datetime.utcnow()
+            # `datetime.utcnow()` está deprecated en Python 3.12+. Construimos
+            # un naive UTC equivalente para mantener compatibilidad con la
+            # columna SQLite (TEXT con ISO sin TZ) y con el resto del código,
+            # que espera datetimes naive.
+            self.first_seen_at = datetime.now(timezone.utc).replace(tzinfo=None)
         if self.extra is None:
             self.extra = {}
 

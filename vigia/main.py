@@ -146,6 +146,11 @@ def _run_maintenance() -> int:
         "Maintenance: %d/%d fechas de Comunidad Madrid recalculadas",
         n_dates, n_seen,
     )
+    n_seen_u, n_dates_u = maintenance.recalcular_fechas_universidades_madrid(storage)
+    logger.info(
+        "Maintenance: %d/%d fechas de Universidades Madrid recalculadas",
+        n_dates_u, n_seen_u,
+    )
     n_enriched = enricher.enrich_pending(storage)
     logger.info("Maintenance: %d items enriquecidos", n_enriched)
     try:
