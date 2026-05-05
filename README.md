@@ -152,8 +152,9 @@ python -m pytest tests/ -v
 
 ## Patrones detectados
 
-- **Match fuerte**: `Enfermería del Trabajo`, `Enfermería de Trabajo`, `Enfermera/o del Trabajo`, `Enfermera de Salud Laboral`, `Especialista en Enfermería del Trabajo`, etc.
-- **Match débil**: `salud laboral` o `servicio de prevención` + `enfermer` en un radio de 100 caracteres.
+- **Match fuerte**: `Enfermería del Trabajo`, `Enfermería de Trabajo`, `Enfermera/o del Trabajo`, `Enfermera de Salud Laboral`, `Especialista en Enfermería del Trabajo`, `Enfermería de Empresa` (denominación pre-MIR), `ATS/DUE de Prevención` (pre-Bolonia).
+- **Match débil**: `salud laboral` o `servicio de prevención` o `prevención de riesgos laborales` + `enfermer` en un radio de 100 caracteres.
+- **Cuerpos AGE con plazas abiertas a Enfermería**: `Escala de Gestión de Organismos Autónomos, especialidad Sanidad y Consumo` (cuerpo del Min. Sanidad cuya Área de Enfermería admite cualquier Diplomatura/Grado en Enfermería sin exigir la especialidad — un Enfermero del Trabajo puede optar).
 - **Falsos positivos descartados**: TCAE, Auxiliar de Enfermería, Enfermería de Salud Mental, Enfermería Pediátrica, Matrona.
 
 ## Estructura del proyecto

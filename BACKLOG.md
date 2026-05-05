@@ -1,6 +1,6 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-04-28 (segunda iteración).
+Pendientes para retomar más adelante. Última actualización: 2026-05-05 (mantenimiento + cobertura EGOA).
 
 ---
 
@@ -111,6 +111,18 @@ El enricher v1 (single-shot Haiku 4.5 que devolvía string ~200 chars) se ha ree
 - Cap de 4 iteraciones (no 2) en el loop tool use — Sonnet a veces hace 2 fetches secuenciales (anuncio + PDF de bases) antes de responder.
 
 **Migración hacia Nivel 3 (futuro).** Si en el futuro queremos vincular item existente con su corrección/anexo (timeline de la convocatoria), entonces Claude Agent SDK con loop. No bloqueante hoy.
+
+### ~~Subir timeouts de comunidad_madrid (15→30s detalle, 20→30s listado)~~ ✅ Resuelto (2026-05-05, commit `c4d082a`)
+
+El daily del 2026-05-05 ([run 25369854357](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25369854357)) registró 1 error y 3 warnings de `comunidad_madrid` por timeouts contra `sede.comunidad.madrid` (que iba lento, no caída — la probe final dio 200 OK):
+
+- Listado `term=salud laboral page=0` murió al timeout 20s → **rama de búsqueda completa perdida en ese run**. Si hubiera habido una oferta accesible solo por "salud laboral" (no por "enfermeria"), se habría escapado.
+- Detalle de `/oferta-empleo/integracion-voluntaria-enfermero-esp` timeout 15s → cascada degradada.
+- 2 items con cascada terminada en `today()` (warnings `fallback a today()`): `auxiliar-enfermeria-0`, `tecnico-cuidados-auxiliares-enfermeria-3`. Comprobado a posteriori que el extractor.py los descarta luego (no son "Enfermería del Trabajo"), así que NO contaminaron BD ni notificaciones — el daño real fue solo la rama de listado perdida.
+
+**Fix aplicado.** [`vigia/sources/comunidad_madrid.py`](vigia/sources/comunidad_madrid.py): `DETAIL_TIMEOUT 15→30` y nueva constante `LISTING_TIMEOUT=30` (antes `timeout=20` inline). Cambio mínimo, sin lógica nueva. Tests verdes.
+
+**Maintenance posterior.** [run 25382876417](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25382876417) corrió `recalcular_fechas_comunidad_madrid` con los timeouts nuevos: 1/11 fechas recalculadas (item `7c7cf06753cd` "Bolsa única… Especialista" pasó de 2026-03-18 → 2026-04-29 porque sede.comunidad.madrid había actualizado su `.fecha-actualizacion`). Las otras 10 quedaron iguales (idempotencia confirmada).
 
 ### ~~Bug — fecha `published` siempre = `detected` en items de Comunidad de Madrid~~ ✅ Resuelto en código (2026-04-28)
 
@@ -285,6 +297,21 @@ Añadidas variantes para la denominación pre-Bolonia "ATS/DUE" (Ayudante Técni
 - WEAK: `ats due` + (`prevencion` | `salud laboral` | `riesgos laborales`) en ventana de 100 chars.
 
 Caso real motivador: [BOE-A-2022-23854](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2022-23854) (Tribunal de Cuentas, 30/12/2022) — "Resolución por la que se convoca proceso selectivo, por el turno de acceso libre, para la provisión de plaza vacante de ATS/DUE de Prevención y Salud laboral." Verificado: el extractor ahora hace match (`Categoría: oposicion`).
+
+### ~~EGOA Sanidad y Consumo en STRONG_PATTERNS~~ ✅ Resuelto (2026-05-05, commit `86dfe9a`)
+
+Añadido pattern para la **Escala de Gestión de Organismos Autónomos, especialidad Sanidad y Consumo** del Ministerio de Sanidad. La escala reserva un Área de Enfermería con plazas abiertas a cualquier Diplomatura/Grado en Enfermería (sin exigir la especialidad de Enfermería del Trabajo), por lo que un Enfermero del Trabajo puede optar.
+
+**Caso motivador.** Convocatoria EGOA 2025: [BOE-A-2025-26156](https://www.boe.es/diario_boe/txt.php?id=BOE-A-2025-26156) (BOE núm 305, 20/12/2025, Sec II.B, Min. Sanidad), 50 plazas turno libre con desglose 28+5 para Área de Enfermería. Cuadernillo y plantillas específicas para enfermería disponibles en sanidad.gob.es.
+
+**Por qué fallaba el sistema actual.** El body HTML del BOE pasaba el fast-keyword del fetcher (8 ocurrencias de "enfermer"), pero el extractor descartaba el RawItem porque ningún STRONG matchea (no contiene "Enfermería del Trabajo") y el WEAK `prevencion de riesgos laborales + enfermer` no se activaba (la única ocurrencia del PRL aparece en el temario común, lejos de los bloques de "Área de Enfermería" en la ventana de ±100 chars).
+
+**Fix.**
+- `STRONG_PATTERNS`: `r"escala\s+de\s+gestion\s+de\s+organismos\s+autonomos.{0,40}sanidad\s+y\s+consumo"`. Es un identificador técnico-administrativo único que el ministerio usa en TODOS los actos del proceso, así que captura el ciclo completo (convocatoria, admitidos, plantillas, listas de aprobados, nombramientos) sin falsos positivos previsibles.
+- `WATCHLIST_ORGS` tile **T-39 EGOA Sanidad y Consumo**.
+- 4 tests nuevos en `test_extractor.py` (2 positivos / 2 negativos: otra escala AGE sin enfermería, EGOA otra especialidad). 331/331 tests pasando.
+
+**Histórico no cazado.** La convocatoria principal del 20/12/2025 está fuera del rango del cron y de los backfills realizados hasta hoy. Los actos posteriores (plantillas, lista de aprobados) se publican en sanidad.gob.es, no en BOE. **Si en el futuro se quiere recuperar el histórico**: backfill segmentado en GitHub Actions (rangos mensuales) o local con `python -m vigia.main --since 2025-12-15`. Verificación: dry-run con `since=2026-04-01` ([run 25387900882](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25387900882)) confirma que el pipeline procesa correctamente y el patrón está activo en producción para futuros actos.
 
 ---
 
@@ -571,6 +598,8 @@ Si solo quieres compartirlo con un puñado de gente y no te molesta intervenir m
 
 ## Otras ideas sueltas (para no olvidarme)
 
+- **Replicar fix de timeouts en `ciemat.py` (detectado 2026-05-05).** En el dry-run [run 25387900882](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25387900882) el CIEMAT acumuló 3 timeouts (`Read timeout=20s`) contra `www.ciemat.es` (`detalle 2381`, `2380`, `2292`). Mismo síntoma que el fix de hoy en `comunidad_madrid`: el portal está vivo pero responde lento puntualmente y el timeout es ajustado. Subirlo a 30s es trivial (1 línea) y elimina ruido.
+- **`recalcular_fechas_universidades_madrid` análogo al de Comunidad de Madrid (detectado 2026-05-05).** El parser `universidades_madrid.py` también dispara warnings `fallback a today()` cuando la página de detalle no expone fecha (visto en UCM con "Convocatoria proceso selectivo…" y UAH con "Escala de Gestión de Prevención de Riesgos Laborales" + "Enfermería del Trabajo"). El bug es estructuralmente idéntico al que `recalcular_fechas_comunidad_madrid` cerró el 2026-04-28: items relevantes en BD con fecha contaminada que falsea el orden del dashboard. Un equivalente para universidades cerraría el caso.
 - **Logs persistidos:** además de la BD `seen.db` en la rama `state`, considerar volcar un CSV histórico de todos los hallazgos (no solo nuevos) para análisis posterior.
 - ~~**Dashboard mínimo:**~~ ✅ Capa de datos resuelta (2026-04-25); ver sección "Dashboard web público" arriba. Falta el HTML, en manos de Claude Design.
 - ~~**Test de fuentes "vivas":**~~ ✅ Resuelto (2026-04-25, commit `44f7240`). Añadido `python -m vigia.main --probe` que hace HEAD/GET ligero a la URL principal de cada fuente y muestra una tabla de salud. Integrado en `daily.yml` con `if: always() + continue-on-error: true` para que cada run del cron deje el estado de las fuentes en los logs sin afectar la conclusion del job.
