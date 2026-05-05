@@ -19,7 +19,6 @@ Hallazgo de investigación:
 """
 from __future__ import annotations
 
-import io
 import logging
 import re
 from datetime import date, timedelta
@@ -28,6 +27,7 @@ from urllib.parse import urljoin, urlparse
 import requests
 
 from vigia.config import FAST_KEYWORDS, normalize
+from vigia.sources._pdf import download_and_extract_pdf
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -38,8 +38,6 @@ logger = logging.getLogger(__name__)
 # `enricher._run_fetch_url`), añadirlos aquí explícitamente.
 PDF_HOST_WHITELIST: set[str] = {"boe.es", "www.boe.es"}
 MAX_PDFS_PER_ITEM = 3
-MAX_PDF_PAGES = 30
-MAX_PDF_BYTES = 5 * 1024 * 1024
 PDF_FETCH_TIMEOUT = 20
 
 # id BOE de un item ("BOE-A-2026-795"). Lo usamos para excluir el PDF
@@ -356,40 +354,9 @@ class BOESource(Source):
         return text, pdf_links
 
     def _fetch_pdf_text(self, url: str) -> str:
-        """Descarga un PDF y devuelve su texto extraído (max 30 páginas).
-
-        El PDF se descarga en streaming hasta `MAX_PDF_BYTES`. pdfplumber
-        ya está en requirements.txt (lo usan también `bocm.py` y
-        `enricher.py`). Si el PDF está corrupto o cifrado, devuelve string
-        vacío y el caller lo trata como "anexo no útil".
-        """
-        import pdfplumber
-
-        resp = requests.get(
+        """Descarga un PDF anexo del BOE y devuelve su texto plano."""
+        return download_and_extract_pdf(
             url,
             headers=self._default_headers(),
             timeout=PDF_FETCH_TIMEOUT,
-            stream=True,
         )
-        resp.raise_for_status()
-        body = bytearray()
-        for chunk in resp.iter_content(chunk_size=8192):
-            if not chunk:
-                continue
-            body.extend(chunk)
-            if len(body) >= MAX_PDF_BYTES:
-                body = body[:MAX_PDF_BYTES]
-                break
-        resp.close()
-
-        try:
-            with pdfplumber.open(io.BytesIO(bytes(body))) as pdf:
-                pieces = []
-                for page in pdf.pages[:MAX_PDF_PAGES]:
-                    t = page.extract_text() or ""
-                    if t:
-                        pieces.append(t)
-                return "\n\n".join(pieces)
-        except Exception as exc:
-            logger.debug("BOE PDF parse error %s: %s", url, exc)
-            return ""

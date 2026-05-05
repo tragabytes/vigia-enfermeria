@@ -28,7 +28,6 @@ Coste estimado al volumen real (≤3 items/día): ~$3/año.
 """
 from __future__ import annotations
 
-import io
 import json
 import logging
 import os
@@ -40,6 +39,8 @@ from urllib.parse import urlparse
 import requests
 
 from vigia.config import USER_AGENT
+from vigia.sources._html import extract_clean_text
+from vigia.sources._pdf import extract_pdf_text
 from vigia.storage import ENRICHMENT_VERSION, Item, Storage
 
 logger = logging.getLogger(__name__)
@@ -358,10 +359,11 @@ def _fetch_body_full(url: str) -> str:
 
     content_type = (resp.headers.get("content-type") or "").lower()
     is_pdf = "pdf" in content_type or url.lower().endswith(".pdf")
-    text = _extract_pdf_text(bytes(body)) if is_pdf else _extract_html_text(bytes(body))
-    if text.startswith("ERROR"):
-        return ""
-    return text
+    if is_pdf:
+        return extract_pdf_text(bytes(body))
+    return extract_clean_text(
+        bytes(body), separator="\n", collapse_lines=True
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -655,9 +657,11 @@ def _run_fetch_url(url: str) -> str:
     is_pdf = "pdf" in content_type or url.lower().endswith(".pdf")
 
     if is_pdf:
-        text = _extract_pdf_text(bytes(body))
+        text = extract_pdf_text(bytes(body))
     else:
-        text = _extract_html_text(bytes(body))
+        text = extract_clean_text(
+            bytes(body), separator="\n", collapse_lines=True
+        )
 
     if not text.strip():
         return "ERROR: contenido vacío tras extracción"
@@ -665,45 +669,6 @@ def _run_fetch_url(url: str) -> str:
     if len(text) > MAX_FETCH_TEXT_CHARS:
         return text[:MAX_FETCH_TEXT_CHARS] + "\n[…texto truncado…]"
     return text
-
-
-def _extract_pdf_text(data: bytes) -> str:
-    """Extrae texto plano de un PDF. Usa pdfplumber (ya en requirements)."""
-    try:
-        import pdfplumber
-    except ImportError:
-        return "ERROR: pdfplumber no instalado"
-
-    try:
-        with pdfplumber.open(io.BytesIO(data)) as pdf:
-            chunks = []
-            for page in pdf.pages[:30]:   # cap a 30 páginas para acotar
-                t = page.extract_text() or ""
-                if t:
-                    chunks.append(t)
-            return "\n\n".join(chunks)
-    except Exception as exc:
-        return f"ERROR: parseo PDF falló ({exc})"
-
-
-def _extract_html_text(data: bytes) -> str:
-    """Extrae texto legible de HTML. Quita scripts/styles y colapsa blancos."""
-    try:
-        from bs4 import BeautifulSoup
-    except ImportError:
-        return data.decode("utf-8", errors="replace")
-
-    try:
-        soup = BeautifulSoup(data, "lxml")
-    except Exception:
-        soup = BeautifulSoup(data, "html.parser")
-
-    for tag in soup(["script", "style", "noscript", "header", "footer", "nav"]):
-        tag.decompose()
-    text = soup.get_text(separator="\n")
-    # colapsa blancos
-    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
