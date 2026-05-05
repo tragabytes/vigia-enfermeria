@@ -55,7 +55,10 @@ TITLE_YEAR_RE = re.compile(r"\((\d{4})\)")
 
 DATE_FROM_TEXT_RE = re.compile(r"(\d{2}/\d{2}/\d{4})")
 
-DETAIL_TIMEOUT = 15
+# 2026-05-05: subido de 15→30 (detalle) y 20→30 (listado) tras pérdida silenciosa
+# por timeouts cuando sede.comunidad.madrid iba lenta — ver run 25369854357.
+DETAIL_TIMEOUT = 30
+LISTING_TIMEOUT = 30
 
 
 class ComunidadMadridSource(Source):
@@ -85,7 +88,7 @@ class ComunidadMadridSource(Source):
             url = f"{BUSCADOR_URL}&t={term}&page={page}"
             try:
                 resp = requests.get(
-                    url, headers=self._default_headers(), timeout=20
+                    url, headers=self._default_headers(), timeout=LISTING_TIMEOUT
                 )
                 resp.raise_for_status()
             except Exception as exc:
