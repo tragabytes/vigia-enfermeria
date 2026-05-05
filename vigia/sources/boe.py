@@ -38,6 +38,14 @@ logger = logging.getLogger(__name__)
 # `enricher._run_fetch_url`), añadirlos aquí explícitamente.
 PDF_HOST_WHITELIST: set[str] = {"boe.es", "www.boe.es"}
 MAX_PDFS_PER_ITEM = 3
+
+# Timeouts unificados al perfil del resto de fuentes. El body fetch
+# estaba antes en 15s, el más corto de la fuente, y bajo lentitud
+# puntual de boe.es perdía silenciosamente el HTML del item — sin
+# match en título y sin body, el item se descartaba. Subido a 20s
+# para alinearlo con el sumario y el PDF.
+SUMARIO_FETCH_TIMEOUT = 20
+BODY_FETCH_TIMEOUT = 20
 PDF_FETCH_TIMEOUT = 20
 
 # id BOE de un item ("BOE-A-2026-795"). Lo usamos para excluir el PDF
@@ -149,7 +157,7 @@ class BOESource(Source):
         resp = requests.get(
             url,
             headers={**self._default_headers(), "Accept": "application/json"},
-            timeout=20,
+            timeout=SUMARIO_FETCH_TIMEOUT,
         )
         if resp.status_code == 404:
             return []  # día sin BOE (festivo nacional)
@@ -309,7 +317,7 @@ class BOESource(Source):
         """
         from bs4 import BeautifulSoup
 
-        resp = requests.get(url, headers=self._default_headers(), timeout=15)
+        resp = requests.get(url, headers=self._default_headers(), timeout=BODY_FETCH_TIMEOUT)
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
         content = (
