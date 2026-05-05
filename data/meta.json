@@ -9,13 +9,13 @@
     "bolsa": 4,
     "nombramiento": 2,
     "oep": 1,
-    "oposicion": 11,
-    "otro": 8,
+    "oposicion": 10,
+    "otro": 9,
     "traslado": 3
   },
   "days_watching": 9,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-05-05T10:06:07.573549+00:00",
+  "last_run_at": "2026-05-05T14:36:43.783344+00:00",
   "next_run_at": "2026-05-06T08:00:00+00:00",
   "sources_online": 14,
   "sources_total": 15,
@@ -23,5 +23,5 @@
   "targets_urgent": 0,
   "targets_total": 38,
   "version": "0.2.0",
-  "commit": "b7f5f00"
+  "commit": "c4d082a"
 }

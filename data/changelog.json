@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-05-05",
+    "commit": "c4d082a",
+    "kind": "fix",
+    "scope": "comunidad_madrid",
+    "title": "subir timeouts a 30s (detalle y listado)",
+    "body": "El run daily 25370... del 2026-05-05 perdió la búsqueda completa"
+  },
+  {
     "date": "2026-04-28",
     "commit": "b7f5f00",
     "kind": "feat",
@@ -22,13 +30,5 @@
     "scope": "sources",
     "title": "parser SAP SuccessFactors común (RENFE, Correos, Navantia)",
     "body": "Tres empresas públicas estatales comparten plataforma SAP SuccessFactors"
-  },
-  {
-    "date": "2026-04-28",
-    "commit": "29a639b",
-    "kind": "fix",
-    "scope": "sources",
-    "title": "convertir BOAM y ayuntamiento_madrid en stubs (Akamai)",
-    "body": "Tras el research del 2026-04-28 que confirmó que `madrid.es` está"
   }
 ]
