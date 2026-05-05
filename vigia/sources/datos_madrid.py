@@ -38,7 +38,7 @@ from datetime import date
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,6 @@ DATASETS: list[tuple[str, str]] = [
     # RPT excluida: ver explicación en el docstring del módulo.
 ]
 
-FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 HTTP_TIMEOUT = 60
 
 

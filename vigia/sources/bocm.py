@@ -23,7 +23,7 @@ from xml.etree import ElementTree as ET
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -111,9 +111,6 @@ PDF_TRIGGER_WORDS = [
     "convocatoria",
     "bolsa de empleo",
 ]
-
-TITLE_FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
-
 
 class BOCMSource(Source):
     name = "bocm"
@@ -238,7 +235,7 @@ class BOCMSource(Source):
             seccion_name = self._find_seccion(root, item_id)
 
             titulo_norm = normalize(titulo)
-            has_fast_kw = any(kw in titulo_norm for kw in TITLE_FAST_KEYWORDS)
+            has_fast_kw = any(kw in titulo_norm for kw in FAST_KEYWORDS)
 
             pdf_text = ""
             if not has_fast_kw and url_pdf:
@@ -252,7 +249,7 @@ class BOCMSource(Source):
                         logger.debug("BOCM PDF fetch error %s: %s", url_pdf, exc)
 
             combined = f"{titulo} {pdf_text}"
-            if not any(kw in normalize(combined) for kw in TITLE_FAST_KEYWORDS):
+            if not any(kw in normalize(combined) for kw in FAST_KEYWORDS):
                 continue  # No hay nada relevante
 
             items.append(

@@ -44,7 +44,7 @@ from urllib.parse import urljoin, urlparse
 import requests
 import urllib3
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 # Silencia el warning del verify=False (cert intermedio de ciemat.es).
@@ -68,13 +68,6 @@ DETAIL_FETCH_TIMEOUT = 20
 
 OFFER_LINK_RE = re.compile(r"/ofertas-de-empleo/-/ofertas/oferta/(\d+)")
 DATE_RE = re.compile(r"\b(\d{2}/\d{2}/\d{4})\b")
-
-# Filtro grueso aplicado al texto agregado (HTML detalle + PDFs) para
-# decidir si vale la pena materializar el RawItem. El extractor real
-# aplica reglas mucho más estrictas; aquí solo evitamos enviar al
-# extractor cosas claramente irrelevantes (oferta de informática, etc).
-FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
-
 
 class CIEMATSource(Source):
     name = "ciemat"

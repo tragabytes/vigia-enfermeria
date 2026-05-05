@@ -27,7 +27,7 @@ from typing import Optional
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,6 @@ BUSCADOR_URL = (
     "&items_per_page=50"
 )
 
-FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 SEARCH_TERMS = ["enfermeria", "salud laboral"]
 
 # El listado expone la fecha como "Apertura..." (estado abierto histórico) o
