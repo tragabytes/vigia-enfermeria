@@ -1,6 +1,20 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-05-05 (mantenimiento + cobertura EGOA).
+Pendientes para retomar más adelante. Última actualización: 2026-05-05 (ultra-review + mantenimiento + cobertura EGOA).
+
+---
+
+## 🔍 Ultra-review 2026-05-05
+
+Revisión integral del proyecto con foco en bugs latentes, duplicación entre fuentes (regla 8 del CLAUDE.md) y código legacy. Cinco PRs cerrados a `main`:
+
+- ~~**[#1](https://github.com/tragabytes/vigia-enfermeria/pull/1) — fix `datetime.utcnow()` deprecated + red de fechas históricas en `universidades_madrid`**~~ ✅. Sustituye la API deprecada en `storage.py` por `datetime.now(timezone.utc).replace(tzinfo=None)`. Añade `recalcular_fechas_universidades_madrid` en `maintenance.py`, paralelo al helper de `comunidad_madrid`: re-fetcha listados de UCM/UAH/UAM y refresca fechas de items históricos cuyo `pub_date` cayó al `today()` por fallo del regex. Refactor: `resolve_pub_date` y `fetch_listing_entries` ahora públicos en `universidades_madrid.py`. 5 tests nuevos.
+- ~~**[#2](https://github.com/tragabytes/vigia-enfermeria/pull/2) — centralizar `FAST_KEYWORDS` en `vigia.config`**~~ ✅. La lista `["enfermer", "salud laboral", "prevencion de riesgos"]` estaba replicada literal en 9 fuentes (algunas como `FAST_KEYWORDS`, BOE/BOCM como `TITLE_FAST_KEYWORDS`). Cualquier ampliación —añadir "especialista", afinar un FP— requería 9 ediciones coordinadas. Centralizada con docstring que explica la relación con `STRONG_PATTERNS`/`WEAK_CONTEXT_PATTERNS`.
+- ~~**[#5](https://github.com/tragabytes/vigia-enfermeria/pull/5) — alinear `universidades_madrid.py` con la centralización**~~ ✅. Cabo suelto del [#2](https://github.com/tragabytes/vigia-enfermeria/pull/2): este archivo quedó fuera porque [#1](https://github.com/tragabytes/vigia-enfermeria/pull/1) lo estaba refactorizando en paralelo. Ya mergeados ambos, alineamos.
+- ~~**[#6](https://github.com/tragabytes/vigia-enfermeria/pull/6) — helpers PDF/HTML compartidos + fix(boe) timeout body 20s**~~ ✅. Nuevo `vigia/sources/_pdf.py` (con `extract_pdf_text` y `download_and_extract_pdf` con streaming + cap 5 MB) reemplaza 4 implementaciones casi idénticas en boe/bocm/ciemat/enricher. Nuevo `vigia/sources/_html.py` (con `extract_clean_text` parametrizable) reemplaza 3 implementaciones en enricher/isciii/cm_ficha_enfermeria. Adicionalmente: BOE body fetch sube de 15s a 20s para alinearlo con el resto de timeouts de la fuente; promovidos a constantes nombradas (`SUMARIO_FETCH_TIMEOUT`, `BODY_FETCH_TIMEOUT`, `PDF_FETCH_TIMEOUT`). 13 tests nuevos en `test_html_pdf_helpers.py`. **Cambio de comportamiento controlado**: BOCM ahora hace streaming + cap 5 MB (antes `resp.content` directo) — defensa pura, los PDFs reales son 200-500 KB.
+- ⚠️ Los PRs [#3](https://github.com/tragabytes/vigia-enfermeria/pull/3) (cerrado) y [#4](https://github.com/tragabytes/vigia-enfermeria/pull/4) (mergeado a su rama base por accidente) son detritos del incidente con stacked PRs + `--delete-branch`; su contenido vive en [#6](https://github.com/tragabytes/vigia-enfermeria/pull/6).
+
+**Test plan acumulado**: 347 tests pasando (331 baseline + 5 de `recalcular_fechas_universidades_madrid` + 11 de `test_html_pdf_helpers`; 2 skipped por reportlab opcional). LoC neto: -130 sin contar tests (centralización + helpers reducen duplicación).
 
 ---
 
