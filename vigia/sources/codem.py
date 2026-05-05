@@ -25,7 +25,7 @@ from xml.etree import ElementTree as ET
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -50,8 +50,6 @@ CODEM_RSS_FEEDS: list[tuple[str, str]] = [
         f"&Canal=0c5726d8-34d8-4116-bb82-1f75d36b307b",
     ),
 ]
-
-FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 # El feed "actualidad" pesa ~8MB; subimos timeout para no fallar por red lenta.
 HTTP_TIMEOUT = 60

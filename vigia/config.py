@@ -91,6 +91,17 @@ WEAK_CONTEXT_PATTERNS: list[tuple[str, str]] = [
     (r"ats\s+due", r"prevencion|salud laboral|riesgos laborales"),
 ]
 
+# Filtro rápido aplicado por las fuentes sobre el título (o el texto
+# agregado del listado) antes de materializar un RawItem. Es un primer
+# corte grueso para evitar que items obviamente irrelevantes lleguen al
+# extractor — las reglas reales de matching (STRONG/WEAK) viven en
+# `STRONG_PATTERNS` / `WEAK_CONTEXT_PATTERNS` y se aplican después.
+#
+# Centralizado aquí porque las 9 fuentes lo tenían replicado literal — una
+# ampliación (añadir "especialista", afinar un FP) requería 9 ediciones
+# coordinadas y dejar una fuera dejaba una rendija de falsos negativos.
+FAST_KEYWORDS: list[str] = ["enfermer", "salud laboral", "prevencion de riesgos"]
+
 # Falsos positivos a descartar (antes de alertar)
 FALSE_POSITIVE_PATTERNS: list[str] = [
     r"\btecnico.{0,10}cuidados auxiliares de enfermeria",

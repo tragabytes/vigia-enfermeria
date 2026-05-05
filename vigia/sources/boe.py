@@ -27,7 +27,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -127,10 +127,6 @@ DEPT_KEYWORDS_FOR_BODY = [
     "ministerio de vivienda",
     "ministerio de juventud",
 ]
-
-# Para el match rápido en título antes de descargar body
-TITLE_FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
-
 
 class BOESource(Source):
     name = "boe"
@@ -236,7 +232,7 @@ class BOESource(Source):
         titulo_norm = normalize(titulo)
 
         # Check rápido: ¿el título ya contiene algo relevante?
-        has_fast_kw = any(kw in titulo_norm for kw in TITLE_FAST_KEYWORDS)
+        has_fast_kw = any(kw in titulo_norm for kw in FAST_KEYWORDS)
 
         # ¿Vale la pena descargar el body?
         dept_norm = normalize(dept_name)
@@ -264,7 +260,7 @@ class BOESource(Source):
         if (
             is_relevant_dept
             and pdf_links
-            and not any(kw in normalize(body_text) for kw in TITLE_FAST_KEYWORDS)
+            and not any(kw in normalize(body_text) for kw in FAST_KEYWORDS)
             and not has_fast_kw
         ):
             for pdf_url in pdf_links[:MAX_PDFS_PER_ITEM]:
@@ -275,7 +271,7 @@ class BOESource(Source):
                     chunk = ""
                 if chunk:
                     pdf_text += "\n\n[ANEXO PDF " + pdf_url + "]\n" + chunk
-                    if any(kw in normalize(pdf_text) for kw in TITLE_FAST_KEYWORDS):
+                    if any(kw in normalize(pdf_text) for kw in FAST_KEYWORDS):
                         # Match encontrado en este anexo: paramos para no
                         # descargar el resto. Volumen optimista: una sola
                         # llamada a pdfplumber suele bastar.
@@ -286,7 +282,7 @@ class BOESource(Source):
 
         combined_text = f"{titulo} {body_text} {pdf_text}"
         # Solo crear el item si hay algo relevante (título, body o anexo)
-        if not has_fast_kw and not any(kw in normalize(combined_text) for kw in TITLE_FAST_KEYWORDS):
+        if not has_fast_kw and not any(kw in normalize(combined_text) for kw in FAST_KEYWORDS):
             return None
 
         # Si hubo match en anexo PDF, lo concatenamos al body para que el

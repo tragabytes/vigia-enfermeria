@@ -14,15 +14,13 @@ from datetime import date, datetime
 
 import requests
 
-from vigia.config import normalize
+from vigia.config import FAST_KEYWORDS, normalize
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
 
 CANAL_PUESTOS_URL = "https://convocatoriascanaldeisabelsegunda.es/puestos"
 CANAL_BASE_URL = "https://convocatoriascanaldeisabelsegunda.es"
-
-FAST_KEYWORDS = ["enfermer", "salud laboral", "prevencion de riesgos"]
 
 
 class CanalIsabelIISource(Source):
