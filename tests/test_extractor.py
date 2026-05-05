@@ -150,6 +150,31 @@ class TestCasosHistoricos:
         assert item is not None
         assert item.categoria == "oposicion"
 
+    def test_egoa_sanidad_y_consumo_2025(self):
+        """BOE-A-2025-26156 (20/12/2025): Escala de Gestión de Organismos
+        Autónomos, especialidad Sanidad y Consumo. La convocatoria reserva
+        un Área de Enfermería (28+5 plazas) abierta a Diplomatura/Grado en
+        Enfermería, sin requerir la especialidad de Enfermería del Trabajo.
+        Matchea por el nombre técnico-administrativo único de la escala.
+        """
+        item = extract(_raw(
+            "Resolución de 4 de diciembre de 2025, de la Subsecretaría, por la "
+            "que se convoca proceso selectivo para el ingreso, por el sistema "
+            "general de acceso libre, en la Escala de Gestión de Organismos "
+            "Autónomos, especialidad Sanidad y Consumo."
+        ))
+        assert item is not None
+        assert item.categoria == "oposicion"
+
+    def test_egoa_separadores_intermedios(self):
+        """El pattern admite hasta ~40 chars entre 'organismos autónomos' y
+        'sanidad y consumo' (separador habitual: ', especialidad ')."""
+        item = extract(_raw(
+            "Anuncio relativo a la Escala de Gestión de Organismos Autónomos "
+            "(especialidad Sanidad y Consumo): plantillas definitivas del primer ejercicio."
+        ))
+        assert item is not None
+
 
 # ---------------------------------------------------------------------------
 # Falsos positivos (NO deben ser detectados)
@@ -195,6 +220,28 @@ class TestFalsosPositivos:
 
     def test_texto_irrelevante(self):
         item = extract(_raw("Convocatoria de becas de investigación en física de partículas."))
+        assert item is None
+
+    def test_otra_escala_age_sin_enfermeria(self):
+        """Otras escalas/cuerpos de la AGE no relacionados (p.ej. Cuerpo
+        Superior de Administradores Civiles del Estado) no deben matchear
+        aunque contengan 'organismos autónomos' por proximidad — el patrón
+        EGOA exige el nombre completo con 'sanidad y consumo'."""
+        item = extract(_raw(
+            "Resolución por la que se convoca proceso selectivo en el Cuerpo "
+            "Superior de Administradores Civiles del Estado, escalas de "
+            "Organismos Autónomos del Ministerio de Hacienda."
+        ))
+        assert item is None
+
+    def test_egoa_otra_especialidad_sin_enfermeria(self):
+        """La escala EGOA tiene varias especialidades (Estadísticos, Técnicos
+        de Gestión, etc.). Solo la de Sanidad y Consumo entra al pipeline."""
+        item = extract(_raw(
+            "Resolución de la Subsecretaría por la que se convoca proceso "
+            "selectivo en la Escala de Gestión de Organismos Autónomos, "
+            "especialidad Estadística."
+        ))
         assert item is None
 
 

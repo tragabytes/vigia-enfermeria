@@ -68,6 +68,15 @@ STRONG_PATTERNS: list[str] = [
     r"ats\s*[-/]?\s*due\s+de\s+salud\s+laboral",
     r"ats\s+due\s+de\s+prevencion",
     r"ats\s+due\s+de\s+salud\s+laboral",
+    # EGOA Sanidad y Consumo — escala AGE del Ministerio de Sanidad cuyo
+    # turno libre incluye un Área de Enfermería (28+5 plazas en EGOA 2025,
+    # convocatoria BOE-A-2025-26156). El perfil es salud pública / vigilancia
+    # epidemiológica / vacunas, NO Enfermería del Trabajo, pero un Enfermero
+    # del Trabajo puede optar (basta título de Diplomatura/Grado en
+    # Enfermería). Lo capturamos vía nombre exacto de la escala porque es
+    # un identificador único usado por el ministerio en TODOS los actos del
+    # proceso (convocatoria, admitidos, plantillas, nombramientos).
+    r"escala\s+de\s+gestion\s+de\s+organismos\s+autonomos.{0,40}sanidad\s+y\s+consumo",
 ]
 
 # Match débil: solo si ADEMÁS aparece "enfermer" en el mismo fragmento (100 chars)
@@ -256,6 +265,9 @@ WATCHLIST_ORGS: list[dict] = [
     {"id": "T-38", "name": "ISCIII",
      "desc": "Instituto de Salud Carlos III — Servicio de Prevención (parser hash-watcher de proceso-selectivo + cobertura BOE/BOCM)",
      "patterns": ["isciii", "instituto de salud carlos iii"]},
+    {"id": "T-39", "name": "EGOA Sanidad y Consumo",
+     "desc": "Escala de Gestión de Organismos Autónomos, esp. Sanidad y Consumo (Min. Sanidad) — incluye Área de Enfermería abierta a Diplomatura/Grado en Enfermería",
+     "patterns": ["escala de gestion de organismos autonomos", "egoa"]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se
