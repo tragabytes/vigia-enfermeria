@@ -274,6 +274,197 @@ class TestRecalcularFechasComunidadMadrid:
 
 
 # ---------------------------------------------------------------------------
+# recalcular_fechas_universidades_madrid (red de seguridad equivalente)
+# ---------------------------------------------------------------------------
+
+
+def _make_uni_item(titulo: str, fecha: date, url: str) -> Item:
+    """Crea un Item con `source='universidades_madrid'`."""
+    return Item(
+        source="universidades_madrid",
+        url=url,
+        titulo=titulo,
+        fecha=fecha,
+        categoria="bolsa",
+    )
+
+
+def _resp(text: str, status: int = 200):
+    r = MagicMock()
+    r.status_code = status
+    r.text = text
+    r.raise_for_status = lambda: None
+    return r
+
+
+# HTML mínimo de UCM con un item de Enfermería con fecha 19/09/2024.
+_UCM_HTML = """
+<html><body>
+  <div class="wg_txt">
+    <ul class="lista_resalta">
+      <li>
+        <a href="https://www.ucm.es/orden-4-du-enfermeria-del-trabajo">
+          Orden 4 D.U. Enfermería del Trabajo
+        </a>
+        (Actualizado el 19/09/2024)
+      </li>
+    </ul>
+  </div>
+</body></html>
+"""
+
+
+def _patch_uni_requests(monkeypatch, html_by_host: dict[str, str]):
+    """Mockea `requests.get` en `universidades_madrid` por host.
+
+    Un host no presente en el dict devuelve HTML vacío (listado sin items).
+    """
+    from vigia.sources import universidades_madrid
+
+    empty = _resp("<html><body></body></html>")
+
+    def side_effect(url, *args, **kwargs):
+        for host, html in html_by_host.items():
+            if host in url:
+                return _resp(html)
+        return empty
+
+    monkeypatch.setattr(
+        universidades_madrid.requests, "get", MagicMock(side_effect=side_effect)
+    )
+
+
+class TestRecalcularFechasUniversidadesMadrid:
+    def test_actualiza_fecha_de_item_cuya_fecha_real_difiere_de_la_de_bd(
+        self, tmp_path, monkeypatch
+    ):
+        """Item en BD con fecha incorrecta (today()-style) → se corrige
+        contra la fecha resoluble del listado actual."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_uni_item(
+            titulo="Orden 4 D.U. Enfermería del Trabajo",
+            fecha=date(2026, 4, 26),  # fecha "errónea" (today-style)
+            url="https://www.ucm.es/orden-4-du-enfermeria-del-trabajo",
+        ))
+
+        _patch_uni_requests(monkeypatch, {"ucm.es": _UCM_HTML})
+
+        seen, updated = maintenance.recalcular_fechas_universidades_madrid(storage)
+        assert seen == 1
+        assert updated == 1
+
+        fecha = storage._conn.execute(
+            "SELECT fecha FROM items WHERE source='universidades_madrid'"
+        ).fetchone()[0]
+        storage.close()
+        assert fecha == "2024-09-19"
+
+    def test_idempotente_no_toca_item_con_la_fecha_correcta(
+        self, tmp_path, monkeypatch
+    ):
+        """Si la fecha en BD ya coincide con la del listado, no se actualiza."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_uni_item(
+            titulo="Orden 4 D.U. Enfermería del Trabajo",
+            fecha=date(2024, 9, 19),  # ya correcta
+            url="https://www.ucm.es/orden-4-du-enfermeria-del-trabajo",
+        ))
+
+        _patch_uni_requests(monkeypatch, {"ucm.es": _UCM_HTML})
+
+        seen, updated = maintenance.recalcular_fechas_universidades_madrid(storage)
+        storage.close()
+        assert seen == 1
+        assert updated == 0
+
+    def test_item_cuya_url_ya_no_aparece_en_listado_se_ignora(
+        self, tmp_path, monkeypatch
+    ):
+        """Convocatoria cerrada/retirada (URL fuera del listado) → no
+        reseteamos su fecha."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_uni_item(
+            titulo="Convocatoria antigua de Enfermería",
+            fecha=date(2023, 1, 15),
+            url="https://www.ucm.es/convocatoria-cerrada-2023",
+        ))
+
+        # Listado solo contiene "Orden 4 D.U.", no la URL del item en BD.
+        _patch_uni_requests(monkeypatch, {"ucm.es": _UCM_HTML})
+
+        seen, updated = maintenance.recalcular_fechas_universidades_madrid(storage)
+        assert seen == 1
+        assert updated == 0
+
+        fecha = storage._conn.execute(
+            "SELECT fecha FROM items WHERE source='universidades_madrid'"
+        ).fetchone()[0]
+        storage.close()
+        assert fecha == "2023-01-15"
+
+    def test_error_red_en_una_universidad_no_aborta_el_resto(
+        self, tmp_path, monkeypatch
+    ):
+        """Si UAH cae con error de red, UCM/UAM siguen procesándose."""
+        from vigia.sources import universidades_madrid
+
+        storage = Storage(db_path=tmp_path / "seen.db")
+        # Item de UCM que SÍ debe corregirse
+        storage.save(_make_uni_item(
+            titulo="Orden 4 D.U. Enfermería del Trabajo",
+            fecha=date(2026, 4, 26),
+            url="https://www.ucm.es/orden-4-du-enfermeria-del-trabajo",
+        ))
+
+        empty = _resp("<html><body></body></html>")
+        ucm_resp = _resp(_UCM_HTML)
+
+        def side_effect(url, *args, **kwargs):
+            if "uah.es" in url:
+                raise Exception("UAH connection reset")
+            if "ucm.es" in url:
+                return ucm_resp
+            return empty
+
+        monkeypatch.setattr(
+            universidades_madrid.requests, "get", MagicMock(side_effect=side_effect)
+        )
+
+        seen, updated = maintenance.recalcular_fechas_universidades_madrid(storage)
+        assert seen == 1
+        assert updated == 1  # UCM se actualiza pese al fallo de UAH
+
+        fecha = storage._conn.execute(
+            "SELECT fecha FROM items WHERE source='universidades_madrid'"
+        ).fetchone()[0]
+        storage.close()
+        assert fecha == "2024-09-19"
+
+    def test_no_toca_items_de_otras_fuentes(self, tmp_path, monkeypatch):
+        """Items con `source != 'universidades_madrid'` quedan intactos."""
+        storage = Storage(db_path=tmp_path / "seen.db")
+        storage.save(_make_item("Bolsa BOE", categoria="bolsa"))  # source=codem
+        storage.save(_make_uni_item(
+            titulo="Orden 4 D.U. Enfermería del Trabajo",
+            fecha=date(2026, 4, 26),
+            url="https://www.ucm.es/orden-4-du-enfermeria-del-trabajo",
+        ))
+
+        _patch_uni_requests(monkeypatch, {"ucm.es": _UCM_HTML})
+
+        seen, updated = maintenance.recalcular_fechas_universidades_madrid(storage)
+        assert seen == 1  # solo el de universidades_madrid
+        assert updated == 1
+
+        # El item de codem mantiene su fecha original (2026-04-25)
+        codem_fecha = storage._conn.execute(
+            "SELECT fecha FROM items WHERE source='codem'"
+        ).fetchone()[0]
+        storage.close()
+        assert codem_fecha == "2026-04-25"
+
+
+# ---------------------------------------------------------------------------
 # Flag --maintenance integrado en main.py
 # ---------------------------------------------------------------------------
 

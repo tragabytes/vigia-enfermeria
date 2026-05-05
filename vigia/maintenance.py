@@ -86,3 +86,88 @@ def recalcular_fechas_comunidad_madrid(storage: Storage) -> tuple[int, int]:
         n_updated += 1
 
     return len(rows), n_updated
+
+
+def recalcular_fechas_universidades_madrid(storage: Storage) -> tuple[int, int]:
+    """Recalcula la fecha de publicación de items de Universidades de Madrid.
+
+    Paralelo a `recalcular_fechas_comunidad_madrid` (regla 8 del CLAUDE.md):
+    `universidades_madrid.py` también tiene una cascada con `today()` como
+    último fallback. Si el regex de fecha falla (cambio de layout en
+    UCM/UAH/UAM), los items quedan congelados con la fecha del run en que
+    se descubrieron y nunca se rescatan.
+
+    Diferencia clave con Comunidad Madrid: las fechas de universidades viven
+    en el `container_text` del listado en vivo, no en una página de detalle
+    individual. Por tanto re-fetchamos el listado de cada `UniListing`,
+    construimos un mapa `{url: (title, container_text)}` y recalculamos solo
+    los items en BD cuya URL siga apareciendo en el listado actual.
+
+    Items en BD cuya URL ya no esté en el listado (oferta cerrada, retirada)
+    se ignoran — no reseteamos su fecha. Si una universidad cae con error
+    de red, se loguea y se sigue con las demás (idempotente).
+
+    Devuelve `(procesados, actualizados)`.
+    """
+    from vigia.sources.universidades_madrid import (
+        UNI_CONFIGS,
+        UniversidadesMadridSource,
+    )
+
+    source = UniversidadesMadridSource()
+
+    # Mapa global url → (title_listado, container_text, code) construido
+    # re-fetchando todos los listados de las universidades configuradas.
+    url_to_entry: dict[str, tuple[str, str, str]] = {}
+    for cfg in UNI_CONFIGS:
+        for listing in cfg.listings:
+            try:
+                entries = source.fetch_listing_entries(cfg, listing)
+            except Exception as exc:
+                # `fetch_listing_entries` ya captura su propio error de red
+                # y lo añade a `last_errors`; este catch es un cinturón
+                # adicional contra excepciones inesperadas (parse, etc.)
+                # para no abortar el resto de universidades.
+                logger.warning(
+                    "Maintenance %s/%s: error inesperado, se ignora: %s",
+                    cfg.code, listing.url, exc,
+                )
+                continue
+            for url, title, container_text in entries:
+                # Si una misma URL aparece en dos listings, gana el primero
+                # (orden de UNI_CONFIGS) — no esperamos colisiones en
+                # producción.
+                url_to_entry.setdefault(url, (title, container_text, cfg.code))
+
+    rows = list(
+        storage._conn.execute(
+            "SELECT id_hash, url, titulo, fecha FROM items "
+            "WHERE source = 'universidades_madrid'"
+        )
+    )
+    n_updated = 0
+    for id_hash, url, titulo, fecha_raw in rows:
+        entry = url_to_entry.get(url)
+        if entry is None:
+            # Item ya no aparece en el listado actual (cerrada/retirada).
+            continue
+
+        _, container_text, code = entry
+
+        try:
+            current = datetime.strptime(fecha_raw, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            current = None
+
+        new_date = source.resolve_pub_date(container_text, titulo, code=code)
+        if new_date == current:
+            continue
+
+        storage.update_fecha(id_hash, new_date)
+        logger.info(
+            "Fecha recalculada %s [%s]: %s → %s (%.60s)",
+            id_hash, code, current, new_date, titulo,
+        )
+        n_updated += 1
+
+    return len(rows), n_updated

@@ -193,6 +193,36 @@ class UniversidadesMadridSource(Source):
     def _fetch_listing(
         self, cfg: UniConfig, listing: UniListing, since_date: date
     ) -> list[RawItem]:
+        entries = self.fetch_listing_entries(cfg, listing)
+        items: list[RawItem] = []
+        for url, title, container_text in entries:
+            pub_date = self.resolve_pub_date(container_text, title, code=cfg.code)
+            if pub_date < since_date:
+                continue
+            items.append(RawItem(
+                source=self.name,
+                url=url,
+                title=title,
+                date=pub_date,
+                text=container_text,
+                extra={"uni": cfg.code, "uni_nombre": cfg.nombre},
+            ))
+            logger.info("%s match: %s", cfg.code, title[:90])
+        return items
+
+    def fetch_listing_entries(
+        self, cfg: UniConfig, listing: UniListing
+    ) -> list[tuple[str, str, str]]:
+        """Re-fetcha el listado y devuelve `[(url, title, container_text), ...]`.
+
+        Aplica el mismo filtro fast-keyword, exclusiones por clase y
+        resolución de URL/título que `_fetch_listing`, pero sin filtro de
+        fecha ni construcción de `RawItem`. Expuesto para
+        `maintenance.py:recalcular_fechas_universidades_madrid`, que necesita
+        emparejar items en BD por URL contra el `container_text` actual.
+
+        Errores de red se acumulan en `self.last_errors` y devuelven `[]`.
+        """
         from bs4 import BeautifulSoup
 
         try:
@@ -206,7 +236,7 @@ class UniversidadesMadridSource(Source):
             return []
 
         soup = BeautifulSoup(resp.text, "lxml")
-        items: list[RawItem] = []
+        entries: list[tuple[str, str, str]] = []
         seen_urls: set[str] = set()
 
         for container in soup.select(listing.item_css):
@@ -234,31 +264,37 @@ class UniversidadesMadridSource(Source):
             if item_url in seen_urls:
                 continue
 
-            pub_date = (
-                _extract_date(container_text)
-                or _year_from_title(title)
-            )
-            if pub_date is None:
-                logger.warning(
-                    "%s: sin fecha resoluble para '%s' — fallback a today()",
-                    cfg.code, title[:80],
-                )
-                pub_date = date.today()
-            if pub_date < since_date:
-                continue
-
             seen_urls.add(item_url)
-            items.append(RawItem(
-                source=self.name,
-                url=item_url,
-                title=title,
-                date=pub_date,
-                text=container_text,
-                extra={"uni": cfg.code, "uni_nombre": cfg.nombre},
-            ))
-            logger.info("%s match: %s", cfg.code, title[:90])
+            entries.append((item_url, title, container_text))
 
-        return items
+        return entries
+
+    def resolve_pub_date(
+        self, container_text: str, title: str, code: str = ""
+    ) -> date:
+        """Cascada de fallbacks para la fecha de publicación.
+
+        1. Texto del listado: "DD/MM/YYYY" o "DD de mes de YYYY".
+        2. Título: año `(YYYY)`.
+        3. `date.today()` con warning — solo si las dos anteriores fallan.
+
+        Expuesto para `maintenance.py:recalcular_fechas_universidades_madrid`,
+        que re-fetcha los listados y recalcula la fecha de items históricos
+        cuando el regex del listado fue mejorado o falló inicialmente.
+        """
+        d = _extract_date(container_text)
+        if d is not None:
+            return d
+
+        d = _year_from_title(title)
+        if d is not None:
+            return d
+
+        logger.warning(
+            "%s: sin fecha resoluble para '%s' — fallback a today()",
+            code, title[:80],
+        )
+        return date.today()
 
 
 # ---------------------------------------------------------------------------
