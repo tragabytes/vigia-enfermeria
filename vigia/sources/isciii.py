@@ -45,6 +45,7 @@ from typing import Optional
 
 import requests
 
+from vigia.sources._html import extract_clean_text
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -58,12 +59,10 @@ PUB_DATE_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Selectores que ensucian el hash (cambian con el render aunque el
-# contenido sustancial no varíe).
-NOISE_SELECTORS = [
-    "nav", "header", "footer", "script", "style",
-    ".lfr-nav-item", ".lfr-nav-child-toggle",
-]
+# Selectores adicionales (más allá de los nav/header/footer/script/style/
+# noscript que el helper ya descompone) que ensucian el hash con cambios
+# de render sin variar el contenido sustancial.
+EXTRA_NOISE_SELECTORS = (".lfr-nav-item", ".lfr-nav-child-toggle")
 
 
 class ISCIIISource(Source):
@@ -110,19 +109,11 @@ class ISCIIISource(Source):
 
     @staticmethod
     def _extract_body_text(html: str) -> str:
-        from bs4 import BeautifulSoup
-
-        soup = BeautifulSoup(html, "lxml")
-        for sel in NOISE_SELECTORS:
-            for el in soup.select(sel):
-                el.decompose()
-        main = (
-            soup.find("main")
-            or soup.find(id="main-content")
-            or soup.body
-            or soup
+        return extract_clean_text(
+            html,
+            target_selectors=("main", "#main-content", "body"),
+            extra_decompose=EXTRA_NOISE_SELECTORS,
         )
-        return main.get_text(" ", strip=True)
 
 
 def _extract_pub_date(text: str) -> Optional[date]:
