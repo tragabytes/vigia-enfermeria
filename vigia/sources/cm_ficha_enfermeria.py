@@ -42,6 +42,7 @@ from typing import Optional
 
 import requests
 
+from vigia.sources._html import extract_clean_text
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -120,20 +121,10 @@ class ComunidadMadridFichaEnfermeriaSource(Source):
 
     @staticmethod
     def _extract_body_text(html: str) -> str:
-        from bs4 import BeautifulSoup
-
-        soup = BeautifulSoup(html, "lxml")
-        target = (
-            soup.select_one(ARTICLE_SELECTOR)
-            or soup.find("main", id="main-content")
-            or soup.body
-            or soup
+        return extract_clean_text(
+            html,
+            target_selectors=(ARTICLE_SELECTOR, "main#main-content", "body"),
         )
-        # Defensivo: aún quitamos ruido predecible que podría ensuciar el hash.
-        for sel in ["nav", "header", "footer", "script", "style"]:
-            for el in target.select(sel):
-                el.decompose()
-        return target.get_text(" ", strip=True)
 
 
 def _date_from_assets(html: str) -> Optional[date]:

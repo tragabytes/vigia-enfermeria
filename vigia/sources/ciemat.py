@@ -35,7 +35,6 @@ de la AGE.
 """
 from __future__ import annotations
 
-import io
 import logging
 import re
 from datetime import date, datetime
@@ -45,6 +44,7 @@ import requests
 import urllib3
 
 from vigia.config import FAST_KEYWORDS, normalize
+from vigia.sources._pdf import download_and_extract_pdf
 from vigia.sources.base import RawItem, Source
 
 # Silencia el warning del verify=False (cert intermedio de ciemat.es).
@@ -60,8 +60,6 @@ CIEMAT_PDF_HOSTS: set[str] = {
     "www.ciemat.es", "ciemat.es", "rdgroups.ciemat.es",
 }
 MAX_PDFS_PER_OFFER = 3
-MAX_PDF_PAGES = 30
-MAX_PDF_BYTES = 5 * 1024 * 1024
 PDF_FETCH_TIMEOUT = 25
 LIST_FETCH_TIMEOUT = 30
 DETAIL_FETCH_TIMEOUT = 20
@@ -215,35 +213,15 @@ class CIEMATSource(Source):
         return text, pdf_links
 
     def _fetch_pdf_text(self, url: str) -> str:
-        """Descarga un PDF anexo y devuelve su texto plano (max 30 págs)."""
-        import pdfplumber
+        """Descarga un PDF anexo y devuelve su texto plano (max 30 págs).
 
-        resp = requests.get(
+        `verify=False`: ciemat.es no envía el cert intermedio y rompe en
+        setups Python sin la cadena de CAs. Riesgo aceptable para una
+        web institucional pública.
+        """
+        return download_and_extract_pdf(
             url,
             headers=self._default_headers(),
             timeout=PDF_FETCH_TIMEOUT,
-            stream=True,
             verify=False,
         )
-        resp.raise_for_status()
-        body = bytearray()
-        for chunk in resp.iter_content(chunk_size=8192):
-            if not chunk:
-                continue
-            body.extend(chunk)
-            if len(body) >= MAX_PDF_BYTES:
-                body = body[:MAX_PDF_BYTES]
-                break
-        resp.close()
-
-        try:
-            with pdfplumber.open(io.BytesIO(bytes(body))) as pdf:
-                pieces = []
-                for page in pdf.pages[:MAX_PDF_PAGES]:
-                    t = page.extract_text() or ""
-                    if t:
-                        pieces.append(t)
-                return "\n\n".join(pieces)
-        except Exception as exc:
-            logger.debug("CIEMAT PDF parse error %s: %s", url, exc)
-            return ""

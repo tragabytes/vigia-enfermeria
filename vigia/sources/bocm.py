@@ -16,7 +16,6 @@ Hallazgo clave (18/03/2024, BOCM-20240318-17):
 """
 from __future__ import annotations
 
-import io
 import logging
 from datetime import date, timedelta
 from xml.etree import ElementTree as ET
@@ -24,6 +23,7 @@ from xml.etree import ElementTree as ET
 import requests
 
 from vigia.config import FAST_KEYWORDS, normalize
+from vigia.sources._pdf import download_and_extract_pdf
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -244,7 +244,7 @@ class BOCMSource(Source):
                 has_trigger = any(kw in titulo_norm for kw in PDF_TRIGGER_WORDS)
                 if is_health and has_trigger:
                     try:
-                        pdf_text = self._extract_pdf_text(url_pdf, max_pages=None)
+                        pdf_text = self._extract_pdf_text(url_pdf)
                     except Exception as exc:
                         logger.debug("BOCM PDF fetch error %s: %s", url_pdf, exc)
 
@@ -282,13 +282,16 @@ class BOCMSource(Source):
                     return sec.get("nombre", "")
         return ""
 
-    def _extract_pdf_text(self, pdf_url: str, max_pages: int | None = None) -> str:
-        """Descarga el PDF y extrae texto completo (PDFs individuales son ~200-500KB)."""
-        import pdfplumber
+    def _extract_pdf_text(self, pdf_url: str) -> str:
+        """Descarga el PDF del BOCM y devuelve texto completo.
 
-        resp = requests.get(pdf_url, headers=self._default_headers(), timeout=60)
-        resp.raise_for_status()
-        with pdfplumber.open(io.BytesIO(resp.content)) as pdf:
-            pages = pdf.pages if max_pages is None else pdf.pages[:max_pages]
-            text_parts = [t for page in pages if (t := page.extract_text())]
-        return " ".join(text_parts)
+        `max_pages=None`: el keyword puede vivir más allá de la página
+        30 (caso histórico: página 19 de 26). PDFs individuales son
+        ~200-500 KB, el cap de 5 MB del helper sobra.
+        """
+        return download_and_extract_pdf(
+            pdf_url,
+            headers=self._default_headers(),
+            timeout=60,
+            max_pages=None,
+        )
