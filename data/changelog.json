@@ -1,34 +1,34 @@
 [
   {
     "date": "2026-05-05",
-    "commit": "86dfe9a",
-    "kind": "feat",
-    "scope": "extractor",
-    "title": "capturar EGOA Sanidad y Consumo del Min. de Sanidad",
-    "body": "La Escala de Gestión de Organismos Autónomos especialidad Sanidad y"
+    "commit": "c663101",
+    "kind": "refactor",
+    "scope": "sources",
+    "title": "helpers PDF/HTML compartidos + fix(boe) timeout body 20s (#6)",
+    "body": "* refactor(sources): extraer helpers PDF/HTML compartidos"
   },
   {
     "date": "2026-05-05",
-    "commit": "c4d082a",
+    "commit": "d02ae5d",
+    "kind": "refactor",
+    "scope": "universidades_madrid",
+    "title": "usar FAST_KEYWORDS centralizada (#5)",
+    "body": "Cabo suelto del PR #2 (centralización de FAST_KEYWORDS): este archivo"
+  },
+  {
+    "date": "2026-05-05",
+    "commit": "9b50c71",
+    "kind": "refactor",
+    "scope": "sources",
+    "title": "centralizar FAST_KEYWORDS en vigia.config (#2)",
+    "body": "La lista [\"enfermer\", \"salud laboral\", \"prevencion de riesgos\"] estaba"
+  },
+  {
+    "date": "2026-05-05",
+    "commit": "686d6c2",
     "kind": "fix",
-    "scope": "comunidad_madrid",
-    "title": "subir timeouts a 30s (detalle y listado)",
-    "body": "El run daily 25370... del 2026-05-05 perdió la búsqueda completa"
-  },
-  {
-    "date": "2026-04-28",
-    "commit": "b7f5f00",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "hash-watcher de la ficha CM Enfermería del Trabajo",
-    "body": "Nueva fuente cm_ficha_enfermeria que monitoriza"
-  },
-  {
-    "date": "2026-04-28",
-    "commit": "1681b60",
-    "kind": "feat",
-    "scope": "sources",
-    "title": "parser hash-watcher ISCIII + cobertura keywords BOE/BOCM",
-    "body": "- vigia/sources/isciii.py: monitoriza proceso-selectivo de la bolsa de"
+    "scope": "",
+    "title": "datetime.utcnow deprecated + red de fechas en universidades_madrid (#1)",
+    "body": "* fix(storage): reemplazar datetime.utcnow() deprecated por now(timezone.utc)"
   }
 ]
