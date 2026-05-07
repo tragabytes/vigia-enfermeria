@@ -13,10 +13,10 @@
     "otro": 9,
     "traslado": 3
   },
-  "days_watching": 10,
+  "days_watching": 11,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-05-06T10:26:09.469869+00:00",
-  "next_run_at": "2026-05-07T08:00:00+00:00",
+  "last_run_at": "2026-05-07T10:31:42.216033+00:00",
+  "next_run_at": "2026-05-08T08:00:00+00:00",
   "sources_online": 14,
   "sources_total": 15,
   "targets_active": 4,
