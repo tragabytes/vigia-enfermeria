@@ -5,7 +5,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 0
   },
   {
@@ -14,7 +14,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 6
   },
   {
@@ -41,7 +41,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 3
   },
   {
@@ -50,7 +50,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 1
   },
   {
@@ -59,7 +59,7 @@
     "status": "error",
     "code": null,
     "detail": "HTTPSConnectionPool(host='www.ciemat.es', port=443): Max retries exceeded with url: /ofertas-de-empleo (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016)')))",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +68,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 1
   },
   {
@@ -77,16 +77,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 3
   },
   {
     "name": "comunidad_madrid",
     "url": "https://sede.comunidad.madrid",
-    "status": "error",
-    "code": 404,
-    "detail": "Not Found",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 11
   },
   {
@@ -95,7 +95,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 1
   },
   {
@@ -104,7 +104,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 0
   },
   {
@@ -113,7 +113,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 0
   },
   {
@@ -122,7 +122,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 0
   },
   {
@@ -131,7 +131,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-11T11:00:27.940231+00:00",
+    "last_probe_at": "2026-05-12T10:38:42.798394+00:00",
     "total_hits": 2
   }
 ]
