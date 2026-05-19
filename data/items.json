@@ -1,5 +1,35 @@
 [
   {
+    "id_hash": "b6b91bee79f1f5e5",
+    "source": "sap_successfactors",
+    "url": "https://empleo.renfe.com/job/El-Pilar-EAE26-053059-T%C3%A9cnicoa-de-Entrada-de-Enfermer%C3%ADa-del-Trabajo-Vari/1361274257/",
+    "titulo": "EAE26-05/3059 Técnico/a de Entrada de Enfermería del Trabajo",
+    "fecha": "2026-05-19",
+    "categoria": "otro",
+    "first_seen_at": "2026-05-19T11:08:31.328903",
+    "summary": "Renfe convoca plaza de Técnico/a de Entrada de Enfermería del Trabajo (ref. EAE26-05/3059), con cobertura en zona 'Vari' (varias localidades). Publicada en portal empleo.renfe.com el 19/05/2026.",
+    "is_relevant": true,
+    "relevance_reason": "El título indica expresamente 'Enfermería del Trabajo', especialidad objetivo de seguimiento. Se trata de una plaza técnica en el servicio de prevención/salud laboral de Renfe.",
+    "process_type": "otro",
+    "organismo": "Renfe Operadora",
+    "centro": "El Pilar / Varias localidades",
+    "plazas": null,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-05-19",
+    "tasas_eur": null,
+    "url_bases": null,
+    "url_inscripcion": "https://empleo.renfe.com/job/El-Pilar-EAE26-053059-T%C3%A9cnicoa-de-Entrada-de-Enfermer%C3%ADa-del-Trabajo-Vari/1361274257/",
+    "requisitos_clave": [
+      "Titulación en Enfermería con especialidad en Enfermería del Trabajo",
+      "Requisitos específicos de la categoría 'Técnico/a de Entrada' en Renfe (consultar convocatoria)"
+    ],
+    "fase": "convocatoria",
+    "next_action": "Acceder a empleo.renfe.com (ref. EAE26-05/3059) para consultar bases, requisitos y plazo de inscripción.",
+    "confidence": 0.55,
+    "enriched_at": "2026-05-19T11:08:45.587696+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "09fd0fc870975ae1",
     "source": "boe",
     "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-10472",

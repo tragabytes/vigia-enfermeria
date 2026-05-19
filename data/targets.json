@@ -376,13 +376,15 @@
     "id": "T-30",
     "name": "RENFE",
     "desc": "Renfe Operadora — Servicio de Prevención (parser propio SAP SuccessFactors)",
-    "hits": 0,
-    "active": false,
+    "hits": 1,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "convocatoria",
+    "item_ids": [
+      "b6b91bee79f1f5e5"
+    ]
   },
   {
     "id": "T-31",
