@@ -5,7 +5,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 0
   },
   {
@@ -14,7 +14,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 6
   },
   {
@@ -41,7 +41,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 4
   },
   {
@@ -50,7 +50,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 1
   },
   {
@@ -59,7 +59,7 @@
     "status": "error",
     "code": null,
     "detail": "HTTPSConnectionPool(host='www.ciemat.es', port=443): Max retries exceeded with url: /ofertas-de-empleo (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016)')))",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 2
   },
   {
@@ -68,16 +68,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 2
   },
   {
     "name": "codem",
     "url": "https://www.codem.es/RssHyperLink.ashx?Idioma=940267a2-4160-4ee0-a17a-a3cc00a7c64c&Web=e8d948e0-b75e-4537-8e16-687622b6b7ce&Menu=e0fed1d6-aff3-4b0d-be4d-7a276dea3867&Canal=d8b9b124-8147-4727-a7a7-2d1b9184ea01",
-    "status": "ok",
-    "code": 200,
-    "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "status": "error",
+    "code": null,
+    "detail": "HTTPSConnectionPool(host='www.codem.es', port=443): Max retries exceeded with url: /RssHyperLink.ashx?Idioma=940267a2-4160-4ee0-a17a-a3cc00a7c64c&Web=e8d948e0-b75e-4537-8e16-687622b6b7ce&Menu=e0fed1d6-aff3-4b0d-be4d-7a276dea3867&Canal=d8b9b124-8147-4727-a7a7-2d1b9184ea01 (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.codem.es', port=443) at 0x7f3b376ebad0>, 'Connection to www.codem.es timed out. (connect timeout=10)'))",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 3
   },
   {
@@ -86,7 +86,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 11
   },
   {
@@ -95,7 +95,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 1
   },
   {
@@ -104,7 +104,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 0
   },
   {
@@ -113,7 +113,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 0
   },
   {
@@ -122,7 +122,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 1
   },
   {
@@ -131,7 +131,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-05-21T11:28:47.350098+00:00",
+    "last_probe_at": "2026-05-22T10:56:33.768300+00:00",
     "total_hits": 2
   }
 ]
