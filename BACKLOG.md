@@ -350,27 +350,23 @@ El cron del 27/04 corrió a las 10:12 UTC y validó las 4 expectativas en BD/das
 
 **Pendiente menor.** El item del CIEMAT `2380` ya está marcado como `seen` en la rama `state`, por lo que el próximo cron no lo re-emitirá. El usuario lo ve directamente en el dashboard. Si en el futuro pasa otra vez con un item importante, se puede borrar su `id_hash` de la BD remota para forzar re-notificación.
 
-### Pendiente: parsers propios para OPIs estatales (CIEMAT, IAC, INIA, ISCIII…)
+### Parsers propios para OPIs estatales — estado consolidado
 
-CIEMAT publica plazas en su web propia (`ciemat.es/ofertas-de-empleo/-/ofertas/oferta/<id>`) que no monitorizamos directamente. Las convocatorias en BOE bajo "Ministerio de Ciencia, Innovación y Universidades" son OPIs conjuntas y a veces el HTML del item no da pista en los primeros KB. Pillamos el caso por departamento + plan B (anexos PDF) cuando aplica, pero un parser dedicado al portal CIEMAT detecta antes y cubre plazas que solo viven ahí.
+Organismos Públicos de Investigación con servicio de prevención propio. Cobertura individual por estado:
 
-Mismo patrón aplica a otros Organismos Públicos de Investigación con servicio de prevención propio:
+- **CIEMAT** ✅ Parser propio en `vigia/sources/ciemat.py`. Tile T-23.
+- **ISCIII** ✅ Parser hash-watcher (portal sin listado dinámico) en `vigia/sources/isciii.py`. Tile T-38.
+- **IAC** ✅ Resuelto (2026-05-24). Parser propio en `vigia/sources/iac.py`. Tile T-40. Listado Drupal `/es/ofertas-de-trabajo/<slug>` con dedupe de "Leer más" duplicado. La fecha cae a `today()` porque el listado solo expone títulos — el detalle la lleva pero requeriría N+1 fetches. Hoy no hay convocatorias de Enfermería.
+- **CSIC** ✅ Resuelto (2026-05-24). Parser propio en `vigia/sources/csic_sede.py` apuntando a `sede.csic.gob.es/tramites/convocatorias-de-personal` (la URL `csic.es/es/formacion-y-empleo/convocatorias` es solo una landing que enlaza ahí). Estructura Drupal Views muy clara: `.views-row` con `.views-field-field-fecha-publicacion .field-content` y `.views-field-title a`. Tile T-41. Hoy 8 convocatorias visibles, ninguna de Enfermería.
+- **INIA** 🟡 Cobertura indirecta solo (T-42). Investigado 2026-05-24: el portal vive en `https://www.inia.es/empleo/OfertasDeEmpleo/Pages/Inicio.aspx` (SharePoint server, SSL inválido — requiere `verify=False`). HTTP 200 con 112KB, pero `Inicio.aspx` es un menú/landing: 0 tablas, 0 articles, sin fechas visibles en el body. Las ofertas se cargan vía SharePoint AJAX/web parts. Para parser propio haría falta inspeccionar las llamadas XHR del portal SharePoint, posiblemente endpoints `_api/Web/Lists/...` o vistas internas. Mientras tanto, "inia" y "instituto nacional de investigacion y tecnologia agraria" están en `HEALTH_ORGS` y `DEPT_KEYWORDS_FOR_BODY`.
+- **IEO** 🟡 Cobertura indirecta solo (T-43). Investigado 2026-05-24: `https://www.ieo.es` y `https://www.ieo.csic.es` dan ReadTimeout incluso con timeout 30s desde IP no-española. Posiblemente IP-bloqueo o servidor muy lento. Wayback Machine confirma que existió portal de empleo, pero no es accesible hoy desde GitHub Actions ni desde mi entorno. "ieo" e "instituto espanol de oceanografia" en `HEALTH_ORGS` y `DEPT_KEYWORDS_FOR_BODY` aseguran que cualquier convocatoria en BOE/BOCM con esos términos active la inspección de cuerpo/PDF.
 
-- **CIEMAT** — Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas. Portal: `ciemat.es/ofertas-de-empleo`. Ya en watchlist (T-23).
-- **IAC** — Instituto de Astrofísica de Canarias. Portal: `iac.es/es/empleo`.
-- **INIA** — Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria (ahora INIA-CSIC). Portal: `inia.es` (a investigar URL exacta de empleo).
-- **ISCIII** — Instituto de Salud Carlos III. **Investigado 2026-04-28: portal sin listado dinámico viable; cobertura por keywords cerrada (ver bloque dedicado abajo).**
-- **IEO** — Instituto Español de Oceanografía. Portal: `ieo.es/empleo` (ahora dependiente del CSIC).
-- **CSIC** — Consejo Superior de Investigaciones Científicas (paraguas de varios). Portal: `csic.es/es/empleo`.
-
-Patrón de implementación (similar a `vigia/sources/canal_isabel_ii.py`):
-1. Una clase Source por organismo, con `name`, `probe_url`, `fetch(since_date)`.
-2. Listar las ofertas activas del portal (HTML render server-side; CSS selectors a investigar).
-3. Para cada oferta, descargar la página de detalle y devolver `RawItem(title, url, text)`.
-4. El extractor + enricher v2 ya hacen el resto (matcher + estructurado).
-5. Añadir cada uno a `WATCHLIST_ORGS` con su id (T-27, T-28…) y patterns.
-
-Coste: ~1-2h por parser, x6 organismos = 6-12h totales si se quieren todos. Priorización razonable: **CIEMAT primero** (caso real motivador), **ISCIII segundo** (instituto sanitario, mayor probabilidad de plazas de Enfermería del Trabajo en su SP), el resto por orden de tamaño/relevancia. Validar primero el portal HTML de CIEMAT — si está renderizado vía JS-only (como `administracion.gob.es`), habría que delegar al BOE/BOCM y abandonar este parser.
+Patrón de implementación reutilizable (CIEMAT/ISCIII/IAC/CSIC sede):
+1. Una clase `Source` por organismo, con `name`, `probe_url`, `fetch(since_date)`.
+2. Listar las ofertas activas del portal con `requests` + BeautifulSoup (HTML server-side).
+3. Filtrar por `FAST_KEYWORDS` sobre el título o el container_text.
+4. Para portales sin listado dinámico (ISCIII), patrón hash-watcher: snapshot del cuerpo + sha1 al título para reusar deduplicación natural.
+5. Añadir a `SOURCE_REGISTRY` (main.py), `SOURCES_ENABLED` (config.py), `WATCHLIST_ORGS` (config.py) con su tile.
 
 ### 🟡 ISCIII — research 2026-04-28: parser propio descartado, cobertura por keywords cerrada
 

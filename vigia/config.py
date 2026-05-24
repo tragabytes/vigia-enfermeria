@@ -279,6 +279,18 @@ WATCHLIST_ORGS: list[dict] = [
     {"id": "T-39", "name": "EGOA Sanidad y Consumo",
      "desc": "Escala de Gestión de Organismos Autónomos, esp. Sanidad y Consumo (Min. Sanidad) — incluye Área de Enfermería abierta a Diplomatura/Grado en Enfermería",
      "patterns": ["escala de gestion de organismos autonomos", "egoa"]},
+    {"id": "T-40", "name": "IAC",
+     "desc": "Instituto de Astrofísica de Canarias — parser propio del portal ofertas-de-trabajo + cobertura BOE",
+     "patterns": ["iac", "instituto de astrofisica de canarias", "astrofisica de canarias"]},
+    {"id": "T-41", "name": "CSIC",
+     "desc": "Consejo Superior de Investigaciones Científicas — parser propio sede.csic.gob.es + cobertura BOE",
+     "patterns": ["csic", "consejo superior de investigaciones cientificas"]},
+    {"id": "T-42", "name": "INIA-CSIC",
+     "desc": "Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria (INIA-CSIC) — cobertura indirecta BOE (parser propio pendiente, SharePoint AJAX)",
+     "patterns": ["inia", "instituto nacional de investigacion y tecnologia agraria"]},
+    {"id": "T-43", "name": "IEO-CSIC",
+     "desc": "Instituto Español de Oceanografía (IEO-CSIC) — cobertura indirecta BOE (parser propio pendiente, portal con timeout)",
+     "patterns": ["ieo", "instituto espanol de oceanografia"]},
 ]
 
 # Días de antigüedad de la fecha de publicación a partir de los cuales se
@@ -309,6 +321,8 @@ SOURCES_ENABLED: list[str] = [
     "sap_successfactors",
     "las_rozas",
     "aena",
+    "iac",
+    "csic_sede",
 ]
 
 

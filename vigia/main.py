@@ -37,7 +37,9 @@ from vigia.sources.ciemat import CIEMATSource
 from vigia.sources.cm_ficha_enfermeria import ComunidadMadridFichaEnfermeriaSource
 from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
+from vigia.sources.csic_sede import CSICSedeSource
 from vigia.sources.datos_madrid import DatosMadridSource
+from vigia.sources.iac import IACSource
 from vigia.sources.isciii import ISCIIISource
 from vigia.sources.las_rozas import LasRozasSource
 from vigia.sources.metro_madrid import MetroMadridSource
@@ -69,6 +71,8 @@ SOURCE_REGISTRY = {
     "sap_successfactors": SapSuccessfactorsSource,
     "las_rozas": LasRozasSource,
     "aena": AENASource,
+    "iac": IACSource,
+    "csic_sede": CSICSedeSource,
 }
 
 

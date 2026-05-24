@@ -51,6 +51,15 @@ HEALTH_ORGS = [
     # Organismos Públicos de Investigación con servicio de prevención propio
     "isciii",
     "instituto de salud carlos iii",
+    "ciemat",
+    "iac",
+    "instituto de astrofisica de canarias",
+    "csic",
+    "consejo superior de investigaciones cientificas",
+    "inia",
+    "instituto nacional de investigacion y tecnologia agraria",
+    "ieo",
+    "instituto espanol de oceanografia",
     # Empresas públicas con servicio de prevención propio
     "canal de isabel",
     "metro de madrid",
