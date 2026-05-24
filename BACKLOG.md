@@ -487,7 +487,7 @@ Añadido `"emt"` y `"empresa municipal de transportes"` a `HEALTH_ORGS` (BOCM) y
 Pendiente como mejora futura: parsers dedicados de portales propios con feed/API estructurado para los que los tengan. Casos interesantes detectados:
 - Majadahonda: `majadahonda.convoca.online` (plataforma específica de convocatorias)
 - Varios usan PORTALEMP: `lasrozas.portalemp.com`, `majadahonda.portalemp.com`, `colladovillalba.portalemp.com`
-- **Las Rozas portal oficial:** `https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo` — listado HTML estático que muestra solo procesos con plazo abierto (filtrado por el propio ayuntamiento). Beneficio adicional sobre BOCM: detectaríamos ANTES (sin esperar publicación oficial) y con la garantía de plazo vivo. Investigar estructura HTML para parser dedicado.
+- ~~**Las Rozas portal oficial**~~ ✅ Resuelto (2026-05-24). Implementado `vigia/sources/las_rozas.py` (tabla `table tbody tr`, plazo en celda 2 con cascada "Desde el ..." → "del ..." → "hasta el ..." → today, fallback a row_text si la celda 2 ya muestra el evento actual en lugar del plazo). **Smoke real detectó match inmediato**: PI-03/2024 "Diplomado Universitario de Enfermería (DUE)", 2 plazas A2 promoción interna, fase actual "Notas Definitivas Fase de Oposición". 14 tests en `test_las_rozas.py`.
 
 ### ~~Empresas públicas estatales — parsers propios SAP SuccessFactors~~ 🟡 RENFE, Correos, Navantia ✅ / ADIF, AENA, RTVE, Paradores, SELAE ❌ (2026-04-28)
 
@@ -503,9 +503,9 @@ Pendiente como mejora futura: parsers dedicados de portales propios con feed/API
 
 **SELAE Loterías** (`https://www.selae.es/es/empleo`): HTTP 403 con misma firma Akamai. Idéntico veredicto que ADIF.
 
-**AENA** (`https://empleo.aena.es/empleo/`): HTTP 200 pero body_text=929 — SPA/landing sin contenido server-side. **NO es SAP SuccessFactors** (`/search/` da 404). Sistema custom propio. Para implementar parser haría falta inspeccionar el bundle JS y descubrir el endpoint API real (probable AJAX a `/api/...` con JSON). Trabajo: 1-2h de research adicional. Cobertura indirecta vigente vía BOE 2B + AENA en `DEPT_KEYWORDS_FOR_BODY`.
+~~**AENA**~~ ✅ Resuelto (2026-05-24). El research del 2026-04-28 había descartado AENA mirando `https://empleo.aena.es/empleo/` (la landing/home), que sí es SPA con body_text=929. Pero el endpoint REAL `https://empleo.aena.es/empleo/PFSrv?accion=inicio` devuelve HTML server-rendered con `<h3>` por convocatoria + fechas + enlaces. Implementado `vigia/sources/aena.py` que pivota sobre `<h3>` y agrupa hermanos hasta el siguiente. Hoy AENA no tiene convocatorias de Enfermería; parser listo para cuando aparezcan. 8 tests en `test_aena.py`.
 
-**RTVE** (`https://convocatorias.rtve.es/puestos-ofertados`): HTTP 200 pero **body_text=0** — SPA absoluta donde la respuesta inicial es el shell vacío de React/Vue, todo el contenido se hidrata client-side desde una API que no aparece en el HTML inicial. Endpoints triviales `/api/puestos`, `/data.json`, etc. devuelven el mismo shell (10402B). Para implementar haría falta abrir DevTools y rastrear la primera request XHR/fetch al cargar la página. Cobertura indirecta vía BOE 2A + RTVE en `DEPT_KEYWORDS_FOR_BODY` ("Convocatorias RTVE" suele publicarse en BOE como "Resolución de la Corporación de Radio y Televisión Española").
+**RTVE** (`https://convocatorias.rtve.es/puestos-ofertados`): HTTP 200 pero **body_text=0** — SPA absoluta donde la respuesta inicial es el shell vacío de React/Vue, todo el contenido se hidrata client-side desde una API que no aparece en el HTML inicial. Endpoints triviales `/api/puestos`, `/data.json`, etc. devuelven el mismo shell (10402B). **Reconfirmado bloqueador en 2026-05-24:** intento de inspección con WebFetch falla con "Claude Code is unable to fetch from convocatorias.rtve.es" — no es accesible para análisis remoto, y sin abrir DevTools en navegador real no podemos rastrear la primera request XHR/fetch. Cobertura indirecta vía BOE 2A + RTVE en `DEPT_KEYWORDS_FOR_BODY` ("Convocatorias RTVE" suele publicarse en BOE como "Resolución de la Corporación de Radio y Televisión Española") sigue siendo la única vía. Si en el futuro se quisiera, requeriría Playwright/curl-impersonate.
 
 **Paradores** (`https://www.paradores.es/es/ofertas`): HTTP 200, 216KB de body, pero `/es/ofertas` es un listado de **ofertas turísticas** (descuentos en estancias), NO empleo. La home no expone link directo a portal de empleo público. Hipótesis: Paradores S.M.E. publica todas las plazas vía BOE como cualquier S.M.E. estatal sin web propia de empleo. Confirmar antes de descartar definitivamente.
 
@@ -524,8 +524,8 @@ Añadidos a `HEALTH_ORGS` (bocm.py) y `DEPT_KEYWORDS_FOR_BODY` (boe.py):
 Cuando una de estas empresas aparezca como organismo emisor en BOE/BOCM, se descargará el cuerpo/PDF para buscar la especialidad. `test_organism_coverage.py` parametrizado con los nombres oficiales reales (50 → 70 casos cubiertos).
 
 **Pendiente como mejora futura:**
-- Añadir las anteriores a `WATCHLIST_ORGS` para que aparezcan como tiles propios en la sección 06 del dashboard.
-- Parser dedicado del portal de RTVE: `https://convocatorias.rtve.es/puestos-ofertados`. Ofrece el listado completo de procesos de RTVE con su estado, sin depender del BOE. Misma ventaja que Las Rozas: detección temprana + garantía de plazo abierto.
+- ~~Añadir las anteriores a `WATCHLIST_ORGS` para que aparezcan como tiles propios en la sección 06 del dashboard.~~ ✅ Hecho — T-30..T-37 cubren RENFE/ADIF/AENA/Correos/Navantia/Paradores/RTVE/SELAE. Tile T-32 AENA actualizado a "parser propio del portal PFSrv" (2026-05-24).
+- ~~Parser dedicado del portal de RTVE~~ ❌ Bloqueador documentado arriba (SPA absoluta, no investigable sin Playwright/DevTools). Cobertura indirecta vía BOE 2A es la única vía.
 
 ### ~~Variante "enfermería de empresa" en STRONG_PATTERNS~~ ✅ Resuelto (2026-04-26, commit `f409b90`)
 

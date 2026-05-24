@@ -27,6 +27,7 @@ from vigia.config import SOURCES_ENABLED
 from vigia.extractor import extract
 from vigia.notifier import send
 from vigia.sources.administracion_gob import AdministracionGobSource
+from vigia.sources.aena import AENASource
 from vigia.sources.ayuntamiento_madrid import AyuntamientoMadridSource
 from vigia.sources.boam import BOAMSource
 from vigia.sources.bocm import BOCMSource
@@ -38,6 +39,7 @@ from vigia.sources.codem import CODEMSource
 from vigia.sources.comunidad_madrid import ComunidadMadridSource
 from vigia.sources.datos_madrid import DatosMadridSource
 from vigia.sources.isciii import ISCIIISource
+from vigia.sources.las_rozas import LasRozasSource
 from vigia.sources.metro_madrid import MetroMadridSource
 from vigia.sources.sap_successfactors import SapSuccessfactorsSource
 from vigia.sources.universidades_madrid import UniversidadesMadridSource
@@ -65,6 +67,8 @@ SOURCE_REGISTRY = {
     "isciii": ISCIIISource,
     "universidades_madrid": UniversidadesMadridSource,
     "sap_successfactors": SapSuccessfactorsSource,
+    "las_rozas": LasRozasSource,
+    "aena": AENASource,
 }
 
 

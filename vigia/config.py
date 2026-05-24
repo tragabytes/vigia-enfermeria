@@ -256,7 +256,7 @@ WATCHLIST_ORGS: list[dict] = [
      "desc": "Administrador de Infraestructuras Ferroviarias — cobertura indirecta BOE/BOCM (Akamai bloquea parser directo)",
      "patterns": ["adif", "administrador de infraestructuras ferroviarias"]},
     {"id": "T-32", "name": "AENA",
-     "desc": "AENA — cobertura indirecta BOE/BOCM (portal SPA sin endpoint público)",
+     "desc": "AENA — parser propio del portal PFSrv (server-rendered) + cobertura BOE/BOCM",
      "patterns": [" aena ", "aeropuertos espanoles"]},
     {"id": "T-33", "name": "Correos",
      "desc": "Sociedad Estatal Correos y Telégrafos — Servicio de Prevención (parser propio SAP SuccessFactors)",
@@ -307,6 +307,8 @@ SOURCES_ENABLED: list[str] = [
     "isciii",
     "universidades_madrid",
     "sap_successfactors",
+    "las_rozas",
+    "aena",
 ]
 
 
