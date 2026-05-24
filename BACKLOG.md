@@ -649,27 +649,17 @@ Por qué aparece "pending enrichment" en items concretos puede deberse a:
 
 **Acción futura:** auditar `items.json` actual contra `enriched_version`. Si hay muchos en pending, lanzar `gh workflow run maintenance.yml`. Si son pocos y recientes, esperar al siguiente maintenance programado. También considerar mostrar un tooltip explicativo en el dashboard cuando aparezca el tag "pending enrichment" para que el usuario sepa qué significa.
 
-### 2. "Copy permalink" y "Copy hash" — explicar o eliminar
+### ~~2. "Copy permalink" y "Copy hash" — explicar o eliminar~~ ✅ Resuelto (2026-05-24, commit `f18bd1a`)
 
-**Estado actual:** botones presentes en cada item del daily feed y del modal histórico. [`web/app.js:559-560`](web/app.js:559) y `:745`:
-- **`COPY PERMALINK`** copia al portapapeles `it.url` — el enlace directo al BOE/BOCM/portal original. Útil para compartir la fuente exacta con otra persona sin pasar por el dashboard intermedio (p.ej. enviarle a un compañero el link al BOE de la convocatoria EGOA).
-- **`COPY HASH`** copia `it.id_hash` — el hash interno de deduplicación SHA-256 truncado a 16 hex. **Solo útil para debug** (consultar BD por id_hash, validar idempotencia, etc.). Para un usuario final no técnico no aporta nada y puede confundir.
+`COPY HASH` (`it.id_hash`) era ruido para el 99% de usuarios — solo útil para debug interno (consultar BD por id_hash, validar idempotencia). Aplicada la opción (a): nueva constante `DEBUG = new URLSearchParams(location.search).has('debug')` en [`web/app.js:62`](web/app.js:62); el botón en [`cardHTML`](web/app.js:571) solo se renderiza si `DEBUG=true`. `COPY PERMALINK` se mantiene siempre visible (link directo al BOE/BOCM, útil para compartir).
 
-**Acción futura:** dos opciones:
-- **(a)** Eliminar `COPY HASH` del UI público y dejarlo solo en un modo "debug" (activable con `?debug=1` en la URL). Mantener `COPY PERMALINK`.
-- **(b)** Añadir tooltip o `title=""` explicativo a ambos botones para que al pasar el ratón aparezca para qué sirven. Para móvil, considerar etiqueta secundaria pequeña debajo del botón.
+Verificado en preview: sin `?debug=1` → 24 items con 24 COPY PERMALINK y 0 COPY HASH; con `?debug=1` → reaparecen los 24 COPY HASH. El expanded-row del historical ([`app.js:745`](web/app.js:745)) ya no tenía botón COPY HASH (el hash se muestra inline en la línea meta), así que no requirió cambio.
 
-Inclinación: **(a)** — el hash es ruido para el 99% de los usuarios.
+### ~~3. Bug del modal en watchlist — se cierra al toggle hits (desktop + Android, NO iPhone)~~ ✅ Resuelto (2026-05-24, commit `f18bd1a`)
 
-### 3. Bug del modal en watchlist — se cierra al toggle hits (desktop + Android, NO iPhone)
+Causa confirmada: el handler del `.head` dentro de `openTerminalModal` ([`web/app.js:269`](web/app.js:269)) no llamaba `stopPropagation()`, así que el click burbujeaba al `<dialog>` y el listener del backdrop lo cerraba. Otros handlers del modal (copy buttons, links) ya tenían el guard; este se quedó fuera por inercia. iOS gestiona el bubbling de clicks de manera distinta, lo que explicaba que iPhone no lo reprodujera.
 
-**Síntoma del usuario:** abriendo un tile de "Targets under observation" se despliega el modal con la lista de hits. Al intentar plegar/desplegar uno de los hits dentro del modal, el modal se cierra entero. **Reproducible en escritorio y Android. NO reproducible en iPhone.**
-
-**Causa probable.** [`web/app.js:287-296`](web/app.js:287): el listener del backdrop del modal cierra el `<dialog>` cuando se hace click fuera del frame. Si los toggles dentro del modal no hacen `stopPropagation()` en su handler, el click "burbujea" hasta el backdrop y dispara el cierre. iOS gestiona los eventos touch/click distinto a Chrome desktop y Android Chrome, lo que explicaría el comportamiento divergente.
-
-Ya hay `stopPropagation()` en otros sitios del modal ([`app.js:271, 278, 498, 505, 869, 951`](web/app.js:271)) — falta cubrir los handlers de los toggles de hits dentro del modal de watchlist. Hay que localizar el handler concreto del toggle dentro del modal de targets y añadir `e.stopPropagation()` en su listener `click`.
-
-**Acción futura:** reproducir en desktop con DevTools abierto, inspeccionar qué elemento dispara el toggle y verificar que no propaga al backdrop. Probable fix de 1-2 líneas.
+Fix: añadir `e.stopPropagation()` antes del `c.classList.toggle('open')`. Verificado en preview con viewport desktop 1280x800 (frame del dialog centrado en 920px con backdrop visible a los lados): togglear la segunda card (cerrada→abierta) ya no cierra el modal; el click en el backdrop (x=50, y=400) sigue cerrándolo correctamente.
 
 ### 4. UX móvil de "Base de datos histórica" — aporta poca info con mucha fricción
 
