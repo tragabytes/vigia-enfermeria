@@ -626,3 +626,66 @@ Si solo quieres compartirlo con un puñado de gente y no te molesta intervenir m
 - **Logs persistidos:** además de la BD `seen.db` en la rama `state`, considerar volcar un CSV histórico de todos los hallazgos (no solo nuevos) para análisis posterior.
 - ~~**Dashboard mínimo:**~~ ✅ Capa de datos resuelta (2026-04-25); ver sección "Dashboard web público" arriba. Falta el HTML, en manos de Claude Design.
 - ~~**Test de fuentes "vivas":**~~ ✅ Resuelto (2026-04-25, commit `44f7240`). Añadido `python -m vigia.main --probe` que hace HEAD/GET ligero a la URL principal de cada fuente y muestra una tabla de salud. Integrado en `daily.yml` con `if: always() + continue-on-error: true` para que cada run del cron deje el estado de las fuentes en los logs sin afectar la conclusion del job.
+
+---
+
+## 🎨 Frontend — pendientes UX detectados 2026-05-24
+
+Conversación con el usuario tras navegar el dashboard en vivo. Apuntes para acometer más adelante, no implementados.
+
+### 1. "AI Summary (pending enrichment)" en el daily feed
+
+**Síntoma del usuario:** al abrir el desplegable de un item, el header del summary muestra "pending enrichment" en lugar del modelo (claude-sonnet-4-6 / claude-haiku-4-5).
+
+**Causa.** [`web/app.js:514-518`](web/app.js:514): el tag se calcula a partir de `it.enriched_version`:
+- `=== 2` → `claude-sonnet-4-6` (v2 estructurado)
+- `=== 1` → `claude-haiku-4-5` (v1 legacy, solo string summary)
+- otro (null/0 / < ENRICHMENT_VERSION) → `pending enrichment`
+
+Por qué aparece "pending enrichment" en items concretos puede deberse a:
+1. **Item nuevo descubierto entre el cron diario y el siguiente run de `maintenance.yml`** — el daily.yml NO ejecuta el enricher en items existentes; solo procesa hallazgos del día. El backfill v2 lo hace `maintenance.yml`.
+2. **Subida de `ENRICHMENT_VERSION` sin re-ejecutar `maintenance.yml`** — items históricos quedan con `enriched_version < 5` (versión actual) y `iter_items_for_enrichment` los marca para backfill.
+3. **Enricher falló por API key ausente o error de Anthropic** — graceful degradation deja el item con `enriched_version=null`.
+
+**Acción futura:** auditar `items.json` actual contra `enriched_version`. Si hay muchos en pending, lanzar `gh workflow run maintenance.yml`. Si son pocos y recientes, esperar al siguiente maintenance programado. También considerar mostrar un tooltip explicativo en el dashboard cuando aparezca el tag "pending enrichment" para que el usuario sepa qué significa.
+
+### 2. "Copy permalink" y "Copy hash" — explicar o eliminar
+
+**Estado actual:** botones presentes en cada item del daily feed y del modal histórico. [`web/app.js:559-560`](web/app.js:559) y `:745`:
+- **`COPY PERMALINK`** copia al portapapeles `it.url` — el enlace directo al BOE/BOCM/portal original. Útil para compartir la fuente exacta con otra persona sin pasar por el dashboard intermedio (p.ej. enviarle a un compañero el link al BOE de la convocatoria EGOA).
+- **`COPY HASH`** copia `it.id_hash` — el hash interno de deduplicación SHA-256 truncado a 16 hex. **Solo útil para debug** (consultar BD por id_hash, validar idempotencia, etc.). Para un usuario final no técnico no aporta nada y puede confundir.
+
+**Acción futura:** dos opciones:
+- **(a)** Eliminar `COPY HASH` del UI público y dejarlo solo en un modo "debug" (activable con `?debug=1` en la URL). Mantener `COPY PERMALINK`.
+- **(b)** Añadir tooltip o `title=""` explicativo a ambos botones para que al pasar el ratón aparezca para qué sirven. Para móvil, considerar etiqueta secundaria pequeña debajo del botón.
+
+Inclinación: **(a)** — el hash es ruido para el 99% de los usuarios.
+
+### 3. Bug del modal en watchlist — se cierra al toggle hits (desktop + Android, NO iPhone)
+
+**Síntoma del usuario:** abriendo un tile de "Targets under observation" se despliega el modal con la lista de hits. Al intentar plegar/desplegar uno de los hits dentro del modal, el modal se cierra entero. **Reproducible en escritorio y Android. NO reproducible en iPhone.**
+
+**Causa probable.** [`web/app.js:287-296`](web/app.js:287): el listener del backdrop del modal cierra el `<dialog>` cuando se hace click fuera del frame. Si los toggles dentro del modal no hacen `stopPropagation()` en su handler, el click "burbujea" hasta el backdrop y dispara el cierre. iOS gestiona los eventos touch/click distinto a Chrome desktop y Android Chrome, lo que explicaría el comportamiento divergente.
+
+Ya hay `stopPropagation()` en otros sitios del modal ([`app.js:271, 278, 498, 505, 869, 951`](web/app.js:271)) — falta cubrir los handlers de los toggles de hits dentro del modal de watchlist. Hay que localizar el handler concreto del toggle dentro del modal de targets y añadir `e.stopPropagation()` en su listener `click`.
+
+**Acción futura:** reproducir en desktop con DevTools abierto, inspeccionar qué elemento dispara el toggle y verificar que no propaga al backdrop. Probable fix de 1-2 líneas.
+
+### 4. UX móvil de "Base de datos histórica" — aporta poca info con mucha fricción
+
+**Síntoma del usuario:** la sección histórica en móvil no aporta información valiosa de forma eficiente. Demasiada fricción para ver lo que importa.
+
+**Hipótesis (a confirmar inspeccionando el componente):**
+- Tabla horizontal con muchas columnas → scroll lateral incómodo en móvil.
+- Filtros (`#f-source`, `#f-date`...) en horizontal pueden requerir scroll para verlos.
+- Items con título largo se cortan o requieren expandir para ver categoria/organismo/fase/deadline.
+- Falta de tarjetas tipo "card" verticales que en móvil suelen funcionar mejor que tabla.
+
+**Acción futura:** rediseño mobile-first de la sección histórica. Posibles direcciones:
+- **Cards verticales en móvil** (≤900px) con título completo, chips de categoria/process_type/plazas/deadline visible sin expandir.
+- **Filtros colapsables** en un drawer/acordeón al inicio, no permanentemente visibles.
+- **Sticky header** del filtro de fecha/fuente que el usuario use más.
+- **Quick stats** arriba: "X convocatorias últimos 30 días", "Y con plazo abierto", "Z urgentes".
+- Considerar limitar columnas mostradas por defecto en móvil y ofrecer un toggle "ver más detalles".
+
+Antes de implementar, sesión de wireframing y validación con el usuario sobre qué información busca primero al abrir el histórico en móvil.
