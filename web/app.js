@@ -55,6 +55,11 @@ const FASE_LABEL = {
 
 let DATA = { items: [], sources: [], meta: {}, targets: [], changelog: [] };
 
+// Modo debug activable con ?debug=1 en la URL. Hoy solo revela el botón
+// COPY HASH en las cards — el hash es ruido para usuarios finales pero
+// útil para consultar la BD por id_hash o validar idempotencia.
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
 /* ---- bootstrap ------------------------------------------------------- */
 async function loadData() {
   const items   = await fetch('data/items.json').then(r => r.json());
@@ -265,8 +270,14 @@ function openTerminalModal({ title, meta = '', items }) {
     body.innerHTML = ordered.map((it, i) => cardHTML(it, i)).join('');
     // Misma interactividad que en el feed: head abre/cierra el body, los
     // botones de copy paran propagación. La primera card empieza abierta.
+    // stopPropagation en el toggle: el listener del backdrop del <dialog>
+    // recibe clicks bubbleados y, en escritorio + Android, los interpreta
+    // como fuera del frame y cierra el modal entero. iPhone no.
     $$('.card', body).forEach((c, idx) => {
-      c.querySelector('.head').addEventListener('click', () => c.classList.toggle('open'));
+      c.querySelector('.head').addEventListener('click', (e) => {
+        e.stopPropagation();
+        c.classList.toggle('open');
+      });
       c.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', e => {
         e.stopPropagation();
         navigator.clipboard?.writeText(b.dataset.copy);
@@ -557,7 +568,7 @@ function cardHTML(it, i) {
           <a href="${it.url}" target="_blank" rel="noopener" class="btn-term">OPEN SOURCE →</a>
           ${basesBtn}
           <button class="btn-term ghost" data-copy="${it.url}">COPY PERMALINK</button>
-          <button class="btn-term ghost" data-copy="${it.id_hash}">COPY HASH</button>
+          ${DEBUG ? `<button class="btn-term ghost" data-copy="${it.id_hash}">COPY HASH</button>` : ''}
         </div>
       </div>
     </div>`;
