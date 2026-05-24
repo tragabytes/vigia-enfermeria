@@ -62,7 +62,10 @@ CIEMAT_PDF_HOSTS: set[str] = {
 MAX_PDFS_PER_OFFER = 3
 PDF_FETCH_TIMEOUT = 25
 LIST_FETCH_TIMEOUT = 30
-DETAIL_FETCH_TIMEOUT = 20
+# 2026-05-24: subido 20→30 tras 3 Read timeouts en dry-run 25387900882
+# (detalle 2381, 2380, 2292). Mismo patrón que el fix en comunidad_madrid
+# (commit c4d082a, 2026-05-05). Regla 8 del CLAUDE.md.
+DETAIL_FETCH_TIMEOUT = 30
 
 OFFER_LINK_RE = re.compile(r"/ofertas-de-empleo/-/ofertas/oferta/(\d+)")
 DATE_RE = re.compile(r"\b(\d{2}/\d{2}/\d{4})\b")
