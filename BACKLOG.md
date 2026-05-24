@@ -323,7 +323,22 @@ Añadido pattern para la **Escala de Gestión de Organismos Autónomos, especial
 - `WATCHLIST_ORGS` tile **T-39 EGOA Sanidad y Consumo**.
 - 4 tests nuevos en `test_extractor.py` (2 positivos / 2 negativos: otra escala AGE sin enfermería, EGOA otra especialidad). 331/331 tests pasando.
 
-**Histórico no cazado.** La convocatoria principal del 20/12/2025 está fuera del rango del cron y de los backfills realizados hasta hoy. Los actos posteriores (plantillas, lista de aprobados) se publican en sanidad.gob.es, no en BOE. **Si en el futuro se quiere recuperar el histórico**: backfill segmentado en GitHub Actions (rangos mensuales) o local con `python -m vigia.main --since 2025-12-15`. Verificación: dry-run con `since=2026-04-01` ([run 25387900882](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25387900882)) confirma que el pipeline procesa correctamente y el patrón está activo en producción para futuros actos.
+**Histórico parcialmente cazado (2026-05-24).** Backfill ejecutado vía [run 26367803443](https://github.com/tragabytes/vigia-enfermeria/actions/runs/26367803443) con `since=2025-12-15` (1h 28m, 878 raw items BOE procesados, 5 items nuevos rescatados). Entre ellos llegó la **relación provisional de admitidos EGOA** del 13/02/2026 (BOE-A-2026-3763, `id_hash=2a6a69249db8974b`) que referencia explícitamente la convocatoria del 4 de diciembre de 2025 — el usuario ahora tiene visibilidad del proceso desde fase intermedia. **Pero la convocatoria principal BOE-A-2025-26156 del sábado 20/12/2025 NO se rescató** porque ese backfill se ejecutó con el bug del weekday (ver siguiente bloque). Tras el fix `c9...` el código ya procesa sábados, así que cualquier futuro backfill o re-ejecución la cogerá; no se relanzó por coste (~$2-4 + 1h+ de runner).
+
+### ~~Bug del fetcher BOE: descartaba sábados además de domingos~~ ✅ Resuelto (2026-05-24, commit pendiente push)
+
+**Síntoma.** Durante el backfill EGOA del 2026-05-24 ([run 26367803443](https://github.com/tragabytes/vigia-enfermeria/actions/runs/26367803443)), la convocatoria BOE-A-2025-26156 (EGOA Sanidad y Consumo, sábado 20/12/2025) no se persistió en BD pese a que: (a) el sumario BOE del 20/12 existe (HTTP 200, 342KB, item presente con epígrafe "Escala de Gestión..."), (b) el body del item tiene 8 ocurrencias de "enfermer" + 4 de "prevencion de riesgos", (c) `BOESource._build_raw_item` reproducido en local con el item real genera RawItem válido y `extract()` lo procesa como `categoria=oposicion`.
+
+**Diagnóstico.** [`vigia/sources/boe.py:154`](vigia/sources/boe.py:154) tenía:
+```python
+if target.weekday() >= 5:  # no hay BOE los sábados y domingos normalmente
+    continue
+```
+El comentario era incorrecto: **BOE publica los sábados regularmente** (Real Decreto 181/2008: diario oficial lunes-sábado). Solo los domingos no publica. El skip de sábados perdía silenciosamente todas las publicaciones de sábado desde el inicio del proyecto.
+
+**Fix.** Cambiar `>= 5` por `== 6` (solo domingos). 4 tests nuevos en `tests/test_boe_weekend.py` que pinean el contrato (sábado consultado, domingo no, semana lunes-sábado entera).
+
+**Deuda histórica abierta.** Items publicados en sábados anteriores a este fix se han perdido sin alerta. Si se quiere recuperar histórico amplio, futuro backfill `--since` con un rango grande cogerá automáticamente esos sábados ahora que el fetcher los respeta. No se relanza inmediatamente por coste (~$2-4 Sonnet + 1h+ runner por backfill).
 
 ---
 

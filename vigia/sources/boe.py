@@ -151,7 +151,12 @@ class BOESource(Source):
         items: list[RawItem] = []
         for delta in range((date.today() - since_date).days + 1):
             target = since_date + timedelta(days=delta)
-            if target.weekday() >= 5:  # no hay BOE los sábados y domingos normalmente
+            # Solo descartamos domingos. BOE publica los sábados regularmente
+            # (Real Decreto 181/2008: diario oficial lunes-sábado). El bug
+            # anterior `>= 5` perdió silenciosamente la convocatoria EGOA
+            # Sanidad y Consumo BOE-A-2025-26156 (sábado 20/12/2025) durante
+            # el backfill del 2026-05-24.
+            if target.weekday() == 6:
                 continue
             try:
                 items.extend(self._fetch_day(target))
