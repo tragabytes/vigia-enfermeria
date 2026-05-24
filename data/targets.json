@@ -364,13 +364,15 @@
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 0,
+    "hits": 1,
     "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "propuesta_nombramiento",
+    "item_ids": [
+      "e3d2ffe18d849152"
+    ]
   },
   {
     "id": "T-30",
@@ -401,7 +403,7 @@
   {
     "id": "T-32",
     "name": "AENA",
-    "desc": "AENA — cobertura indirecta BOE/BOCM (portal SPA sin endpoint público)",
+    "desc": "AENA — parser propio del portal PFSrv (server-rendered) + cobertura BOE/BOCM",
     "hits": 0,
     "active": false,
     "nearest_deadline": null,
@@ -486,6 +488,54 @@
     "id": "T-39",
     "name": "EGOA Sanidad y Consumo",
     "desc": "Escala de Gestión de Organismos Autónomos, esp. Sanidad y Consumo (Min. Sanidad) — incluye Área de Enfermería abierta a Diplomatura/Grado en Enfermería",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-40",
+    "name": "IAC",
+    "desc": "Instituto de Astrofísica de Canarias — parser propio del portal ofertas-de-trabajo + cobertura BOE",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-41",
+    "name": "CSIC",
+    "desc": "Consejo Superior de Investigaciones Científicas — parser propio sede.csic.gob.es + cobertura BOE",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-42",
+    "name": "INIA-CSIC",
+    "desc": "Instituto Nacional de Investigación y Tecnología Agraria y Alimentaria (INIA-CSIC) — cobertura indirecta BOE (parser propio pendiente, SharePoint AJAX)",
+    "hits": 0,
+    "active": false,
+    "nearest_deadline": null,
+    "days_until": null,
+    "urgent": false,
+    "latest_phase": null,
+    "item_ids": []
+  },
+  {
+    "id": "T-43",
+    "name": "IEO-CSIC",
+    "desc": "Instituto Español de Oceanografía (IEO-CSIC) — cobertura indirecta BOE (parser propio pendiente, portal con timeout)",
     "hits": 0,
     "active": false,
     "nearest_deadline": null,

@@ -1,34 +1,34 @@
 [
   {
-    "date": "2026-05-05",
-    "commit": "c663101",
-    "kind": "refactor",
+    "date": "2026-05-24",
+    "commit": "36ab39f",
+    "kind": "feat",
     "scope": "sources",
-    "title": "helpers PDF/HTML compartidos + fix(boe) timeout body 20s (#6)",
-    "body": "* refactor(sources): extraer helpers PDF/HTML compartidos"
+    "title": "parsers IAC y CSIC sede + cobertura indirecta INIA/IEO",
+    "body": "Cierre parcial de las 4 OPIs estatales pendientes (BACKLOG.md:362-366)."
   },
   {
-    "date": "2026-05-05",
-    "commit": "d02ae5d",
-    "kind": "refactor",
+    "date": "2026-05-24",
+    "commit": "cfc682e",
+    "kind": "feat",
+    "scope": "sources",
+    "title": "parsers Las Rozas y AENA + cierre tiles/RTVE",
+    "body": "Cuatro tareas acotadas atacadas en bloque, todas en torno a fuentes"
+  },
+  {
+    "date": "2026-05-24",
+    "commit": "2ceb485",
+    "kind": "feat",
     "scope": "universidades_madrid",
-    "title": "usar FAST_KEYWORDS centralizada (#5)",
-    "body": "Cabo suelto del PR #2 (centralización de FAST_KEYWORDS): este archivo"
+    "title": "UC3M + fecha desde PDF + state UAM en extra",
+    "body": "Tres mejoras acotadas sobre el parser de universidades, sacadas del"
   },
   {
-    "date": "2026-05-05",
-    "commit": "9b50c71",
-    "kind": "refactor",
-    "scope": "sources",
-    "title": "centralizar FAST_KEYWORDS en vigia.config (#2)",
-    "body": "La lista [\"enfermer\", \"salud laboral\", \"prevencion de riesgos\"] estaba"
-  },
-  {
-    "date": "2026-05-05",
-    "commit": "686d6c2",
+    "date": "2026-05-24",
+    "commit": "afcb888",
     "kind": "fix",
-    "scope": "",
-    "title": "datetime.utcnow deprecated + red de fechas en universidades_madrid (#1)",
-    "body": "* fix(storage): reemplazar datetime.utcnow() deprecated por now(timezone.utc)"
+    "scope": "ciemat",
+    "title": "subir DETAIL_FETCH_TIMEOUT a 30s (regla 8)",
+    "body": "El dry-run [25387900882](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25387900882)"
   }
 ]
