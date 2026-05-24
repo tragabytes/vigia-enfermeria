@@ -207,7 +207,7 @@ Las universidades públicas convocan plazas para sus servicios de prevención y 
 - **Selector**: `div.uam-card` (excluyendo cards con clase `uam-filters`, que es panel de filtros).
 - **Caso atípico**: UAM **no expone enlaces `<a>` por convocatoria** — solo texto plano dentro de `<p>`. Generamos URL sintética `listing_url#<sha1[:12]>(title)` para que cada item tenga URL única determinista.
 - **Match real validado end-to-end**: 7 items históricos de Enfermero/a y Titulado Medio Enfermería del Trabajo (resoluciones desde 2022 hasta enero 2026).
-- **Limitación**: los cards llevan estado (`Resuelta` / `Abierta` / `Cerrada` / `Próxima apertura`) en `<span class="uam-becas-status">`, valioso para filtrar por fase. Hoy lo conservamos en `RawItem.text` pero no se persiste estructuradamente; el enricher v2 puede recuperarlo del cuerpo. Mejora futura: extraer `state` como campo dedicado del item.
+- **Estado del card** (`Resuelta` / `Abierta` / `Cerrada` / `Próxima apertura`, `<span class="uam-becas-status">`): ✅ propagado a `RawItem.extra['state']` (2026-05-24). Lectura mínima — sin persistencia en BD ni en el dashboard. El enricher v2 puede consumirlo como hint para `fase`. Si en algún momento se quiere ver en el frontend, requeriría migración aditiva (`ALTER TABLE items ADD COLUMN state TEXT`) y propagación al dashboard.
 
 #### Watchlist
 Tres tiles añadidos a `WATCHLIST_ORGS`: T-27 UCM, T-28 UAH, T-29 UAM.
@@ -216,13 +216,11 @@ Tres tiles añadidos a `WATCHLIST_ORGS`: T-27 UCM, T-28 UAH, T-29 UAM.
 
 ### Pendientes con notas técnicas reproducibles para una próxima iteración
 
-#### UC3M — Universidad Carlos III de Madrid
-- **URL útil descubierta**: `https://www.uc3m.es/empleo/pas/novedades_empleo_publico` (HTTP 200).
-- **Plataforma**: CMS propio. Plantilla "MiniSiteB". El tradicional `Satellite/...Portal_de_Empleo` redirige a una página vacía con menú genérico.
-- **Estructura del listado**: tabla `<tr>` con columnas `[CUERPO O ESCALA, GRUPO, ESPECIALIDAD, PLAZAS, FECHA PREVISTA CONVOCATORIA, FECHA PREVISTA INICIO PLAZO PRESENTACIÓN SOLICITUDES]`. 33 filas en captura de 2026-04-28.
-- **Bloqueo**: las celdas son texto plano sin `<a>` por fila — necesitamos URL sintética igual que UAM. **Hoy ESPECIALIDAD = ADMINISTRACIÓN / BIBLIOTECA / INFORMÁTICA**, sin Enfermería. Cuando UC3M planifique una plaza de Enfermería, aparecerá en este cuadro.
-- **Implementación recomendada**: añadir entrada en `UNI_CONFIGS` con `item_css="table tr"`, filtrar `<th>` (cabecera), aceptar URL sintética con fragment basado en el contenido completo del `<tr>`.
-- **Estimación**: ~30 min con la arquitectura actual.
+#### ~~UC3M — Universidad Carlos III de Madrid~~ ✅ Resuelto (2026-05-24)
+- **URL**: `https://www.uc3m.es/empleo/pas/novedades_empleo_publico` (HTTP 200).
+- **Plataforma**: CMS propio. Tabla `<tr>` con columnas `[CUERPO, GRUPO, ESPECIALIDAD, PLAZAS, FECHA PREVISTA CONVOCATORIA, FECHA INICIO PLAZO]`.
+- **Implementación**: entrada en `UNI_CONFIGS` con `item_css="table tr"`. La cabecera `<th>` y filas sin keyword caen naturalmente con el filtro fast-keyword sobre el `container_text` — no requiere exclusión explícita. Filas que sí matcheen reciben URL sintética determinista (`listing#sha1[:12]`) igual que UAM. Tests en `test_universidades_madrid.py::TestUc3mListing`.
+- **Hoy ESPECIALIDAD = ADMINISTRACIÓN / BIBLIOTECA / INFORMÁTICA**, sin Enfermería. Cuando UC3M planifique una plaza de Enfermería, aparecerá en el cuadro y el parser la pillará sin más cambios.
 
 #### URJC — Universidad Rey Juan Carlos
 - **URL**: `https://www.urjc.es/empleo-publico` (HTTP 200, ~1.1MB).
@@ -238,8 +236,8 @@ Tres tiles añadidos a `WATCHLIST_ORGS`: T-27 UCM, T-28 UAH, T-29 UAM.
 - **Hipótesis**: UPM publica todo vía BOE / BOUPM (boletín interno) sin listado HTTP libre. Confirmar consultando el organigrama y la sección RR.HH. del portal principal.
 - **Acción**: requerirá research adicional con navegación manual antes de poder añadir parser.
 
-#### Mejora compartida — URL al detalle real del PDF en UAM/UAH bolsa
-Los items donde se cae a `today()` por falta de fecha en el listado (4 casos en validación end-to-end del 2026-04-28) podrían rescatarse extrayendo la fecha del filename del PDF cuando el `<a>` apunta a uno: patrón `(\d{2})\.(\d{2})\.(\d{4})\.pdf` o variantes con `_`/`-` separadores. Trabajo acotado: ~30 min y un par de tests.
+#### ~~Mejora compartida — Fecha desde filename del PDF en UAM/UAH bolsa~~ ✅ Resuelto (2026-05-24)
+Nueva capa intermedia en la cascada de `resolve_pub_date` (entre el `container_text` y el `year_from_title`): si la URL del item termina en `.pdf`, intentar el regex `(\d{1,2})[.\-_](\d{1,2})[.\-_](\d{4})\.pdf` para rescatar la fecha embebida. Soporta puntos, guiones y underscores como separadores. Caso real motivador: `B1-Enfermeria-03.09.2020.pdf` (UAH bolsa). Helper `_date_from_pdf_url(url)` con 7 tests, integrado también en `recalcular_fechas_universidades_madrid` para rescatar items históricos.
 
 ---
 

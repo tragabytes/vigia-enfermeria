@@ -87,6 +87,13 @@ _DATE_LITERAL = re.compile(
     r"\b(\d{1,2})\s+de\s+([a-záéíóú]+)\s+de\s+(\d{4})\b",
     re.IGNORECASE,
 )
+# Regex de fecha embebida en el filename de un PDF: "DD.MM.YYYY.pdf",
+# "DD-MM-YYYY.pdf", "DD_MM_YYYY.pdf". Caso real UAH bolsa:
+# "B1-Enfermeria-03.09.2020.pdf".
+_DATE_IN_PDF_URL = re.compile(
+    r"(\d{1,2})[.\-_](\d{1,2})[.\-_](\d{4})\.pdf\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -165,6 +172,25 @@ UNI_CONFIGS: list[UniConfig] = [
             ),
         ],
     ),
+    UniConfig(
+        # UC3M publica las plazas en tabla con columnas CUERPO O ESCALA /
+        # GRUPO / ESPECIALIDAD / PLAZAS / FECHA PREVISTA CONVOCATORIA /
+        # FECHA PREVISTA INICIO PLAZO PRESENTACIÓN SOLICITUDES. Sin <a> por
+        # fila: el filtro fast-keyword sobre el container_text deja pasar
+        # solo las filas con "enfermer"/"salud laboral"/etc, y se asigna
+        # URL sintética (listing#sha1) determinista — igual que UAM.
+        # La fila <th> de cabecera no contiene esas keywords, así que cae
+        # naturalmente sin necesidad de filtro extra.
+        code="UC3M",
+        nombre="Universidad Carlos III de Madrid",
+        base_url="https://www.uc3m.es",
+        listings=[
+            UniListing(
+                url="https://www.uc3m.es/empleo/pas/novedades_empleo_publico",
+                item_css="table tr",
+            ),
+        ],
+    ),
 ]
 
 
@@ -191,25 +217,36 @@ class UniversidadesMadridSource(Source):
     ) -> list[RawItem]:
         entries = self.fetch_listing_entries(cfg, listing)
         items: list[RawItem] = []
-        for url, title, container_text in entries:
-            pub_date = self.resolve_pub_date(container_text, title, code=cfg.code)
+        for url, title, container_text, state in entries:
+            pub_date = self.resolve_pub_date(
+                container_text, title, code=cfg.code, item_url=url,
+            )
             if pub_date < since_date:
                 continue
+            extra: dict[str, str] = {"uni": cfg.code, "uni_nombre": cfg.nombre}
+            if state:
+                # Hoy solo UAM lo expone (span.uam-becas-status). Valores
+                # vistos: Resuelta / Abierta / Cerrada / Próxima apertura.
+                extra["state"] = state
             items.append(RawItem(
                 source=self.name,
                 url=url,
                 title=title,
                 date=pub_date,
                 text=container_text,
-                extra={"uni": cfg.code, "uni_nombre": cfg.nombre},
+                extra=extra,
             ))
             logger.info("%s match: %s", cfg.code, title[:90])
         return items
 
     def fetch_listing_entries(
         self, cfg: UniConfig, listing: UniListing
-    ) -> list[tuple[str, str, str]]:
-        """Re-fetcha el listado y devuelve `[(url, title, container_text), ...]`.
+    ) -> list[tuple[str, str, str, Optional[str]]]:
+        """Re-fetcha el listado y devuelve `[(url, title, container_text, state), ...]`.
+
+        `state` solo no-None en UAM (cards con `span.uam-becas-status`):
+        Resuelta / Abierta / Cerrada / Próxima apertura. En el resto de
+        universidades el selector no matchea y queda `None`.
 
         Aplica el mismo filtro fast-keyword, exclusiones por clase y
         resolución de URL/título que `_fetch_listing`, pero sin filtro de
@@ -232,7 +269,7 @@ class UniversidadesMadridSource(Source):
             return []
 
         soup = BeautifulSoup(resp.text, "lxml")
-        entries: list[tuple[str, str, str]] = []
+        entries: list[tuple[str, str, str, Optional[str]]] = []
         seen_urls: set[str] = set()
 
         for container in soup.select(listing.item_css):
@@ -260,25 +297,35 @@ class UniversidadesMadridSource(Source):
             if item_url in seen_urls:
                 continue
 
+            state_node = container.select_one("span.uam-becas-status")
+            state = state_node.get_text(strip=True) if state_node else None
+
             seen_urls.add(item_url)
-            entries.append((item_url, title, container_text))
+            entries.append((item_url, title, container_text, state))
 
         return entries
 
     def resolve_pub_date(
-        self, container_text: str, title: str, code: str = ""
+        self, container_text: str, title: str, code: str = "",
+        item_url: Optional[str] = None,
     ) -> date:
         """Cascada de fallbacks para la fecha de publicación.
 
         1. Texto del listado: "DD/MM/YYYY" o "DD de mes de YYYY".
-        2. Título: año `(YYYY)`.
-        3. `date.today()` con warning — solo si las dos anteriores fallan.
+        2. Filename del PDF si `item_url` apunta a uno (`.pdf` con fecha
+           embebida tipo `B1-Enfermeria-03.09.2020.pdf`).
+        3. Título: año `(YYYY)`.
+        4. `date.today()` con warning — solo si las anteriores fallan.
 
         Expuesto para `maintenance.py:recalcular_fechas_universidades_madrid`,
         que re-fetcha los listados y recalcula la fecha de items históricos
         cuando el regex del listado fue mejorado o falló inicialmente.
         """
         d = _extract_date(container_text)
+        if d is not None:
+            return d
+
+        d = _date_from_pdf_url(item_url)
         if d is not None:
             return d
 
@@ -386,3 +433,21 @@ def _year_from_title(title: str) -> Optional[date]:
     if year < 2000 or year > today.year + 1:
         return None
     return date(year, 1, 1)
+
+
+def _date_from_pdf_url(url: Optional[str]) -> Optional[date]:
+    """Extrae fecha del filename de un PDF, si la lleva embebida.
+
+    Rescata items UAH/UAM donde el listado no expone fecha pero el `<a href>`
+    apunta a un PDF cuyo nombre contiene la fecha de publicación. Caso real
+    motivador: `B1-Enfermeria-03.09.2020.pdf` (bolsa UAH).
+    """
+    if not url or not url.lower().endswith(".pdf"):
+        return None
+    m = _DATE_IN_PDF_URL.search(url)
+    if not m:
+        return None
+    try:
+        return date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+    except ValueError:
+        return None

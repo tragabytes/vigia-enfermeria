@@ -133,10 +133,11 @@ def recalcular_fechas_universidades_madrid(storage: Storage) -> tuple[int, int]:
                     cfg.code, listing.url, exc,
                 )
                 continue
-            for url, title, container_text in entries:
-                # Si una misma URL aparece en dos listings, gana el primero
-                # (orden de UNI_CONFIGS) — no esperamos colisiones en
-                # producción.
+            for url, title, container_text, _state in entries:
+                # `_state` (UAM Resuelta/Abierta/...) no se usa aquí — solo
+                # nos interesa la fecha. Si una misma URL aparece en dos
+                # listings, gana el primero (orden de UNI_CONFIGS) — no
+                # esperamos colisiones en producción.
                 url_to_entry.setdefault(url, (title, container_text, cfg.code))
 
     rows = list(
@@ -159,7 +160,9 @@ def recalcular_fechas_universidades_madrid(storage: Storage) -> tuple[int, int]:
         except (TypeError, ValueError):
             current = None
 
-        new_date = source.resolve_pub_date(container_text, titulo, code=code)
+        new_date = source.resolve_pub_date(
+            container_text, titulo, code=code, item_url=url,
+        )
         if new_date == current:
             continue
 

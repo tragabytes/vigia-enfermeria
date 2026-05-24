@@ -22,6 +22,7 @@ import pytest
 from vigia.sources import universidades_madrid
 from vigia.sources.universidades_madrid import (
     UniversidadesMadridSource,
+    _date_from_pdf_url,
     _extract_date,
     _matches_fast_keywords,
     _resolve_url,
@@ -481,3 +482,232 @@ class TestResolveTitleAndUrl:
         )
         # Cae al modo URL sintética
         assert url.startswith("https://example.org/listing#")
+
+
+# ---------------------------------------------------------------------------
+# UC3M — tabla `<tr>` con columnas, sin `<a>` por fila. URL sintética como UAM.
+# Hoy no hay procesos de Enfermería en UC3M; el HTML del test reproduce la
+# estructura (cabecera + filas de otras especialidades + 1 fila de Enfermería
+# añadida ad-hoc para verificar el camino del matching cuando aparezca).
+# ---------------------------------------------------------------------------
+
+UC3M_LISTING_HTML = """
+<html><body>
+  <table>
+    <tr>
+      <th>CUERPO O ESCALA</th><th>GRUPO</th><th>ESPECIALIDAD</th>
+      <th>PLAZAS</th><th>FECHA PREVISTA CONVOCATORIA</th>
+      <th>FECHA PREVISTA INICIO PLAZO PRESENTACIÓN SOLICITUDES</th>
+    </tr>
+    <tr>
+      <td>Escala Auxiliar Administrativa</td><td>C2</td><td>ADMINISTRACIÓN</td>
+      <td>5</td><td>jun 2026</td><td>sept 2026</td>
+    </tr>
+    <tr>
+      <td>Escala Técnica de Gestión</td><td>A2</td><td>ENFERMERÍA DEL TRABAJO</td>
+      <td>1</td><td>mar 2026</td><td>abr 2026</td>
+    </tr>
+  </table>
+</body></html>
+"""
+
+
+class TestUc3mListing:
+    def _patch_get_uc3m_only(self, html: str):
+        empty = _resp("<html><body></body></html>")
+        uc3m_resp = _resp(html)
+
+        def side_effect(url, *args, **kwargs):
+            return uc3m_resp if "uc3m.es" in url else empty
+
+        return patch.object(
+            universidades_madrid.requests, "get", side_effect=side_effect
+        )
+
+    def test_cabecera_th_y_filas_sin_keyword_se_descartan(self):
+        """La cabecera <th> y la fila de ADMINISTRACIÓN no contienen
+        keywords del filtro fast → caen naturalmente, no requieren
+        exclusión explícita."""
+        source = UniversidadesMadridSource()
+        with self._patch_get_uc3m_only(UC3M_LISTING_HTML):
+            items = source.fetch(since_date=date(2000, 1, 1))
+
+        uc3m_items = [it for it in items if it.extra.get("uni") == "UC3M"]
+        for it in uc3m_items:
+            assert "CUERPO O ESCALA" not in it.title
+            assert "ADMINISTRACIÓN" not in it.title.upper().split("ENFERMER")[0]
+
+    def test_fila_con_enfermeria_genera_item_con_url_sintetica(self):
+        """Cuando UC3M publique una plaza de Enfermería (no es hoy), debe
+        entrar al pipeline con URL sintética determinista igual que UAM."""
+        source = UniversidadesMadridSource()
+        with self._patch_get_uc3m_only(UC3M_LISTING_HTML):
+            items = source.fetch(since_date=date(2000, 1, 1))
+
+        uc3m_items = [it for it in items if it.extra.get("uni") == "UC3M"]
+        enf = next(it for it in uc3m_items if "ENFERMERÍA" in it.title.upper())
+        assert enf.url.startswith(
+            "https://www.uc3m.es/empleo/pas/novedades_empleo_publico#"
+        )
+        digest = enf.url.split("#", 1)[1]
+        assert len(digest) == 12
+
+    def test_solo_se_genera_item_de_la_fila_con_keyword(self):
+        """De 3 filas (cabecera + admin + enfermería), solo la última
+        genera item."""
+        source = UniversidadesMadridSource()
+        with self._patch_get_uc3m_only(UC3M_LISTING_HTML):
+            items = source.fetch(since_date=date(2000, 1, 1))
+
+        uc3m_items = [it for it in items if it.extra.get("uni") == "UC3M"]
+        assert len(uc3m_items) == 1
+
+
+# ---------------------------------------------------------------------------
+# `_date_from_pdf_url` — rescate de fecha desde el filename del PDF
+# ---------------------------------------------------------------------------
+
+
+class TestDateFromPdfUrl:
+    def test_formato_puntos_caso_real_uah(self):
+        """`B1-Enfermeria-03.09.2020.pdf` → 2020-09-03."""
+        assert _date_from_pdf_url(
+            "https://www.uah.es/.../B1-Enfermeria-03.09.2020.pdf"
+        ) == date(2020, 9, 3)
+
+    def test_formato_guiones(self):
+        assert _date_from_pdf_url(
+            "https://example.org/Convocatoria-15-04-2025.pdf"
+        ) == date(2025, 4, 15)
+
+    def test_formato_underscores(self):
+        assert _date_from_pdf_url(
+            "https://example.org/Bolsa_27_10_2024.pdf"
+        ) == date(2024, 10, 27)
+
+    def test_url_no_pdf_devuelve_none(self):
+        assert _date_from_pdf_url("https://example.org/foo.html") is None
+
+    def test_pdf_sin_fecha_legible_devuelve_none(self):
+        assert _date_from_pdf_url("https://example.org/anexo-III.pdf") is None
+
+    def test_pdf_con_fecha_invalida_devuelve_none(self):
+        """`32.13.2025` no es una fecha real."""
+        assert _date_from_pdf_url(
+            "https://example.org/Foo-32.13.2025.pdf"
+        ) is None
+
+    def test_url_vacia_devuelve_none(self):
+        assert _date_from_pdf_url(None) is None
+        assert _date_from_pdf_url("") is None
+
+
+# ---------------------------------------------------------------------------
+# `resolve_pub_date` con item_url — la cascada respeta prioridades
+# ---------------------------------------------------------------------------
+
+
+class TestResolvePubDateCascade:
+    def test_container_gana_sobre_pdf_url(self):
+        """Si el listado expone fecha explícita, prevalece sobre la del
+        filename — el listado es más reciente y autoritativo."""
+        source = UniversidadesMadridSource()
+        d = source.resolve_pub_date(
+            container_text="(Actualizado el 15/03/2026)",
+            title="Plaza Enfermería del Trabajo",
+            item_url="https://example.org/foo-03.09.2020.pdf",
+        )
+        assert d == date(2026, 3, 15)
+
+    def test_pdf_gana_sobre_year_from_title_cuando_container_no_tiene_fecha(self):
+        """PDF filename es más preciso que el año del título."""
+        source = UniversidadesMadridSource()
+        d = source.resolve_pub_date(
+            container_text="sin fecha legible",
+            title="Convocatoria (2020)",
+            item_url="https://example.org/B1-03.09.2020.pdf",
+        )
+        assert d == date(2020, 9, 3)
+
+    def test_year_from_title_cuando_container_y_pdf_fallan(self):
+        source = UniversidadesMadridSource()
+        d = source.resolve_pub_date(
+            container_text="sin fecha legible",
+            title="Convocatoria (2024)",
+            item_url="https://example.org/anexo-III.pdf",
+        )
+        assert d == date(2024, 1, 1)
+
+    def test_fallback_today_si_todo_falla(self):
+        source = UniversidadesMadridSource()
+        d = source.resolve_pub_date(
+            container_text="sin fecha",
+            title="sin año",
+            item_url=None,
+        )
+        assert d == date.today()
+
+
+# ---------------------------------------------------------------------------
+# Estado UAM — capturado en `RawItem.extra['state']` (lectura mínima, sin BD)
+# ---------------------------------------------------------------------------
+
+
+class TestUamState:
+    def _patch_get_uam_only(self, html: str):
+        empty = _resp("<html><body></body></html>")
+        uam_resp = _resp(html)
+
+        def side_effect(url, *args, **kwargs):
+            return uam_resp if "uam.es" in url else empty
+
+        return patch.object(
+            universidades_madrid.requests, "get", side_effect=side_effect
+        )
+
+    def test_card_con_span_status_propaga_state_a_extra(self):
+        """UAM con `<span class='uam-becas-status'>Resuelta</span>` →
+        `RawItem.extra['state'] == 'Resuelta'`."""
+        source = UniversidadesMadridSource()
+        with self._patch_get_uam_only(UAM_FUNCIONARIO_HTML):
+            items = source.fetch(since_date=date(2000, 1, 1))
+
+        enfermero = next(
+            it for it in items
+            if it.extra.get("uni") == "UAM" and "Enfermero" in it.title
+        )
+        assert enfermero.extra["state"] == "Resuelta"
+
+    def test_card_sin_span_status_no_anade_clave_state(self):
+        """Si el card UAM no tiene `span.uam-becas-status` (hipotético),
+        la clave `state` no aparece en `extra`."""
+        html_sin_status = """
+        <html><body>
+          <div class="uam-card">
+            <span class="uam-becas-date">01/02/2026</span>
+            <p>Plaza Enfermería del Trabajo sin estado declarado</p>
+          </div>
+        </body></html>
+        """
+        source = UniversidadesMadridSource()
+        with self._patch_get_uam_only(html_sin_status):
+            items = source.fetch(since_date=date(2000, 1, 1))
+
+        uam_items = [it for it in items if it.extra.get("uni") == "UAM"]
+        assert uam_items
+        for it in uam_items:
+            assert "state" not in it.extra
+
+    def test_universidades_sin_ese_span_no_reciben_state(self):
+        """UCM/UAH no usan esa clase → ningún item suyo lleva `extra['state']`."""
+        source = UniversidadesMadridSource()
+        with patch.object(
+            universidades_madrid.requests, "get",
+            return_value=_resp(UCM_LISTING_HTML),
+        ):
+            items = source.fetch(since_date=date(2000, 1, 1))
+
+        ucm_items = [it for it in items if it.extra.get("uni") == "UCM"]
+        assert ucm_items
+        for it in ucm_items:
+            assert "state" not in it.extra
