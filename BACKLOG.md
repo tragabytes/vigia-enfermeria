@@ -1,6 +1,33 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-05-05 (ultra-review + mantenimiento + cobertura EGOA).
+Pendientes para retomar más adelante. Última actualización: 2026-05-25 (Análisis A + B implementados — vigilancia automática de páginas de detalle y resumen de cambios vía Sonnet).
+
+---
+
+## ✅ Análisis A — DetailWatcher genérico (2026-05-25)
+
+Vigilancia automática de páginas de detalle de TODOS los procesos vivos en BD, generalizando el patrón de los 3 hash-watchers ad-hoc (cm_ficha_enfermeria, isciii, canal_isabel_ii_calendario). Sentado del [plan](.claude/plans/okey-a-hacer-un-bubbly-lantern.md) de la misma fecha.
+
+- ~~**A.1 — Abstraer `HashWatcherSource`**~~ ([commit `91e7ea5`](https://github.com/tragabytes/vigia-enfermeria/commit/91e7ea5)). Nueva base en `vigia/sources/_hash_watcher.py` con `body_selectors`/`noise_selectors`/`title_template`/`extract_pub_date` parametrizables. Las 3 fuentes hash-watcher migradas (refactor estricto, 39/39 tests verdes sin tocar). `__init_subclass__` auto-enlaza `probe_url=url`.
+- ~~**A.2 — Tabla `detail_snapshots` + query items vivos**~~ ([commit `1b77b92`](https://github.com/tragabytes/vigia-enfermeria/commit/1b77b92)). Nueva tabla SQLite `(url PK, last_hash, last_body, last_checked_at)` con migración aditiva idempotente. Query nueva `iter_live_items_for_detail_watch(excluded_sources, days_without_deadline=90)` con window function para escoger el title más reciente cuando una URL aparece en varios snapshots. 6 tests.
+- ~~**A.3 — `DetailWatcher` + integración main.py**~~ ([commit `702629b`](https://github.com/tragabytes/vigia-enfermeria/commit/702629b)). Nuevo `vigia/watchers/detail_watcher.py`. Fase paralela (HTTP+hash) + fase secuencial (BD) para evitar SQLite threading. Seed implícito en primera ejecución. Body cap 16 KB defensivo. Source del RawItem emitido = source ORIGINAL del item (dashboard agrupa visualmente). Integrado como "Fase 1.5" en `vigia/main.py`. EXCLUDED_SOURCES cubre BOE/BOCM/CODEM/datos_madrid (item=detalle), stubs WAF, hash-watchers dedicados. 13 tests.
+- ~~**A.4 — Dry-run validación contra BD producción**~~. 12 URLs vivas detectadas (7 sede.comunidad.madrid, 2 CIEMAT, 1 RENFE SAP, 1 UAH PDF, 1 UAM). Seed pobló 10 (2 CIEMAT SSL en Windows local; en runner Linux OK). Segunda pasada idempotente emitió 0.
+
+**Limitación conocida**: el DetailWatcher vigila las URLs que YA están en BD. Si los cambios reales viven en una sub-URL distinta (ej. `/calendario-XXX` cuando en BD sólo está `/convocatoria-XXX`), no las descubre automáticamente. Por eso `canal_isabel_ii_calendario.py` sigue siendo necesario como parser dedicado para ese caso.
+
+---
+
+## ✅ Análisis B — Resumen de cambios entre snapshots vía Sonnet (2026-05-25)
+
+Suprime alertas cosméticas y, cuando el cambio es real, le dice al usuario QUÉ ha cambiado.
+
+- ~~**B.1 — Persistir `raw_text` + campos `change_*` en Item**~~ ([commit `4d2de39`](https://github.com/tragabytes/vigia-enfermeria/commit/4d2de39)). Migración aditiva añade 3 columnas a `items`: `raw_text`, `change_summary`, `change_substantive`. Extractor copia `raw.text` a `item.raw_text` sólo si el título matchea `[snapshot XXX]` (cap 32 KB chars). Nuevos métodos `Storage.update_change_summary()` y `get_previous_snapshot_raw_text()`. 12 tests.
+- ~~**B.2 — Módulo `diff_summarizer`**~~ ([commit `de49036`](https://github.com/tragabytes/vigia-enfermeria/commit/de49036)). Pre-filtro local sin API: `difflib` + `VOLATILE_PATTERNS` (Última actualización, timestamps, widgets Compartir). Si todas las líneas que cambian son volátiles → cosmético inmediato sin Sonnet. Si no, llamada a Sonnet 4.6 con unified diff y prompt JSON minimalista. Fail-open (sin API key, sin SDK, error red, JSON malformado → notifica como antes). Coste ~$0.0005/llamada, volumen ≤5/run. 20 tests.
+- ~~**B.3 — Integración main.py + notifier**~~ ([commit `00500d2`](https://github.com/tragabytes/vigia-enfermeria/commit/00500d2)). Nueva Fase 3.4 entre `filter_new` y `enrich` invoca `summarize_diff` por cada item snapshot con previo en BD. Filtro de Fase 4 ahora descarta también `change_substantive=False`. Notifier: header `🟡 ACTUALIZACIÓN en X: <resumen>` cuando `change_substantive=True`. 5 tests.
+
+**Efecto en producción**:
+- Snapshot cosmético (tipo el `67324b71b7` de cm_ficha): pre-filtro local → suprimido sin llamar a Sonnet → 0 alerta inútil.
+- Snapshot sustantivo: Sonnet genera resumen → Telegram lo recibe con `🟡 ACTUALIZACIÓN`.
 
 ---
 
