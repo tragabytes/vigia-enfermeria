@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "7d50c95f71fd56ef",
+    "source": "cm_ficha_enfermeria",
+    "url": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "titulo": "Comunidad de Madrid — Ficha Diplomado en Enfermería del Trabajo [snapshot 67324b71b7]",
+    "fecha": "2026-03-25",
+    "categoria": "oposicion",
+    "first_seen_at": "2026-05-25T11:59:43.468236",
+    "summary": "OPE acceso libre 9 plazas Diplomado Enfermería del Trabajo (1 discapacidad), Grupo II Nivel 8 Área D, CM. Convocatoria Orden 1074/2025 (BOCM 08/05/2025). 1er ejercicio celebrado 21/03/2026. Apertura de plicas 22/05/2026.",
+    "is_relevant": true,
+    "relevance_reason": "Convocatoria de oposición de acceso libre específicamente para la especialidad de Enfermería del Trabajo (Diplomado en Enfermería Especialista, Especialidad Enfermería del Trabajo, Grupo II, Nivel 8, Área D) de la Comunidad de Madrid.",
+    "process_type": "oposicion",
+    "organismo": "Comunidad de Madrid — Dirección General de la Función Pública",
+    "centro": null,
+    "plazas": 9,
+    "deadline_inscripcion": "2025-06-10",
+    "fecha_publicacion_oficial": "2025-05-08",
+    "tasas_eur": null,
+    "url_bases": "https://www.comunidad.madrid/docs/assets/2018/04/06/dipl.sal_.pub_enfermeria.pdf",
+    "url_inscripcion": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "requisitos_clave": [
+      "Título de Diplomado/Grado en Enfermería con Especialidad en Enfermería del Trabajo",
+      "Acceso libre (sistema general)",
+      "Proceso: Oposición (Ref. E5783, proceso 3826)"
+    ],
+    "fase": "examen",
+    "next_action": "Primer ejercicio ya celebrado (21/03/2026); apertura de plicas el 22/05/2026 — pendiente publicación de calificaciones.",
+    "confidence": 0.93,
+    "enriched_at": "2026-05-25T11:59:54.700953+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "2a6a69249db8974b",
     "source": "boe",
     "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-3763",

@@ -1,6 +1,22 @@
 [
   {
     "date": "2026-05-24",
+    "commit": "f18bd1a",
+    "kind": "fix",
+    "scope": "dashboard",
+    "title": "modal watchlist + ocultar COPY HASH del UI público",
+    "body": "Cierra dos pendientes UX del 2026-05-24 (BACKLOG #2 y #3):"
+  },
+  {
+    "date": "2026-05-24",
+    "commit": "4ee2199",
+    "kind": "fix",
+    "scope": "boe",
+    "title": "no descartar sábados — BOE publica de lunes a sábado",
+    "body": "Bug detectado durante el backfill EGOA del 2026-05-24 (run 26367803443):"
+  },
+  {
+    "date": "2026-05-24",
     "commit": "36ab39f",
     "kind": "feat",
     "scope": "sources",
@@ -14,21 +30,5 @@
     "scope": "sources",
     "title": "parsers Las Rozas y AENA + cierre tiles/RTVE",
     "body": "Cuatro tareas acotadas atacadas en bloque, todas en torno a fuentes"
-  },
-  {
-    "date": "2026-05-24",
-    "commit": "2ceb485",
-    "kind": "feat",
-    "scope": "universidades_madrid",
-    "title": "UC3M + fecha desde PDF + state UAM en extra",
-    "body": "Tres mejoras acotadas sobre el parser de universidades, sacadas del"
-  },
-  {
-    "date": "2026-05-24",
-    "commit": "afcb888",
-    "kind": "fix",
-    "scope": "ciemat",
-    "title": "subir DETAIL_FETCH_TIMEOUT a 30s (regla 8)",
-    "body": "El dry-run [25387900882](https://github.com/tragabytes/vigia-enfermeria/actions/runs/25387900882)"
   }
 ]
