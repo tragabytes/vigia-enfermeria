@@ -21,14 +21,7 @@ activas son demasiado ruidosas: docenas de PDFs nuevos al mes, todos
 con códigos `SGPY-XXX-26-M3-DDCP` que no revelan perfil profesional
 sin abrir el documento — ROI negativo para enricher v2.
 
-Estrategia: descarga la página, extrae el cuerpo principal limpio
-(quitando navegación), calcula un hash corto del texto, y lo incorpora
-al título del RawItem como `[snapshot <hash>]`. Como
-`id_hash = sha256(source|url|titulo)`, cada snapshot distinto es un
-item nuevo en BD; snapshots repetidos los descarta `filter_new`. El
-extractor decide si el contenido menciona Enfermería del Trabajo: si
-lo hace, entra al pipeline normal (matcher + enricher v2). Si no, se
-descarta como cualquier otro item irrelevante.
+Estrategia: hash-watcher (ver `_hash_watcher.HashWatcherSource`).
 
 Coste: 1 GET por run, ~225KB. Sin paginación, sin PDFs anexos.
 Cobertura indirecta complementaria vía BOE/BOCM ya cerrada (keywords
@@ -37,7 +30,6 @@ y `HEALTH_ORGS`).
 """
 from __future__ import annotations
 
-import hashlib
 import logging
 import re
 from datetime import date, datetime
@@ -45,8 +37,8 @@ from typing import Optional
 
 import requests
 
-from vigia.sources._html import extract_clean_text
-from vigia.sources.base import RawItem, Source
+from vigia.sources._hash_watcher import HashWatcherSource
+from vigia.sources.base import RawItem
 
 logger = logging.getLogger(__name__)
 
@@ -65,54 +57,41 @@ PUB_DATE_RE = re.compile(
 EXTRA_NOISE_SELECTORS = (".lfr-nav-item", ".lfr-nav-child-toggle")
 
 
-class ISCIIISource(Source):
+class ISCIIISource(HashWatcherSource):
     name = "isciii"
-    probe_url = ISCIII_PROCESO_URL
+    url = ISCIII_PROCESO_URL
+    title_template = "ISCIII Bolsa de empleo — Proceso Selectivo [snapshot {hash}]"
+    error_label = "ISCIII proceso-selectivo"
+    body_selectors = ("main", "#main-content", "body")
+    noise_selectors = EXTRA_NOISE_SELECTORS
 
     def fetch(self, since_date: date) -> list[RawItem]:
         try:
             resp = requests.get(
-                ISCIII_PROCESO_URL,
+                self.url,
                 headers=self._default_headers(),
                 timeout=FETCH_TIMEOUT,
             )
             resp.raise_for_status()
         except Exception as exc:
-            msg = f"ISCIII proceso-selectivo: {exc}"
+            msg = f"{self.error_label}: {exc}"
             self.logger.warning(msg)
             self.last_errors.append(msg)
             return []
 
-        body_text = self._extract_body_text(resp.text)
-        if not body_text.strip():
-            msg = "ISCIII proceso-selectivo: cuerpo principal vacío tras limpieza"
-            self.logger.warning(msg)
-            self.last_errors.append(msg)
-            return []
+        raw = self._build_snapshot_raw_item(resp.text)
+        return [raw] if raw is not None else []
 
-        snapshot_hash = hashlib.sha1(body_text.encode("utf-8")).hexdigest()[:10]
-        title = (
-            f"ISCIII Bolsa de empleo — Proceso Selectivo "
-            f"[snapshot {snapshot_hash}]"
-        )
-        pub_date = _extract_pub_date(body_text) or date.today()
+    def extract_pub_date(self, html: str, body_text: str) -> date:
+        return _extract_pub_date(body_text) or date.today()
 
-        return [
-            RawItem(
-                source=self.name,
-                url=ISCIII_PROCESO_URL,
-                title=title,
-                date=pub_date,
-                text=body_text,
-            )
-        ]
-
-    @staticmethod
-    def _extract_body_text(html: str) -> str:
+    # Compat: tests existentes invocan src._extract_body_text(html).
+    def _extract_body_text(self, html: str) -> str:
+        from vigia.sources._html import extract_clean_text
         return extract_clean_text(
             html,
-            target_selectors=("main", "#main-content", "body"),
-            extra_decompose=EXTRA_NOISE_SELECTORS,
+            target_selectors=self.body_selectors,
+            extra_decompose=self.noise_selectors,
         )
 
 

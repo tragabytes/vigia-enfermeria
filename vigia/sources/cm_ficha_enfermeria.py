@@ -14,47 +14,34 @@ se publiquen como item específico en el buscador `sede.comunidad.madrid`
 (pueden pasar días entre que se actualiza la ficha y que sale la
 resolución concreta).
 
-Estrategia: misma técnica que el parser ISCIII. Descarga la página,
-selecciona el `<article class="node--type-main-information">` (cuerpo
-limpio sin nav/menú), calcula `sha1(body)[:10]` e incorpora el hash al
-título del RawItem como `[snapshot <hash>]`. Como `id_hash =
-sha256(source|url|titulo)`, snapshots distintos generan items distintos
-en BD; idénticos los descarta `filter_new`. El cuerpo menciona
-"Enfermería del Trabajo" varias veces, así que el extractor matcheará
-siempre que el snapshot exista — cada cambio sustantivo de la ficha
-genera una alerta real al usuario.
+Estrategia: hash-watcher (ver `_hash_watcher.HashWatcherSource`). El
+cuerpo sí menciona "Enfermería del Trabajo", así que el extractor
+matcheará cada snapshot que se emita → cada cambio sustantivo de la
+ficha genera una alerta real al usuario.
 
 Fecha de publicación: extraída de la última fecha presente en los paths
 `/docs/assets/YYYY/MM/DD/...` del HTML (señal real de la última
-actualización de los documentos enlazados, más precisa que parsear el
-texto). Fallback al texto "Última actualización: DD mes YYYY", luego a
-`today()` con warning.
+actualización de los documentos enlazados). Fallback al texto
+"Última actualización: DD mes YYYY", luego a `today()` con warning.
 
 Coste por run: 1 GET ~125KB. Sin paginación, sin PDFs anexos.
 """
 from __future__ import annotations
 
-import hashlib
 import logging
 import re
-from datetime import date, datetime
+from datetime import date
 from typing import Optional
 
 import requests
 
-from vigia.sources._html import extract_clean_text
-from vigia.sources.base import RawItem, Source
+from vigia.sources._hash_watcher import HashWatcherSource
+from vigia.sources.base import RawItem
 
 logger = logging.getLogger(__name__)
 
 FICHA_URL = "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo"
 FETCH_TIMEOUT = 20
-
-# Selector del cuerpo principal de la ficha. La página usa Drupal con un
-# layout estable de varios años. Si Drupal cambia el theme y el selector
-# deja de matchear, _extract_body_text cae a `<main id="main-content">`
-# y luego a `<body>`.
-ARTICLE_SELECTOR = "article.node--type-main-information"
 
 # Fecha en path de assets enlazados desde la ficha. Cuando el tribunal
 # publica un PDF nuevo, queda con esta forma.
@@ -72,59 +59,51 @@ LAST_UPDATE_RE = re.compile(
 )
 
 
-class ComunidadMadridFichaEnfermeriaSource(Source):
+class ComunidadMadridFichaEnfermeriaSource(HashWatcherSource):
     name = "cm_ficha_enfermeria"
-    probe_url = FICHA_URL
+    url = FICHA_URL
+    title_template = (
+        "Comunidad de Madrid — Ficha Diplomado en Enfermería del Trabajo "
+        "[snapshot {hash}]"
+    )
+    error_label = "CM ficha Enfermería del Trabajo"
+    # Selector preciso de la ficha (Drupal). Si el theme cambia, cae a
+    # `<main id="main-content">` y luego a `<body>`.
+    body_selectors = (
+        "article.node--type-main-information",
+        "main#main-content",
+        "body",
+    )
 
     def fetch(self, since_date: date) -> list[RawItem]:
         try:
             resp = requests.get(
-                FICHA_URL,
+                self.url,
                 headers=self._default_headers(),
                 timeout=FETCH_TIMEOUT,
             )
             resp.raise_for_status()
         except Exception as exc:
-            msg = f"CM ficha Enfermería del Trabajo: {exc}"
+            msg = f"{self.error_label}: {exc}"
             self.logger.warning(msg)
             self.last_errors.append(msg)
             return []
 
-        html = resp.text
-        body_text = self._extract_body_text(html)
-        if not body_text.strip():
-            msg = "CM ficha Enfermería del Trabajo: cuerpo principal vacío tras limpieza"
-            self.logger.warning(msg)
-            self.last_errors.append(msg)
-            return []
+        raw = self._build_snapshot_raw_item(resp.text)
+        return [raw] if raw is not None else []
 
-        snapshot_hash = hashlib.sha1(body_text.encode("utf-8")).hexdigest()[:10]
-        title = (
-            f"Comunidad de Madrid — Ficha Diplomado en Enfermería del Trabajo "
-            f"[snapshot {snapshot_hash}]"
-        )
-        pub_date = (
+    def extract_pub_date(self, html: str, body_text: str) -> date:
+        return (
             _date_from_assets(html)
             or _date_from_last_update_text(body_text)
             or date.today()
         )
 
-        return [
-            RawItem(
-                source=self.name,
-                url=FICHA_URL,
-                title=title,
-                date=pub_date,
-                text=body_text,
-            )
-        ]
-
-    @staticmethod
-    def _extract_body_text(html: str) -> str:
-        return extract_clean_text(
-            html,
-            target_selectors=(ARTICLE_SELECTOR, "main#main-content", "body"),
-        )
+    # Compat: tests existentes invocan src._extract_body_text(html).
+    # Mantenemos el método como wrapper sobre la base.
+    def _extract_body_text(self, html: str) -> str:
+        from vigia.sources._html import extract_clean_text
+        return extract_clean_text(html, target_selectors=self.body_selectors)
 
 
 def _date_from_assets(html: str) -> Optional[date]:
