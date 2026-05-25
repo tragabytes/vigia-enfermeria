@@ -33,6 +33,16 @@ _STRONG_RE = [re.compile(p) for p in STRONG_PATTERNS]
 _FP_RE = [re.compile(p) for p in FALSE_POSITIVE_PATTERNS]
 _WEAK_RE = [(re.compile(a), re.compile(b)) for a, b in WEAK_CONTEXT_PATTERNS]
 
+# Marcador de items snapshot (hash-watchers + DetailWatcher). Cuando aparece
+# en el título, persistimos `item.raw_text` para que el diff_summarizer
+# pueda comparar futuros snapshots contra esta versión.
+_SNAPSHOT_TITLE_RE = re.compile(r"\[snapshot [0-9a-f]+\]")
+
+# Cap del raw_text persistido. 32 KB chars es ~2-10x el tamaño real de los
+# bodies hash-watcher actuales (cm_ficha 3.5 KB, isciii ~10 KB, calendario
+# 167 bytes). Defensivo para evitar inflar la BD en casos patológicos.
+_RAW_TEXT_PERSIST_CAP = 32 * 1024
+
 
 def extract(raw: RawItem) -> Optional[Item]:
     """
@@ -92,12 +102,21 @@ def extract(raw: RawItem) -> Optional[Item]:
     if raw.text:
         extra["raw_text"] = raw.text
 
+    # Para items snapshot (hash-watchers + DetailWatcher) persistimos el
+    # cuerpo a `item.raw_text` para que el diff_summarizer (Análisis B)
+    # pueda comparar futuras versiones. Para el resto de items dejamos
+    # NULL y no engordamos la BD con bodies BOE/BOCM que no se diffean.
+    raw_text_persist: Optional[str] = None
+    if raw.text and _SNAPSHOT_TITLE_RE.search(raw.title):
+        raw_text_persist = raw.text[:_RAW_TEXT_PERSIST_CAP]
+
     return Item(
         source=raw.source,
         url=raw.url,
         titulo=raw.title,
         fecha=raw.date,
         categoria=categoria,
+        raw_text=raw_text_persist,
         extra=extra,
     )
 

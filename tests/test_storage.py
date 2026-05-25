@@ -142,6 +142,115 @@ class TestUpdateSummary:
         assert rows["B"] is None
 
 
+class TestDiffSummarizerSupport:
+    """Soporte de Storage para el diff_summarizer (Análisis B):
+    persistencia de raw_text + change_summary y query del snapshot anterior."""
+
+    def test_bd_nueva_tiene_columnas_diff(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        cols = {row[1] for row in s._conn.execute("PRAGMA table_info(items)")}
+        s.close()
+        assert "raw_text" in cols
+        assert "change_summary" in cols
+        assert "change_substantive" in cols
+
+    def test_save_persiste_raw_text_si_viene_relleno(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        item = _make_item(titulo="Foo [snapshot abcdef0123]")
+        item.raw_text = "Cuerpo limpio del snapshot"
+        s.save(item)
+        row = s._conn.execute(
+            "SELECT raw_text FROM items WHERE id_hash = ?", (item.id_hash,)
+        ).fetchone()
+        s.close()
+        assert row[0] == "Cuerpo limpio del snapshot"
+
+    def test_save_persiste_raw_text_null_para_items_no_snapshot(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        item = _make_item()  # raw_text por defecto = None
+        s.save(item)
+        row = s._conn.execute(
+            "SELECT raw_text FROM items WHERE id_hash = ?", (item.id_hash,)
+        ).fetchone()
+        s.close()
+        assert row[0] is None
+
+    def test_update_change_summary_persiste(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        item = _make_item()
+        s.save(item)
+        item.change_summary = "Publicada lista provisional de admitidos"
+        item.change_substantive = True
+        s.update_change_summary(item)
+        row = s._conn.execute(
+            "SELECT change_summary, change_substantive FROM items "
+            "WHERE id_hash = ?", (item.id_hash,)
+        ).fetchone()
+        s.close()
+        assert row[0] == "Publicada lista provisional de admitidos"
+        assert row[1] == 1
+
+    def test_update_change_substantive_false_se_persiste_como_cero(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        item = _make_item()
+        s.save(item)
+        item.change_substantive = False
+        s.update_change_summary(item)
+        row = s._conn.execute(
+            "SELECT change_substantive FROM items WHERE id_hash = ?",
+            (item.id_hash,)
+        ).fetchone()
+        s.close()
+        assert row[0] == 0
+
+    def test_get_previous_snapshot_raw_text_devuelve_anterior(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        # Snapshot antiguo, persistido primero
+        old = _make_item(titulo="Foo [snapshot oldhash1234]")
+        old.raw_text = "cuerpo viejo"
+        old.first_seen_at = datetime(2026, 5, 20, 10, 0)
+        s.save(old)
+        # Snapshot nuevo
+        new = _make_item(titulo="Foo [snapshot newhash5678]")
+        new.raw_text = "cuerpo nuevo"
+        new.first_seen_at = datetime(2026, 5, 25, 10, 0)
+        s.save(new)
+        prev = s.get_previous_snapshot_raw_text(
+            source=new.source, url=new.url, exclude_id_hash=new.id_hash,
+        )
+        s.close()
+        assert prev == "cuerpo viejo"
+
+    def test_get_previous_snapshot_raw_text_sin_anterior_devuelve_none(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        item = _make_item(titulo="Foo [snapshot newhash5678]")
+        item.raw_text = "cuerpo nuevo"
+        s.save(item)
+        prev = s.get_previous_snapshot_raw_text(
+            source=item.source, url=item.url, exclude_id_hash=item.id_hash,
+        )
+        s.close()
+        assert prev is None
+
+    def test_get_previous_snapshot_raw_text_pre_migracion_devuelve_none(self, tmp_path):
+        """Snapshot anterior pre-feature B: raw_text es NULL. La query
+        debe devolver None (no podemos diffear contra NULL)."""
+        s = Storage(db_path=tmp_path / "seen.db")
+        old = _make_item(titulo="Foo [snapshot oldhash1234]")
+        # raw_text deliberadamente None
+        old.first_seen_at = datetime(2026, 5, 20, 10, 0)
+        s.save(old)
+        new = _make_item(titulo="Foo [snapshot newhash5678]")
+        new.raw_text = "cuerpo nuevo"
+        new.first_seen_at = datetime(2026, 5, 25, 10, 0)
+        s.save(new)
+        prev = s.get_previous_snapshot_raw_text(
+            source=new.source, url=new.url, exclude_id_hash=new.id_hash,
+        )
+        s.close()
+        assert prev is None
+
+
 class TestDetailSnapshots:
     """Tabla auxiliar `detail_snapshots` — estado del DetailWatcher."""
 

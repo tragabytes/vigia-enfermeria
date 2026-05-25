@@ -92,6 +92,12 @@ class Item:
     enriched_at: Optional[str] = None         # ISO timestamp
     enriched_version: Optional[int] = None    # 1 = string-only, 2 = estructurado
 
+    # Soporte para resumen de diff (Análisis B) — sólo poblado para items
+    # snapshot (título matchea `[snapshot ...]`).
+    raw_text: Optional[str] = None            # cuerpo limpio, capeado, para comparar con futuras versiones
+    change_summary: Optional[str] = None      # frase del diff_summarizer cuando el cambio es sustantivo
+    change_substantive: Optional[bool] = None # True = cambio real, False = cosmético (filtra alerta), None = no aplica / primer snapshot
+
     # Buffer interno para datos efímeros del run (raw_text del extractor,
     # diagnósticos…). No se persiste.
     extra: dict = field(default_factory=dict)
@@ -136,6 +142,16 @@ _V2_COLUMNS: list[tuple[str, str]] = [
 ]
 
 
+# Columnas para soporte del diff_summarizer (Análisis B). Aditivas e
+# idempotentes igual que las anteriores; las BDs legacy se actualizan en
+# el primer run sin perder filas.
+_DIFF_COLUMNS: list[tuple[str, str]] = [
+    ("raw_text",            "TEXT"),    # cuerpo limpio para diff
+    ("change_summary",      "TEXT"),    # resumen del cambio
+    ("change_substantive",  "INTEGER"), # 0/1, NULL si no se evaluó
+]
+
+
 class Storage:
     def __init__(self, db_path: Optional[Path] = None) -> None:
         # Resolución diferida de DB_PATH: si la usáramos como default del
@@ -172,6 +188,12 @@ class Storage:
                 self._conn.execute(
                     f"ALTER TABLE items ADD COLUMN {col_name} {col_type}"
                 )
+        # Migración B (idempotente): soporte para diff_summarizer.
+        for col_name, col_type in _DIFF_COLUMNS:
+            if col_name not in existing_cols:
+                self._conn.execute(
+                    f"ALTER TABLE items ADD COLUMN {col_name} {col_type}"
+                )
         # Tabla detail_snapshots: estado del DetailWatcher genérico
         # (`vigia/watchers/detail_watcher.py`). Una fila por URL de detalle
         # que vigilamos automáticamente; guarda el último hash y el último
@@ -197,15 +219,22 @@ class Storage:
     def save(self, item: Item) -> None:
         """Inserta el ítem; no falla si ya existe (INSERT OR IGNORE).
 
-        Solo persiste los campos básicos + summary. Los campos del enricher
-        v2 se rellenan después con `update_enrichment()` — el enricher se
-        ejecuta tras `filter_new`, no antes.
+        Persiste los campos básicos + summary + raw_text. Los campos del
+        enricher v2 y de change_* se rellenan después con
+        `update_enrichment()` / `update_change_summary()` — se calculan
+        tras `filter_new`, no antes.
+
+        `raw_text` SÍ se persiste en save() porque viene poblado desde el
+        extractor para items snapshot, y el diff_summarizer (que corre
+        después de save() pero antes de enrich) lo necesita disponible
+        para futuras iteraciones.
         """
         self._conn.execute(
             """
             INSERT OR IGNORE INTO items
-                (id_hash, source, url, titulo, fecha, categoria, first_seen_at, summary)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (id_hash, source, url, titulo, fecha, categoria,
+                 first_seen_at, summary, raw_text)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item.id_hash,
@@ -216,6 +245,7 @@ class Storage:
                 item.categoria,
                 item.first_seen_at.isoformat(),
                 item.summary,
+                item.raw_text,
             ),
         )
         self._conn.commit()
@@ -292,6 +322,54 @@ class Storage:
             ),
         )
         self._conn.commit()
+
+    def update_change_summary(self, item: Item) -> None:
+        """Persiste `change_summary` y `change_substantive` para un item
+        que ha pasado por el `diff_summarizer`.
+
+        Idempotente: se escriben aunque sean NULL. Se invoca tras el
+        diff (que vive entre filter_new y enrich), no afecta a los items
+        sin `[snapshot ...]` en el título.
+        """
+        substantive_int = (
+            None if item.change_substantive is None
+            else int(bool(item.change_substantive))
+        )
+        self._conn.execute(
+            """
+            UPDATE items
+            SET change_summary = ?, change_substantive = ?
+            WHERE id_hash = ?
+            """,
+            (item.change_summary, substantive_int, item.id_hash),
+        )
+        self._conn.commit()
+
+    def get_previous_snapshot_raw_text(
+        self, source: str, url: str, exclude_id_hash: str
+    ) -> Optional[str]:
+        """Devuelve el `raw_text` del snapshot anterior para `(source, url)`,
+        excluyendo el id_hash actual.
+
+        Los hash-watchers (cm_ficha, isciii, canal_isabel_ii_calendario)
+        y el DetailWatcher emiten snapshots sucesivos con el mismo `source`
+        y la misma `url`, distinguidos sólo por el `[snapshot XXX]` del
+        título — y por tanto por el `id_hash` derivado.
+
+        Devuelve `None` si:
+          - No hay snapshot previo (primer snapshot tras feature).
+          - El snapshot previo tiene `raw_text` NULL (pre-migración).
+        """
+        row = self._conn.execute(
+            """
+            SELECT raw_text FROM items
+            WHERE source = ? AND url = ? AND id_hash != ?
+            ORDER BY first_seen_at DESC
+            LIMIT 1
+            """,
+            (source, url, exclude_id_hash),
+        ).fetchone()
+        return row[0] if row and row[0] else None
 
     def update_categoria(self, id_hash: str, categoria: str) -> None:
         """Cambia la categoría de un item ya guardado. Lo usa la tarea de

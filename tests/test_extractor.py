@@ -274,3 +274,51 @@ class TestClasificacion:
         item = extract(_raw("Enfermería del Trabajo: lista definitiva de admitidos."))
         assert item is not None
         assert item.categoria == "otro"
+
+
+# ---------------------------------------------------------------------------
+# Persistencia de raw_text (soporte para diff_summarizer / Análisis B)
+# ---------------------------------------------------------------------------
+
+class TestRawTextPersistencia:
+    def test_item_snapshot_persiste_raw_text(self):
+        """Items con `[snapshot XXX]` en el título deben llevar
+        `item.raw_text` poblado para el diff_summarizer."""
+        item = extract(_raw(
+            "Comunidad de Madrid — Ficha Enfermería del Trabajo [snapshot abc1234567]",
+            text="Cuerpo limpio de la ficha con todos los datos del proceso.",
+        ))
+        assert item is not None
+        assert item.raw_text == "Cuerpo limpio de la ficha con todos los datos del proceso."
+
+    def test_item_no_snapshot_no_persiste_raw_text(self):
+        """Items normales (BOE/BOCM/listados) NO deben llevar raw_text
+        — engordaría la BD sin beneficio (no se diffean)."""
+        item = extract(_raw(
+            "Resolución BOE 12345 convocatoria Enfermería del Trabajo",
+            text="Cuerpo enorme del item BOE con todos los anexos…",
+        ))
+        assert item is not None
+        assert item.raw_text is None
+
+    def test_raw_text_se_capa_a_32k_chars(self):
+        """Defensivo: bodies patológicamente grandes se truncan al persistir."""
+        # Texto largo + keyword Enfermería del Trabajo al inicio para matchear.
+        huge_with_keyword = "Enfermería del Trabajo " + ("X" * 100_000)
+        item = extract(_raw(
+            "Ficha Enfermería del Trabajo [snapshot deadbeef99]",
+            text=huge_with_keyword,
+        ))
+        assert item is not None
+        assert item.raw_text is not None
+        assert len(item.raw_text) == 32 * 1024
+
+    def test_item_snapshot_pero_sin_text_no_persiste(self):
+        """Si el RawItem no trae text, raw_text queda en None aunque
+        el título sea snapshot (caso degenerado pero posible)."""
+        item = extract(_raw(
+            "Algo [snapshot abc1234567] Enfermería del Trabajo",
+            text="",
+        ))
+        assert item is not None
+        assert item.raw_text is None
