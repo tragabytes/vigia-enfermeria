@@ -26,9 +26,9 @@ import json
 import logging
 import sqlite3
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Iterable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +172,19 @@ class Storage:
                 self._conn.execute(
                     f"ALTER TABLE items ADD COLUMN {col_name} {col_type}"
                 )
+        # Tabla detail_snapshots: estado del DetailWatcher genérico
+        # (`vigia/watchers/detail_watcher.py`). Una fila por URL de detalle
+        # que vigilamos automáticamente; guarda el último hash y el último
+        # cuerpo limpio para detectar cambios y, en futuro, generar diff
+        # resumido (Análisis B).
+        self._conn.execute("""
+            CREATE TABLE IF NOT EXISTS detail_snapshots (
+                url             TEXT PRIMARY KEY,
+                last_hash       TEXT NOT NULL,
+                last_body       TEXT NOT NULL,
+                last_checked_at TEXT NOT NULL
+            )
+        """)
         self._conn.commit()
 
     def is_new(self, item: Item) -> bool:
@@ -362,6 +375,98 @@ class Storage:
             else:
                 logger.debug("Ya visto: %s", item.id_hash)
         return new_items
+
+    def iter_live_items_for_detail_watch(
+        self,
+        excluded_sources: Iterable[str],
+        days_without_deadline: int = 90,
+        today: Optional[date] = None,
+    ) -> list[tuple[str, str, str]]:
+        """Devuelve `(source, url, titulo)` de items "vivos" cuyo source NO
+        está en `excluded_sources`.
+
+        "Vivo" = el proceso aún tiene un horizonte temporal abierto. Dos
+        condiciones (OR):
+          - `deadline_inscripcion >= today` (deadline declarado pendiente)
+          - `deadline_inscripcion IS NULL AND first_seen_at >= today - N
+            días` (sin deadline conocido, pero descubierto recientemente)
+
+        Si una misma URL aparece en varios items (caso típico: snapshots
+        sucesivos del mismo hash-watcher comparten `url`), devuelve sólo
+        el más reciente — el `titulo` que devuelve es el más actual y
+        sirve para construir el title del nuevo snapshot del DetailWatcher.
+        """
+        if today is None:
+            today = date.today()
+        cutoff_first_seen = (
+            datetime.combine(today, datetime.min.time())
+            - timedelta(days=days_without_deadline)
+        ).isoformat()
+        today_iso = today.isoformat()
+        # Subquery: ranking por first_seen_at descendente dentro de cada
+        # (source, url). Tomamos el más reciente.
+        excluded = list(excluded_sources)
+        placeholders = ",".join("?" * len(excluded)) if excluded else "''"
+        cur = self._conn.execute(
+            f"""
+            SELECT source, url, titulo FROM (
+                SELECT source, url, titulo, first_seen_at,
+                       ROW_NUMBER() OVER (
+                           PARTITION BY source, url
+                           ORDER BY first_seen_at DESC
+                       ) AS rn
+                FROM items
+                WHERE source NOT IN ({placeholders})
+                  AND (
+                      (deadline_inscripcion IS NOT NULL
+                       AND deadline_inscripcion >= ?)
+                      OR (deadline_inscripcion IS NULL
+                          AND first_seen_at >= ?)
+                  )
+            ) WHERE rn = 1
+            ORDER BY source, url
+            """,
+            (*excluded, today_iso, cutoff_first_seen),
+        )
+        return [(row[0], row[1], row[2]) for row in cur]
+
+    # ------------------------------------------------------------------
+    # detail_snapshots — estado del DetailWatcher genérico
+    # ------------------------------------------------------------------
+
+    def get_detail_snapshot(self, url: str) -> Optional[tuple[str, str, str]]:
+        """Devuelve `(last_hash, last_body, last_checked_at)` para `url`,
+        o `None` si no hay snapshot previo."""
+        cur = self._conn.execute(
+            "SELECT last_hash, last_body, last_checked_at "
+            "FROM detail_snapshots WHERE url = ?",
+            (url,),
+        )
+        row = cur.fetchone()
+        return tuple(row) if row else None
+
+    def upsert_detail_snapshot(
+        self, url: str, last_hash: str, last_body: str, last_checked_at: str
+    ) -> None:
+        """Inserta o actualiza el snapshot de una URL de detalle.
+
+        Idempotente: re-escribe los 3 campos. El timestamp es del
+        llamador (no `datetime.now()` aquí) para que el DetailWatcher
+        controle la granularidad y los tests sean deterministas.
+        """
+        self._conn.execute(
+            """
+            INSERT INTO detail_snapshots
+                (url, last_hash, last_body, last_checked_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(url) DO UPDATE SET
+                last_hash = excluded.last_hash,
+                last_body = excluded.last_body,
+                last_checked_at = excluded.last_checked_at
+            """,
+            (url, last_hash, last_body, last_checked_at),
+        )
+        self._conn.commit()
 
     def close(self) -> None:
         self._conn.close()

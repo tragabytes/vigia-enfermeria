@@ -140,3 +140,97 @@ class TestUpdateSummary:
         s.close()
         assert rows["A"] == "Resumen A"
         assert rows["B"] is None
+
+
+class TestDetailSnapshots:
+    """Tabla auxiliar `detail_snapshots` — estado del DetailWatcher."""
+
+    def test_bd_nueva_tiene_tabla_detail_snapshots(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        tables = {
+            row[0] for row in s._conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+        }
+        s.close()
+        assert "detail_snapshots" in tables
+
+    def test_get_devuelve_none_cuando_no_hay_snapshot(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        assert s.get_detail_snapshot("https://example.com/a") is None
+        s.close()
+
+    def test_upsert_inserta_y_get_lo_devuelve(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        s.upsert_detail_snapshot(
+            url="https://example.com/a",
+            last_hash="abc123",
+            last_body="cuerpo limpio",
+            last_checked_at="2026-05-25T12:00:00",
+        )
+        snap = s.get_detail_snapshot("https://example.com/a")
+        s.close()
+        assert snap == ("abc123", "cuerpo limpio", "2026-05-25T12:00:00")
+
+    def test_upsert_reescribe_si_url_existe(self, tmp_path):
+        s = Storage(db_path=tmp_path / "seen.db")
+        s.upsert_detail_snapshot(
+            "https://example.com/a", "hash_v1", "body_v1", "2026-05-25T08:00:00"
+        )
+        s.upsert_detail_snapshot(
+            "https://example.com/a", "hash_v2", "body_v2", "2026-05-26T08:00:00"
+        )
+        snap = s.get_detail_snapshot("https://example.com/a")
+        s.close()
+        assert snap == ("hash_v2", "body_v2", "2026-05-26T08:00:00")
+
+    def test_migracion_idempotente_no_borra_snapshots(self, tmp_path):
+        """Abrir Storage dos veces preserva los snapshots ya guardados."""
+        path = tmp_path / "seen.db"
+        s1 = Storage(db_path=path)
+        s1.upsert_detail_snapshot(
+            "https://example.com/x", "h1", "b1", "2026-05-25T08:00:00"
+        )
+        s1.close()
+
+        s2 = Storage(db_path=path)
+        snap = s2.get_detail_snapshot("https://example.com/x")
+        s2.close()
+        assert snap == ("h1", "b1", "2026-05-25T08:00:00")
+
+    def test_legacy_db_sin_tabla_se_crea_sin_perder_items(self, tmp_path):
+        """BD pre-A: tabla items pero no detail_snapshots. Al abrir,
+        la tabla nueva se crea sin tocar la existente."""
+        legacy_path = tmp_path / "legacy.db"
+        conn = sqlite3.connect(str(legacy_path))
+        conn.execute("""
+            CREATE TABLE items (
+                id_hash TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                url TEXT NOT NULL,
+                titulo TEXT NOT NULL,
+                fecha TEXT NOT NULL,
+                categoria TEXT NOT NULL,
+                first_seen_at TEXT NOT NULL,
+                summary TEXT
+            )
+        """)
+        conn.execute(
+            "INSERT INTO items VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ("h", "boe", "u", "t", "2026-04-20", "oposicion",
+             "2026-04-20T08:00:00", None),
+        )
+        conn.commit()
+        conn.close()
+
+        s = Storage(db_path=legacy_path)
+        tables = {
+            row[0] for row in s._conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            )
+        }
+        assert "detail_snapshots" in tables
+        # Item legacy intacto
+        rows = list(s._conn.execute("SELECT id_hash, titulo FROM items"))
+        s.close()
+        assert rows == [("h", "t")]
