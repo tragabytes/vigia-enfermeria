@@ -47,6 +47,7 @@ from vigia.sources.metro_madrid import MetroMadridSource
 from vigia.sources.sap_successfactors import SapSuccessfactorsSource
 from vigia.sources.universidades_madrid import UniversidadesMadridSource
 from vigia.storage import Storage
+from vigia.watchers.detail_watcher import DetailWatcher
 
 logger = logging.getLogger(__name__)
 
@@ -261,7 +262,26 @@ def main() -> None:
                 logger.error("Fuente %s falló: %s", source_name, exc)
                 errors.append((source_name, str(exc)))
 
-    logger.info("Total raw items: %d", len(raw_items_all))
+    logger.info("Total raw items tras fuentes: %d", len(raw_items_all))
+
+    # --- Fase 1.5: DetailWatcher (snapshots de páginas de detalle) ---
+    # Lee de BD items "vivos" (deadline pendiente o descubrimiento reciente),
+    # hace GET a cada URL, compara con detail_snapshots, emite RawItem por
+    # cada cambio detectado. En dry_run se salta: requiere upsert en BD.
+    storage = Storage()
+    if not args.dry_run:
+        try:
+            detail_watcher = DetailWatcher(storage)
+            raw_items_detail = detail_watcher.run()
+            raw_items_all.extend(raw_items_detail)
+            for err in detail_watcher.last_errors:
+                errors.append(("detail_watcher", err))
+            logger.info(
+                "Total raw items tras DetailWatcher: %d", len(raw_items_all),
+            )
+        except Exception as exc:
+            logger.error("DetailWatcher falló: %s", exc)
+            errors.append(("detail_watcher", str(exc)))
 
     # --- Fase 2: Extracción (matching + clasificación) ---
     matched = []
@@ -279,10 +299,10 @@ def main() -> None:
         if errors:
             for src, err in errors:
                 print(f"ERROR {src}: {err}")
+        storage.close()
         return
 
     # --- Fase 3: Deduplicación y persistencia ---
-    storage = Storage()
     new_items = storage.filter_new(matched)
 
     logger.info("Nuevos (no vistos antes): %d", len(new_items))
