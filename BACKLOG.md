@@ -568,6 +568,49 @@ Implementación inicial con Claude **Haiku 4.5**: `enrich()` recibía la lista d
 
 ---
 
+## 🔖 Seguir procesos concretos (subscripción por `id_hash`)
+
+Pedido por el usuario el 2026-05-25 tras recibir una alerta del snapshot `67324b71b7` de `cm_ficha_enfermeria` (un cambio cosmético — sólo el campo "Última actualización") y notar que para procesos como el de Canal Isabel II nada le avisa cuando se publica la lista provisional de admitidos en `/calendario-245`.
+
+**Diferencia respecto a las dos entradas existentes en este BACKLOG:**
+- "Backend de suscripción Telegram" (sección Dashboard web) y "Auto-suscripción de terceros" (sección siguiente) hablan de **suscribirse al bot entero** (recibir todas las alertas como un destinatario más). Esto es **otra cosa**: el usuario ya recibe todo; quiere **sub-suscribirse a procesos puntuales** para tener alertas adicionales y específicas sobre ellos (cambios sustantivos + recordatorios T-7/T-1).
+
+### Decisiones de diseño (cerradas el 2026-05-25)
+
+- **Granularidad**: por `id_hash` de proceso concreto (no por fuente entera).
+- **Triggers**:
+  1. Cambio sustantivo del enriched JSON — al menos: `fase`, `deadline_inscripcion`, `plazas`, `next_action`, `url_bases`. Diff campo a campo en `notifier.py` entre versión previa y nueva del item. **Filtra el ruido cosmético del hash-watcher** (caso `67324b71b7`: sólo cambió "Última actualización", el enricher no detectaría diff en ningún campo → no alerta).
+  2. Recordatorios temporales: T-7 y T-1 sobre `deadline_inscripcion` (y, cuando esté presente, sobre fechas clave en `next_action` parseables). Cron diario chequea suscripciones vivas contra `today + 7d` / `today + 1d`.
+- **Entry points** (todos):
+  1. Botón "📌 Seguir este proceso" en cada tile/item del dashboard web (requiere pairing web↔bot previo — depende de la entrada "Backend de suscripción Telegram").
+  2. Comando Telegram `/seguir <id_hash>` (y `/dejar <id_hash>`, `/misprocesos`). El `<id_hash>` se ve en cada notificación o se copia desde el dashboard.
+  3. Botón inline (`InlineKeyboardMarkup`) en cada notificación nueva: "📌 Seguir este proceso". Un toque y queda suscrito.
+- **MVP**: sólo Telegram (comandos + botón inline). Sin web hasta que el pairing exista. Implementable de forma autónoma porque el `chat_id` del usuario admin ya está en Secrets.
+
+### Plan MVP (sin Cloudflare Worker)
+
+1. **Persistencia**: nuevo `subscriptions.json` en la rama `state` junto a `seen.db`. Estructura: `{chat_id: [id_hash, id_hash, ...]}`. Lectura/escritura desde `vigia/subscriptions.py` (módulo nuevo).
+2. **Receptor de comandos sin webhook**: el cron diario hace `getUpdates` al final del run (offset persistido también en `state/`). Procesa `/seguir`, `/dejar`, `/misprocesos` y `callback_query` de los botones inline. Latencia de respuesta = cadencia del cron (hoy 1×día) — aceptable para MVP. Cuando exista el Worker se migra a webhook con respuesta instantánea (no rompe nada, mismo storage).
+3. **Detección de cambios sustantivos**: `notifier.py` recibe `(item_nuevo, item_previo)` (storage devuelve la versión previa antes de `update_enrichment`). Diff sobre la lista cerrada de campos relevantes. Si hay diff → notifica a cada `chat_id` suscrito a ese `id_hash`.
+4. **Recordatorios T-7 / T-1**: nuevo step en `daily.yml` (o función llamada al final de `vigia.main`) que itera items con `deadline_inscripcion` ∈ {hoy+7, hoy+1} y `id_hash` ∈ alguna suscripción → enviar.
+5. **Notificación base**: cada item nuevo en el feed habitual lleva botón inline "📌 Seguir" además del texto.
+
+### Tests / verificación
+
+- Mock de `getUpdates` para validar el parseo de comandos y `callback_query`.
+- Tests de diff de enriched (caso: sólo cambia "Última actualización" → no alerta; caso: cambia `deadline` → alerta).
+- Test de recordatorio T-7/T-1 contra fechas mockeadas.
+- Migración idempotente: si `subscriptions.json` no existe en `state/`, se crea vacío en el primer run.
+
+### Coste y riesgos
+
+- **Coste**: 0 €. Sin Worker, sin KV, sin enricher extra (ya enriquecemos el item; sólo añadimos diff).
+- **Riesgo de spam**: ninguno mientras sea sólo para el chat admin. Cuando se abra a terceros (tras montar el Worker), aplicar `flood control` por `chat_id`.
+- **Pérdida de comandos**: si el cron falla un día y no llama a `getUpdates`, los comandos quedan en cola — Telegram los guarda 24h. Riesgo bajo.
+- **Mensaje de bienvenida**: añadir docstring al bot (`/start` describiendo `/seguir`, `/dejar`, `/misprocesos`).
+
+---
+
 ## 👥 Auto-suscripción de terceros (sin tu intervención)
 
 A día de hoy, añadir un nuevo destinatario al bot requiere:
