@@ -117,9 +117,20 @@ def _format_item(item: Item, today: date) -> list[str]:
     Si el enricher v2 no ha corrido (sin API key, fallo, item legacy), las
     líneas de plazas/cierre/tasa/bases simplemente se omiten — el formato
     degrada al del enricher v1 (header + título + categoría + summary + url).
+
+    Si el item es un snapshot evolutivo (hash-watcher o DetailWatcher) y el
+    diff_summarizer lo ha marcado como cambio sustantivo, el header dice
+    "🟡 ACTUALIZACIÓN" en vez de "🟢 NUEVO" e incluye el resumen del
+    cambio si está disponible.
     """
     block: list[str] = []
-    header = f"🟢 <b>NUEVO en {_escape(item.source.upper())}</b>"
+    is_update = item.change_substantive is True
+    if is_update:
+        header = f"🟡 <b>ACTUALIZACIÓN en {_escape(item.source.upper())}</b>"
+        if item.change_summary:
+            header += f": {_escape(item.change_summary)}"
+    else:
+        header = f"🟢 <b>NUEVO en {_escape(item.source.upper())}</b>"
     if item.organismo:
         header += f" — {_escape(item.organismo)}"
     block.append(header)

@@ -22,7 +22,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, timedelta
 from pathlib import Path
 
-from vigia import dashboard, enricher, maintenance
+from vigia import dashboard, diff_summarizer, enricher, maintenance
 from vigia.config import SOURCES_ENABLED
 from vigia.extractor import extract
 from vigia.notifier import send
@@ -307,6 +307,48 @@ def main() -> None:
 
     logger.info("Nuevos (no vistos antes): %d", len(new_items))
 
+    # --- Fase 3.4: Diff summarizer (Análisis B) ---
+    # Para items snapshot (hash-watchers + DetailWatcher) con un snapshot
+    # anterior en BD, compara raw_text y clasifica el cambio:
+    #   - cosmético (típicamente sólo "Última actualización") → suprime
+    #     la alerta marcando change_substantive=False (filtrado en Fase 4).
+    #   - sustantivo → poblamos change_summary para el notifier.
+    # Items sin raw_text (no snapshot) o sin previo se saltan el diff.
+    _SNAPSHOT_RE = __import__("re").compile(r"\[snapshot [0-9a-f]+\]")
+    diff_evaluated = 0
+    diff_suppressed = 0
+    for item in new_items:
+        if not item.raw_text or not _SNAPSHOT_RE.search(item.titulo):
+            continue
+        prev_text = storage.get_previous_snapshot_raw_text(
+            source=item.source, url=item.url, exclude_id_hash=item.id_hash,
+        )
+        if prev_text is None:
+            continue  # primer snapshot del proceso post-feature B
+        substantive, summary = diff_summarizer.summarize_diff(
+            prev_text, item.raw_text,
+        )
+        item.change_substantive = substantive
+        item.change_summary = summary
+        storage.update_change_summary(item)
+        diff_evaluated += 1
+        if not substantive:
+            diff_suppressed += 1
+            logger.info(
+                "diff_summarizer: cosmético — supresión de alerta para %s",
+                item.titulo[:80],
+            )
+        elif summary:
+            logger.info(
+                "diff_summarizer: sustantivo (%s) — %s",
+                summary, item.titulo[:60],
+            )
+    if diff_evaluated:
+        logger.info(
+            "diff_summarizer: %d snapshots evaluados, %d cosméticos suprimidos",
+            diff_evaluated, diff_suppressed,
+        )
+
     # --- Fase 3.5: Enriquecimiento con IA (solo items nuevos, opcional) ---
     # Si ANTHROPIC_API_KEY no está configurada, enricher.enrich() devuelve la
     # lista intacta y el cron sigue funcionando como antes. Si está configurada,
@@ -335,15 +377,22 @@ def main() -> None:
     storage.close()
 
     # --- Fase 4: Notificación ---
-    # Filtramos los items marcados como falsos positivos por el enricher
-    # (`is_relevant=false`): siguen guardados en BD para auditoría, pero no
-    # generan ruido en Telegram. Items sin enriquecer (`is_relevant=None`)
-    # se notifican igual — graceful degradation cuando el enricher está off.
-    notifiable = [it for it in new_items if it.is_relevant is not False]
+    # Filtramos:
+    #   - is_relevant=False: FP del enricher (Salud Mental, Pediátrica…).
+    #   - change_substantive=False: cambio cosmético detectado por el
+    #     diff_summarizer (sólo "Última actualización" del CMS).
+    # Ambos siguen guardados en BD para auditoría, pero no generan ruido
+    # en Telegram. Items con esos campos a None pasan (graceful degradation
+    # cuando enricher / diff_summarizer no operaron).
+    notifiable = [
+        it for it in new_items
+        if it.is_relevant is not False
+        and it.change_substantive is not False
+    ]
     discarded = len(new_items) - len(notifiable)
     if discarded:
         logger.info(
-            "Notifier: %d items descartados (is_relevant=false) — no se envían",
+            "Notifier: %d items descartados (FP enricher o cosmético) — no se envían",
             discarded,
         )
 
