@@ -33,6 +33,7 @@ from vigia.sources.boam import BOAMSource
 from vigia.sources.bocm import BOCMSource
 from vigia.sources.boe import BOESource
 from vigia.sources.canal_isabel_ii import CanalIsabelIISource
+from vigia.sources.canal_isabel_ii_calendario import CanalIsabelIICalendarioSource
 from vigia.sources.ciemat import CIEMATSource
 from vigia.sources.cm_ficha_enfermeria import ComunidadMadridFichaEnfermeriaSource
 from vigia.sources.codem import CODEMSource
@@ -62,6 +63,7 @@ SOURCE_REGISTRY = {
     "cm_ficha_enfermeria": ComunidadMadridFichaEnfermeriaSource,
     "metro_madrid": MetroMadridSource,
     "canal_isabel_ii": CanalIsabelIISource,
+    "canal_isabel_ii_calendario": CanalIsabelIICalendarioSource,
     "administracion_gob": AdministracionGobSource,
     "codem": CODEMSource,
     "datos_madrid": DatosMadridSource,
