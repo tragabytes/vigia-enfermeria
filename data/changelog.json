@@ -1,34 +1,34 @@
 [
   {
-    "date": "2026-05-24",
-    "commit": "f18bd1a",
-    "kind": "fix",
-    "scope": "dashboard",
-    "title": "modal watchlist + ocultar COPY HASH del UI público",
-    "body": "Cierra dos pendientes UX del 2026-05-24 (BACKLOG #2 y #3):"
-  },
-  {
-    "date": "2026-05-24",
-    "commit": "4ee2199",
-    "kind": "fix",
-    "scope": "boe",
-    "title": "no descartar sábados — BOE publica de lunes a sábado",
-    "body": "Bug detectado durante el backfill EGOA del 2026-05-24 (run 26367803443):"
-  },
-  {
-    "date": "2026-05-24",
-    "commit": "36ab39f",
+    "date": "2026-05-25",
+    "commit": "00500d2",
     "kind": "feat",
-    "scope": "sources",
-    "title": "parsers IAC y CSIC sede + cobertura indirecta INIA/IEO",
-    "body": "Cierre parcial de las 4 OPIs estatales pendientes (BACKLOG.md:362-366)."
+    "scope": "main,notifier",
+    "title": "integrar diff_summarizer + header ACTUALIZACIÓN",
+    "body": "Pipeline:"
   },
   {
-    "date": "2026-05-24",
-    "commit": "cfc682e",
+    "date": "2026-05-25",
+    "commit": "de49036",
     "kind": "feat",
-    "scope": "sources",
-    "title": "parsers Las Rozas y AENA + cierre tiles/RTVE",
-    "body": "Cuatro tareas acotadas atacadas en bloque, todas en torno a fuentes"
+    "scope": "diff_summarizer",
+    "title": "pre-filtro local + Sonnet para clasificar snapshots",
+    "body": "Resuelve el ruido cosmético de los hash-watchers. Caso real reciente:"
+  },
+  {
+    "date": "2026-05-25",
+    "commit": "4d2de39",
+    "kind": "feat",
+    "scope": "storage,extractor",
+    "title": "persistir raw_text para items snapshot",
+    "body": "Base para el diff_summarizer (siguiente commit). Hasta ahora el"
+  },
+  {
+    "date": "2026-05-25",
+    "commit": "702629b",
+    "kind": "feat",
+    "scope": "watchers",
+    "title": "DetailWatcher genérico de páginas de detalle",
+    "body": "Generaliza el patrón de los 3 hash-watchers ad-hoc (cm_ficha,"
   }
 ]
