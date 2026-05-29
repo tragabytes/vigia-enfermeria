@@ -1,5 +1,35 @@
 [
   {
+    "id_hash": "e3fb3ce2ebe2ef69",
+    "source": "universidades_madrid",
+    "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "titulo": "Resuelta 22/01/2026 Pruebas selectivas para el ingreso en la Escala Especial Superior de Servicios de la Universidad Autónoma de Madrid para el Person [snapshot 4c65b47237]",
+    "fecha": "2026-05-29",
+    "categoria": "traslado",
+    "first_seen_at": "2026-05-29T11:34:30.092785",
+    "summary": "UAM. Pruebas selectivas Escala Especial Superior de Servicios. 1 plaza Enfermero/a Servicio de Prevención y Salud. Oposición libre. Convocatoria resuelta el 22/01/2026. Plazo inscripción cerrado.",
+    "is_relevant": true,
+    "relevance_reason": "La convocatoria ofrece una plaza de Enfermero/a en el Servicio de Prevención y Salud de la UAM, lo que corresponde a Enfermería del Trabajo/Salud Laboral en un servicio de prevención de riesgos laborales.",
+    "process_type": "oposicion",
+    "organismo": "Universidad Autónoma de Madrid (UAM)",
+    "centro": "Servicio de Prevención y Salud",
+    "plazas": 1,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-01-22",
+    "tasas_eur": null,
+    "url_bases": null,
+    "url_inscripcion": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "requisitos_clave": [
+      "Titulación habilitante para Enfermería del Trabajo / Enfermería en Servicios de Prevención",
+      "Acceso a Escala Especial Superior de Servicios de la UAM (funcionario)"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Convocatoria resuelta (22/01/2026). Consultar resolución definitiva en la web PTGAS de la UAM para verificar adjudicación.",
+    "confidence": 0.62,
+    "enriched_at": "2026-05-29T11:34:43.220493+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "7d50c95f71fd56ef",
     "source": "cm_ficha_enfermeria",
     "url": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
