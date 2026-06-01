@@ -3,12 +3,12 @@
     "id": "T-01",
     "name": "SERMAS",
     "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
-    "hits": 9,
+    "hits": 10,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "propuesta_nombramiento",
+    "latest_phase": "admitidos_definitivo",
     "item_ids": [
       "7c7cf06753cdc77c",
       "540d6a651569c4aa",
@@ -18,7 +18,8 @@
       "1aafe2e00198889c",
       "4f7002c8a5b3ff9e",
       "477665a57d787814",
-      "07fd6d40b3f62811"
+      "07fd6d40b3f62811",
+      "b5833965d1028561"
     ]
   },
   {
