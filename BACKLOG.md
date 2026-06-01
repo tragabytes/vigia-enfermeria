@@ -1,6 +1,20 @@
 # Backlog — vigia-enfermeria
 
-Pendientes para retomar más adelante. Última actualización: 2026-05-25 (Análisis A + B implementados — vigilancia automática de páginas de detalle y resumen de cambios vía Sonnet).
+Pendientes para retomar más adelante. Última actualización: 2026-06-01 (arranque del plan maestro multi-bot — ver abajo).
+
+---
+
+## 🚧 Plan maestro multi-bot (en curso, 2026-06-01)
+
+Evolución de vigia a plataforma para varios bots (núcleo empaquetado + repos finos por perfil) y creación de un segundo bot para perfil docente (historia / secundaria / ELE). Documento vivo con seguimiento por fases: [PLAN_MAESTRO.md](PLAN_MAESTRO.md). Plan de sesión: [.claude/plans/quiero-hacer-crecer-este-parallel-graham.md](.claude/plans/quiero-hacer-crecer-este-parallel-graham.md).
+
+- ⬜ **Fase 0** — Red de seguridad (pyproject + baseline de tests)
+- ⬜ **Fase 1** — `Profile` + enfermería byte-idéntico (refactor interno)
+- ⬜ **Fase 2** — Registro extensible de fuentes + fix `DB_PATH`
+- ⬜ **Fase 3** — Publicar el core como repo `vigia-core`
+- ⬜ **Fase 4** — Bot docente `vigia-docencia`
+- ⬜ **Fase 5** — Documentación (CLAUDE.md maestro + por bot)
+- ⬜ **Fase 6** — (Opcional) Migrar enfermería al core
 
 ---
 
