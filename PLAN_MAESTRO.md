@@ -9,7 +9,7 @@
 | Fase | Descripción | Estado |
 |---|---|---|
 | 0 | Red de seguridad (empaquetado + baseline) | ✅ hecha (tests verdes; editable install pendiente de toolchain) |
-| 1 | `Profile` + enfermería byte-idéntico (refactor interno) | ⬜ pendiente |
+| 1 | `Profile` + enfermería byte-idéntico (refactor interno) | ✅ hecha (472 tests verdes) |
 | 2 | Registro extensible de fuentes + fix multi-repo (`DB_PATH`) | ⬜ pendiente |
 | 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ⬜ pendiente |
 | 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | ⬜ pendiente |
@@ -94,12 +94,13 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - [x] Baseline de tests verde: **472 passed, 2 skipped** (`PYTHONIOENCODING=utf-8 python -m pytest tests --capture=no`; este shell no soporta la captura por fd de pytest).
 - **Verifica:** `import vigia` OK; `pytest` verde. ⚠️ `pip install -e .` NO valida en local por toolchain de 2021 (pip 21.1.3 < 21.3, setuptools 56 < 61); el empaquetado se validará en CI / Fase 3 con toolchain moderno.
 
-### Fase 1 — `Profile`, enfermería byte-idéntico *(el refactor interno)*
-- [ ] `vigia/profile.py` (`Profile` frozen) + `get/set_active_profile`.
-- [ ] `vigia/_default_profile.py` copiando los valores actuales de enfermería (patrones, watchlist, 2 SYSTEM_PROMPT, snippet keywords, `ALLOWED_FETCH_HOSTS`, `DASHBOARD_URL`, header notifier, `SEARCH_TERMS`, `DEPT_KEYWORDS_FOR_BODY`).
-- [ ] Consumidores leen del perfil activo en tiempo de llamada: `extractor.py` (regex cacheada, firmas intactas), `enricher.py`, `diff_summarizer.py`, `notifier.py`, `dashboard.py`, y los 13 imports de fuentes (`FAST_KEYWORDS` → `get_active_profile().fast_keywords`).
-- [ ] `main()` hace `set_active_profile(DEFAULT)` al inicio.
-- **Verifica:** `pytest` verde sin tocar tests. `--dry-run --since <día con match histórico conocido>` da los mismos matches que hoy. Assert temporal `tuple(STRONG_PATTERNS) == DEFAULT.strong_patterns`.
+### Fase 1 — `Profile`, enfermería byte-idéntico ✅
+- [x] `vigia/profile.py` (`Profile` frozen) + `get/set_active_profile` (un perfil por proceso, default perezoso).
+- [x] `vigia/_default_profile.py` con el perfil Enfermería del Trabajo: patrones, watchlist, 2 SYSTEM_PROMPT, snippet keywords, `ALLOWED_FETCH_HOSTS`, branding (display_name/dashboard_url/test_message).
+- [x] `config.py` convertido en fachada `__getattr__` (PEP 562): reexpone los 8 símbolos de perfil → `extractor`, las 13 fuentes y `dashboard` NO se tocan.
+- [x] `enricher`/`diff_summarizer`/`notifier` migrados a leer del perfil activo.
+- **Verifica:** ✅ **472 passed, 2 skipped** sin tocar tests + sanity check de la fachada.
+- **Notas de diseño:** el extractor lee de la fachada en import-time (modelo *un perfil por proceso*, sin cache dinámica). `vigia/main.py` (core) se deja **agnóstico**: NO fija perfil; el lazy default cubre enfermería y cada bot fijará el suyo (Fase 4). `SEARCH_TERMS`/`DEPT_KEYWORDS_FOR_BODY` se quedan de momento en sus fuentes; se moverán a `source_params` en Fase 4.
 
 ### Fase 2 — Registro extensible + fix multi-repo
 - [ ] `vigia/sources/registry.py` con `CORE_SOURCES` (las ~18 genéricas). Sanitarias (`cm_ficha_enfermeria`, `isciii`, `canal_isabel_ii_calendario`, `codem`) → `DEFAULT.extra_sources`.
@@ -165,3 +166,10 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - Entorno: Python **3.9.6**; toolchain de empaquetado viejo (pip 21.1.3, setuptools 56) → editable install local no disponible; se valida en CI/Fase 3.
 - Gotcha: pytest en este shell requiere `--capture=no` (la captura por descriptores de fichero peta con "I/O operation on closed file").
 - **Siguiente:** Fase 1 — crear `vigia/profile.py` + `vigia/_default_profile.py` (trasladar valores/prompts exactos), migrar consumidores leyendo del perfil activo, verificar `pytest` verde sin tocar tests.
+
+### 2026-06-01 — Sesión 1 (Fase 1)
+- Creados `vigia/profile.py` (dataclass `Profile` + `get/set_active_profile`) y `vigia/_default_profile.py` (perfil Enfermería del Trabajo).
+- `config.py` → fachada `__getattr__` (8 símbolos de perfil). `enricher`/`diff_summarizer`/`notifier` migrados a leer del perfil.
+- `extractor`, 13 fuentes y `dashboard` NO tocados (leen vía fachada). `vigia/main.py` se deja agnóstico (no fija perfil).
+- Verificado: **472 passed, 2 skipped** sin tocar tests + sanity check.
+- **Siguiente:** Fase 2 — `vigia/sources/registry.py` (CORE_SOURCES) + mover fuentes sanitarias a `extra_sources` del perfil + fix `DB_PATH` (cwd / `VIGIA_STATE_DIR`).

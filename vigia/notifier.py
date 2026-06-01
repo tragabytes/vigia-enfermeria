@@ -39,6 +39,7 @@ FASE_LABEL = {
 import requests
 
 from vigia.config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, USER_AGENT
+from vigia.profile import get_active_profile
 from vigia.storage import Item
 
 logger = logging.getLogger(__name__)
@@ -46,10 +47,9 @@ logger = logging.getLogger(__name__)
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 MAX_MESSAGE_LEN = 4096  # límite de Telegram
 
-# URL pública del dashboard (rama gh-pages). Se incluye al final de cada
-# notificación para que el destinatario pueda inspeccionar el histórico,
-# las estadísticas y el estado de las fuentes desde un sitio estable.
-DASHBOARD_URL = "https://tragabytes.github.io/vigia-enfermeria/"
+# La URL pública del dashboard (rama gh-pages) viene del perfil activo
+# (profile.dashboard_url); se incluye al final de cada notificación para que
+# el destinatario pueda inspeccionar el histórico desde un sitio estable.
 
 
 def send(
@@ -75,8 +75,10 @@ def send(
         _send_chunk(chunk)
 
 
-def send_test(message: str = "✅ vigia-enfermeria: conexión OK") -> None:
+def send_test(message: Optional[str] = None) -> None:
     """Envía un mensaje de prueba para validar credenciales."""
+    if message is None:
+        message = get_active_profile().test_message
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         raise RuntimeError(
             "TELEGRAM_BOT_TOKEN y TELEGRAM_CHAT_ID deben estar en las variables de entorno"
@@ -90,8 +92,9 @@ def send_test(message: str = "✅ vigia-enfermeria: conexión OK") -> None:
 # ---------------------------------------------------------------------------
 
 def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date) -> str:
+    profile = get_active_profile()
     fecha_str = today.strftime("%d/%m/%Y")
-    lines: list[str] = [f"🔔 <b>Vigilancia Enfermería del Trabajo — {fecha_str}</b>\n"]
+    lines: list[str] = [f"🔔 <b>{profile.display_name} — {fecha_str}</b>\n"]
 
     if items:
         for item in items:
@@ -106,7 +109,7 @@ def _build_message(items: list[Item], errors: list[tuple[str, str]], today: date
         )
 
     lines.append("")
-    lines.append(f"🛰️ Panel completo: {DASHBOARD_URL}")
+    lines.append(f"🛰️ Panel completo: {profile.dashboard_url}")
 
     return "\n".join(lines)
 

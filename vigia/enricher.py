@@ -39,6 +39,7 @@ from urllib.parse import urlparse
 import requests
 
 from vigia.config import USER_AGENT
+from vigia.profile import get_active_profile
 from vigia.sources._html import extract_clean_text
 from vigia.sources._pdf import extract_pdf_text
 from vigia.storage import ENRICHMENT_VERSION, Item, Storage
@@ -63,28 +64,11 @@ MAX_TEXT_CHARS = 12000
 # Configuración del fetcher (anti-SSRF + límites)
 # ---------------------------------------------------------------------------
 
-# Whitelist estricta de hostnames permitidos en `fetch_url`. Cualquier otro
-# dominio devuelve error inmediato sin hacer la request — incluido tras
-# seguir redirects.
-ALLOWED_FETCH_HOSTS: set[str] = {
-    # BOE
-    "boe.es", "www.boe.es",
-    # BOCM (sumario y descargas)
-    "bocm.es", "www.bocm.es",
-    # Comunidad de Madrid (sede y portales relacionados)
-    "comunidad.madrid", "www.comunidad.madrid",
-    "sede.comunidad.madrid", "transparencia.comunidad.madrid",
-    # Ayuntamiento de Madrid (incluye sede que sirve BOAM)
-    "madrid.es", "www.madrid.es", "sede.madrid.es",
-    "transparencia.madrid.es",
-    # Datos abiertos del Ayto.
-    "datos.madrid.es",
-    # Canal de Isabel II (web de convocatorias)
-    "convocatoriascanaldeisabelsegunda.es",
-    "www.convocatoriascanaldeisabelsegunda.es",
-    # CODEM
-    "codem.es", "www.codem.es",
-}
+# Whitelist estricta de hostnames permitidos en `fetch_url` (anti-SSRF).
+# Cualquier otro dominio devuelve error inmediato sin hacer la request —
+# incluido tras seguir redirects. Viene del perfil activo (cada perfil
+# declara los dominios oficiales de sus fuentes); ver vigia/_default_profile.py.
+ALLOWED_FETCH_HOSTS = get_active_profile().enricher_allowed_fetch_hosts
 
 MAX_FETCH_BYTES = 5 * 1024 * 1024     # 5 MB
 FETCH_TIMEOUT_SECONDS = 15
@@ -122,69 +106,7 @@ FETCH_URL_TOOL: dict[str, Any] = {
 # Schema de salida esperada del modelo (JSON estructurado)
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """Eres un asistente que extrae datos estructurados de convocatorias de empleo público en España, especializado en plazas para Enfermería del Trabajo (también llamada Enfermería de Empresa o Enfermería de Salud Laboral, sinónimos a efectos de catálogo del Ministerio de Sanidad).
-
-Tu trabajo: recibir el dato bruto de una convocatoria y devolver un JSON con los campos clave. Puedes (y debes, cuando los datos no estén en el resumen recibido) usar la tool `fetch_url` para descargar el cuerpo del boletín o el PDF de bases.
-
-CRITERIOS PARA `is_relevant`:
-- TRUE → la convocatoria ofrece plazas, bolsa o concurso de traslados específicamente para la especialidad de Enfermería del Trabajo / Salud Laboral / Enfermería de Empresa, o es un servicio de prevención de riesgos laborales que requiere esa titulación.
-- FALSE → falsos positivos típicos: Enfermería de Salud Mental, Pediátrica, Familiar y Comunitaria, Geriátrica, Obstétrico-Ginecológica (matronas), o Enfermería general sin especialidad. También FALSE si solo es un nombramiento/lista provisional/cese sin plazas nuevas para la especialidad.
-- En la duda, prioriza FALSE — el sistema reduce ruido eliminando items con is_relevant=false.
-
-CRITERIOS PARA `process_type`:
-- "oposicion" → proceso selectivo / pruebas selectivas / concurso-oposición de acceso libre
-- "bolsa" → bolsa de empleo, bolsa única, contratación temporal estructurada
-- "concurso_traslados" → concurso de traslados / concurso de méritos entre estatutarios
-- "interinaje" → nombramiento de interino / sustitución concreta
-- "temporal" → contrato temporal puntual no incluido en bolsa
-- "otro" → cualquier otro caso
-
-CRITERIOS PARA `fase`:
-- "convocatoria" → publicación inicial con plazo de inscripción abierto
-- "admitidos_provisional" / "admitidos_definitivo" → listas de admitidos
-- "examen" → fechas/sedes del ejercicio
-- "calificacion" → resultados de un ejercicio o calificación final
-- "propuesta_nombramiento" → resolución de adjudicación
-- "otro" → cualquier otro estado intermedio
-
-REGLAS DE EXTRACCIÓN:
-- Fechas en formato `YYYY-MM-DD`. Si solo conoces el mes y año, deja `null`.
-- `plazas`: solo el TOTAL de plazas convocadas; si no aparece, `null`.
-- `tasas_eur`: tasa de inscripción base en euros (no descuentos ni reducciones).
-- `url_bases`: URL al PDF/HTML con las bases completas (a veces es un anexo distinto del que recibes).
-- `requisitos_clave`: lista corta (≤4) de requisitos imprescindibles (titulación específica, experiencia, etc.). No copies todo el listado del BOE — solo lo más diferenciador.
-- `next_action`: una frase ≤140 chars con la acción inmediata que el usuario debe tomar (ej. "Presentar instancia online en sede.comunidad.madrid antes del 15/05/2026").
-- `summary`: ~200 caracteres en estilo telegrama, factual, sin frases introductorias. Mismo formato que el enricher v1.
-- `confidence`: 0..1 según lo seguro que estés del extracto general.
-- Si un campo no es deducible con razonable certeza, devuélvelo como `null`. NO INVENTES NADA.
-
-USO DE LA TOOL:
-- Si el título y `raw_text` son suficientes para todos los campos pedidos, NO llames a la tool — responde directamente con el JSON.
-- Si te falta algún dato clave (deadline, plazas, tasas, bases) y la URL principal está en dominio oficial, llámala una vez para inspeccionar el cuerpo.
-- IMPORTANTE — falsos negativos a evitar: si el sistema te ha enviado este item es porque un matcher automático YA detectó "Enfermería del Trabajo", "Enfermería de Empresa", "Enfermería de Salud Laboral" o "salud laboral + enfermer" en el cuerpo descargado de la convocatoria. Si el `raw_text` que recibes no muestra esa evidencia, ES PORQUE LLEGA TRUNCADO — los listados de plazas suelen estar más adelante en el documento. En ese caso DEBES llamar a `fetch_url` para descargar el HTML/PDF completo antes de marcar `is_relevant=false`. Solo descarta si tras consultar la URL tampoco aparece la especialidad.
-- Como mucho 2 llamadas a tool por item. Después responde con lo que tengas.
-
-FORMATO DE SALIDA OBLIGATORIO:
-Responde SOLO con un bloque JSON válido (puedes envolverlo en ```json … ``` si quieres). Sin texto antes ni después. El JSON debe seguir este schema (todos los campos opcionales pueden ser null):
-
-{
-  "is_relevant": true|false,
-  "relevance_reason": "string",
-  "process_type": "oposicion|bolsa|concurso_traslados|interinaje|temporal|otro",
-  "summary": "string ~200 chars",
-  "organismo": "string|null",
-  "centro": "string|null",
-  "plazas": int|null,
-  "deadline_inscripcion": "YYYY-MM-DD|null",
-  "fecha_publicacion_oficial": "YYYY-MM-DD|null",
-  "tasas_eur": float|null,
-  "url_bases": "string|null",
-  "url_inscripcion": "string|null",
-  "requisitos_clave": ["string", ...] | [],
-  "fase": "convocatoria|admitidos_provisional|admitidos_definitivo|examen|calificacion|propuesta_nombramiento|otro",
-  "next_action": "string|null",
-  "confidence": 0.0..1.0
-}"""
+SYSTEM_PROMPT = get_active_profile().enricher_system_prompt
 
 
 # ---------------------------------------------------------------------------
@@ -483,29 +405,9 @@ def _build_initial_user_content(item: Item) -> str:
 # (lactancia, gestión, etc.) y saturarían el max_snippets antes de llegar
 # a las menciones STRONG (que están en el listado de plazas, hacia el
 # final). Procesamos HIGH primero para garantizar que llegan al prompt.
-_SNIPPET_KEYWORDS_HIGH: list[str] = [
-    # Strong matches del extractor — la propia especialidad
-    "enfermería del trabajo", "enfermeria del trabajo",
-    "enfermería de empresa", "enfermeria de empresa",
-    "enfermería de salud laboral", "enfermeria de salud laboral",
-    "enfermero del trabajo", "enfermera del trabajo",
-    "enfermero de empresa", "enfermera de empresa",
-    "enfermero/a del trabajo", "enfermero/a de empresa",
-    "especialista en enfermería del trabajo",
-    "especialidad enfermería del trabajo",
-    # Categoría profesional convocada
-    "especialidad enfermería", "especialidad enfermeria",
-    "especialidad en enfermería", "especialidad en enfermeria",
-    "especialista en enfermería", "especialista en enfermeria",
-]
-_SNIPPET_KEYWORDS_LOW: list[str] = [
-    "enfermería (prevención", "enfermeria (prevencion",
-    "(prevención riesgos", "(prevencion riesgos",
-    "salud laboral",
-    "servicio de prevención", "servicio de prevencion",
-    "prevención de riesgos laborales", "prevencion de riesgos laborales",
-    "(prl)", " prl ",
-]
+# Vienen del perfil activo (ver vigia/_default_profile.py).
+_SNIPPET_KEYWORDS_HIGH = get_active_profile().enricher_snippet_keywords_high
+_SNIPPET_KEYWORDS_LOW = get_active_profile().enricher_snippet_keywords_low
 
 
 def _extract_relevant_snippets(

@@ -43,6 +43,8 @@ import os
 import re
 from typing import Optional
 
+from vigia.profile import get_active_profile
+
 logger = logging.getLogger(__name__)
 
 
@@ -72,23 +74,7 @@ MODEL = "claude-sonnet-4-6"
 MAX_TOKENS = 256
 MAX_DIFF_CHARS = 8000  # truncamos antes de mandar para acotar coste
 
-SYSTEM_PROMPT = (
-    "Eres analista de convocatorias de Enfermería del Trabajo. Recibes el "
-    "unified diff entre dos snapshots de la misma página oficial (cuerpo "
-    "HTML extraído como texto plano).\n\n"
-    "Tu tarea:\n"
-    "1. Clasifica el cambio como SUSTANTIVO (información nueva relevante "
-    "para un opositor: nueva fase publicada, nuevo plazo, lista de "
-    "admitidos, calendario, examen, resolución, cambio de tribunal, cambio "
-    "en plazas, modificación de fechas relevantes…) o COSMÉTICO (sólo "
-    "cambia el timestamp \"Última actualización\", formato, espacios en "
-    "blanco, redacción equivalente sin información nueva).\n"
-    "2. Si es SUSTANTIVO: redacta UNA frase ≤100 caracteres explicando qué "
-    "ha cambiado, en español neutro y factual.\n"
-    "3. Si es COSMÉTICO: deja el resumen vacío.\n\n"
-    "Devuelve EXACTAMENTE este JSON sin texto adicional ni markdown:\n"
-    "{\"sustantivo\": true|false, \"resumen\": \"...\"}"
-)
+SYSTEM_PROMPT = get_active_profile().diff_system_prompt
 
 USER_TEMPLATE = (
     "Analiza este diff:\n\n```\n{diff}\n```\n\nResponde sólo el JSON."
