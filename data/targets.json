@@ -365,7 +365,7 @@
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 2,
+    "hits": 3,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
@@ -373,7 +373,8 @@
     "latest_phase": "propuesta_nombramiento",
     "item_ids": [
       "e3d2ffe18d849152",
-      "e3fb3ce2ebe2ef69"
+      "e3fb3ce2ebe2ef69",
+      "c868d93ad65d5783"
     ]
   },
   {
