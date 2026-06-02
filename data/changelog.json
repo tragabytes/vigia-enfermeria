@@ -1,34 +1,34 @@
 [
   {
-    "date": "2026-05-25",
-    "commit": "00500d2",
+    "date": "2026-06-02",
+    "commit": "c5cfd2f",
     "kind": "feat",
-    "scope": "main,notifier",
-    "title": "integrar diff_summarizer + header ACTUALIZACIÓN",
-    "body": "Pipeline:"
+    "scope": "",
+    "title": "migrar enfermería a repo fino sobre vigia-core@v0.4.0 (Fase 6)",
+    "body": "Enfermería deja de tener su copia del core (vigia/) y lo consume por pip, igual que vigia-docencia. El código es byte-idéntico a v0.4.0 (verificado), así que el comportamiento no cambia."
   },
   {
-    "date": "2026-05-25",
-    "commit": "de49036",
+    "date": "2026-06-02",
+    "commit": "6f90932",
     "kind": "feat",
-    "scope": "diff_summarizer",
-    "title": "pre-filtro local + Sonnet para clasificar snapshots",
-    "body": "Resuelve el ruido cosmético de los hash-watchers. Caso real reciente:"
+    "scope": "core",
+    "title": "v0.4.0 — BOE configurable por source_params + process_types profile-driven (Fase 4)",
+    "body": "Cambios aditivos para que un bot por perfil reuse el BOE del core y declare"
   },
   {
-    "date": "2026-05-25",
-    "commit": "4d2de39",
+    "date": "2026-06-02",
+    "commit": "7504f8c",
     "kind": "feat",
-    "scope": "storage,extractor",
-    "title": "persistir raw_text para items snapshot",
-    "body": "Base para el diff_summarizer (siguiente commit). Hasta ahora el"
+    "scope": "sources",
+    "title": "registro extensible + fix DB_PATH multi-repo (Fase 2)",
+    "body": "El registro de fuentes se compone del core (genericas) mas las que aporta el perfil activo; la BD de estado se puede redirigir por entorno."
   },
   {
-    "date": "2026-05-25",
-    "commit": "702629b",
+    "date": "2026-06-01",
+    "commit": "08ea731",
     "kind": "feat",
-    "scope": "watchers",
-    "title": "DetailWatcher genérico de páginas de detalle",
-    "body": "Generaliza el patrón de los 3 hash-watchers ad-hoc (cm_ficha,"
+    "scope": "profile",
+    "title": "introduce Profile + perfil por defecto (Fase 1)",
+    "body": "Separa lo especifico del perfil (keywords, prompts, watchlist, branding) del nucleo agnostico. Enfermeria byte-identico."
   }
 ]

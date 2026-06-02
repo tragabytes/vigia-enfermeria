@@ -1,5 +1,35 @@
 [
   {
+    "id_hash": "d3c57e573404c23d",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/enfermeria-trabajo-0",
+    "titulo": "Bolsa única de empleo temporal de Especialista en Enfermería del Trabajo (2026). Subsanación [snapshot bacc08fe50]",
+    "fecha": "2026-06-02",
+    "categoria": "bolsa",
+    "first_seen_at": "2026-06-02T13:58:53.729236",
+    "summary": "Bolsa única empleo temporal Especialista Enfermería del Trabajo SERMAS 2026. Lista definitiva admitidos/excluidos publicada 25/05/2026. Recurso de alzada hasta 25/06/2026. Sin tasas. Plazo inscripción cerrado.",
+    "is_relevant": true,
+    "relevance_reason": "Bolsa única de empleo temporal específica para la especialidad de Enfermería del Trabajo en el SERMAS (Comunidad de Madrid), con lista definitiva de admitidos publicada el 25/05/2026.",
+    "process_type": "bolsa",
+    "organismo": "Comunidad de Madrid – Consejería de Sanidad / Servicio Madrileño de Salud (SERMAS)",
+    "centro": "Dirección General de Recursos Humanos y Relaciones Laborales",
+    "plazas": null,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-05-25",
+    "tasas_eur": 0.0,
+    "url_bases": "https://sede.comunidad.madrid/oferta-empleo/enfermeria-trabajo-0",
+    "url_inscripcion": null,
+    "requisitos_clave": [
+      "Diplomatura o Grado en Enfermería con especialidad de Enfermería del Trabajo (o equivalente)",
+      "Estar inscrito y formar parte de la bolsa única de empleo temporal en la categoría de Especialista en Enfermería del Trabajo"
+    ],
+    "fase": "admitidos_definitivo",
+    "next_action": "Si estás excluido, presenta recurso de alzada antes del 25/06/2026 contra la Resolución de 22/05/2026 (SERMAS).",
+    "confidence": 0.92,
+    "enriched_at": "2026-06-02T13:59:03.083474+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "c868d93ad65d5783",
     "source": "universidades_madrid",
     "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
