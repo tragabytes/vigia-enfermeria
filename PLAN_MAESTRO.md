@@ -12,11 +12,18 @@
 | 1 | `Profile` + enfermería byte-idéntico (refactor interno) | ✅ hecha (472 tests verdes) |
 | 2 | Registro extensible de fuentes + fix multi-repo (`DB_PATH`) | ✅ hecha (472 tests verdes) |
 | 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ✅ hecha (repo público + tag v0.3.0) |
-| 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | ⬜ pendiente |
+| 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | 🟨 en curso — **replanteada** (ver corrección abajo): core **v0.4.0** ✅ + scaffold/perfil ✅ verificados offline; falta repo GitHub + cutover |
 | 5 | Reestructurar documentación (CLAUDE.md maestro + por bot) | ⬜ pendiente |
 | 6 | (Opcional) Migrar enfermería a consumir `vigia-core` | ⬜ pendiente |
 
 Eje transversal continuo: expansión de fuentes (boletines autonómicos → core; Instituto Cervantes y portales privados → perfil docente).
+
+> ### ⚠️ Corrección de premisa (sesión 3, 2026-06-02)
+> La Fase 4 se escribió asumiendo construir el bot docente **desde cero**. **No es así**: el bot del hermano **ya existía desplegado** — `alerta-empleo-profe` (repo `tragabytes/alerta-empleo-profe`, dashboard en vivo, cron L-V, 41 tests), creado el 26-abr como **fork monolítico** del pipeline (copia de `vigia/` con perfil docente inline). Había **tres copias** del pipeline (enfermería, vigia-core, fork docente).
+>
+> **Decisiones del usuario (sesión 3):** (1) rehacer limpio en **repo NUEVO `vigia-docencia`** que consume el core, migrar estado y **archivar el fork** al final; (2) **purista**: parametrizar el core → **vigia-core v0.4.0** (BOE configurable por `source_params`, enums de `process_type` profile-driven) para **compartir el BOE**; el **BOCM** del fork (reescritura RSS) va como **fuente custom**. El perfil docente real (informe.md) **excluye a propósito** universidad/PDI general y primaria; el boceto de "archivos/museos/universidad-Historia" de la Fase 4 original era **erróneo** y se descarta.
+>
+> **Plan detallado por etapas (E0–E11):** `.claude/plans/zazzy-splashing-dawn.md`.
 
 ---
 
@@ -115,11 +122,24 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - [x] El repo `vigia-enfermeria` NO se modificó (conserva su copia; duplicación temporal hasta Fase 6).
 - **Verifica:** ✅ la suite pasa en la copia autónoma (**472 passed, 2 skipped**); tag `v0.3.0` en remoto; contenido = solo el core. ⚠️ `pip install git+…@v0.3.0` no validable en local (toolchain 2021); se valida en el CI del bot docente (Fase 4).
 
-### Fase 4 — Bot docente `vigia-docencia` *(entregable)*
-- [ ] Repo nuevo: `requirements.txt` con `vigia-core@v0.3.0`; `vigia_docencia/{profile,main}.py`, `sources/`, `web/`, `daily.yml`, secrets + bot de Telegram, ramas `state`/`gh-pages`, Pages.
-- [ ] Perfil docente MVP — `strong_patterns`: "geografia e historia", "profesor de historia", "profesor(a) de secundaria", "cuerpo de profesores de enseñanza secundaria", "español para extranjeros / ELE", "archivero", "bibliotecario", "conservador de museos"… · `false_positive_patterns`: otras especialidades (matemáticas, inglés, ed. física…), primaria/infantil · prompts del enricher/diff reescritos · watchlist: consejerías de educación, EOI, universidades (Historia/Geografía), Instituto Cervantes, archivos/bibliotecas/museos.
-- [ ] Fuentes MVP (Madrid + nacional): `boe`, `bocm`, `comunidad_madrid` (con `search_terms` docentes) + **fuente nueva `instituto_cervantes`** (ELE/extranjero).
-- **Verifica:** suite propia verde; `--probe`; `--dry-run` con matches docentes plausibles; primer run real revisando `gh run view <id> --log | grep -E "WARNING|errores"`.
+### Fase 4 — Bot docente `vigia-docencia` *(entregable, replanteada — ver corrección arriba)*
+
+Migración por etapas que **porta** el perfil docente ya rodado del fork (no lo reinventa) y acaba jubilando `alerta-empleo-profe` con red. Detalle completo + riesgos en `.claude/plans/zazzy-splashing-dawn.md`. Estado:
+
+**Core v0.4.0 (aditivo, enfermería byte-idéntico) — ✅ hecho y verificado (472/2):**
+- [x] `boe.py`: `dept_keywords`/`fetch_pdfs`/`timeout_*` desde `source_params["boe"]` (defaults = enfermería). El `fast_keywords` del perfil ya cubre el pre-filtro de título (no hizo falta `title_fast_keywords`).
+- [x] `profile.py` campo `valid_process_types` + `enricher.py` lo lee (default 6 genéricos). `CATEGORIES` **no** se hizo campo (nadie lo importa; `category_hints` ya es profile-driven).
+- [x] Bump `pyproject.toml`/`__init__.py` → `0.4.0`.
+
+**Repo nuevo `vigia-docencia` (local, consume `vigia-core@v0.4.0`) — ✅ scaffold + validación offline:**
+- [x] `vigia_docencia/profile.py` (`PERFIL_DOCENCIA`, portado 1:1 del fork: strong/weak/FP, category_hints, 25 watchlist, prompt enricher, hosts; snippet keywords autoradas) + `__main__.py` (entrypoint: `set_active_profile` antes del pipeline, import diferido) + `sources/bocm.py` (BOCM-RSS custom que sobrescribe el del core vía `extra_sources`).
+- [x] **Validación offline 19/19**: extractor del core + perfil docente sobre oráculo del fork + caso trampa multi-especialidad; wiring end-to-end (BOE core + BOCM custom + params + enums + prompt) verificado.
+
+**Pendiente (requiere recursos del usuario):**
+- [ ] E4: publicar v0.4.0 en `tragabytes/vigia-core` + tag.
+- [ ] E7-E8: `requirements.txt`(@v0.4.0) + `daily.yml`(con `VIGIA_STATE_DIR`) + `web/` rebrand; crear repo GitHub + secrets (TELEGRAM_*, ANTHROPIC_API_KEY) + Pages.
+- [ ] E9-E11: migrar `seen.db` del fork (hashes/esquema compatibles → sin re-alertas) → `--dry-run` → run real en paralelo → **archivar el fork** solo tras ≥2 ciclos verdes.
+- **Verifica:** CI del bot instala `vigia-core@v0.4.0` (valida el pip que no se puede en local) + tests verdes; `--probe`/`--dry-run`; primer run real revisando `gh run view <id> --log | grep -E "WARNING|errores"`; Telegram + dashboard OK antes de jubilar el fork.
 
 ### Fase 5 — Documentación
 - [ ] CLAUDE.md maestro en `vigia-core`: Karpathy + convenciones genéricas del pipeline + guía "cómo crear un nuevo bot/perfil".
@@ -188,3 +208,12 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - Verificado: la copia es autónoma (472 passed, 2 skipped); tag en remoto; contenido correcto. `vigia-enfermeria` intacto.
 - Instalable: `pip install git+https://github.com/tragabytes/vigia-core.git@v0.3.0` (validación real de instalación en Fase 4 / CI con toolchain moderno).
 - **Siguiente:** Fase 4 — bot docente `vigia-docencia` (repo fino que consume `vigia-core@v0.3.0`): definir perfil docente (keywords/prompts), fuente Instituto Cervantes, bot de Telegram, web, daily.yml. Requiere recursos del usuario (repo + token Telegram).
+
+### 2026-06-02 — Sesión 3 (Fase 4 replanteada)
+- **Hallazgo:** el bot docente del hermano YA existía desplegado (`alerta-empleo-profe`, fork monolítico, 26-abr). La Fase 4 estaba escrita sobre premisa falsa (greenfield). Tres copias del pipeline en juego.
+- **Decisiones del usuario:** repo NUEVO `vigia-docencia` consumiendo el core + jubilar el fork; vía **purista** (parametrizar el core, compartir BOE). Perfil real (informe.md) **excluye** universidad/PDI y primaria; el boceto original "archivos/museos/universidad" era erróneo.
+- **Hecho y verificado (offline, sin recursos externos):**
+  - **Core v0.4.0** (rama `feat/plataforma-multibot`): BOE parametrizable por `source_params` (dept_keywords/fetch_pdfs/timeouts, defaults = enfermería, resueltos en runtime); `valid_process_types` profile-driven; bump 0.4.0. **472 passed, 2 skipped** tras cada cambio + smoke de overrides docentes.
+  - **`vigia-docencia`** (local `proyectos/vigia-docencia`): `Profile` docente portado 1:1 del fork + entrypoint `python -m vigia_docencia` (fija perfil antes del pipeline) + BOCM-RSS custom. **Validación offline 19/19** (oráculo del fork + caso trampa) + wiring end-to-end OK (BOE core + BOCM custom).
+- **Plan por etapas (E0–E11):** `.claude/plans/zazzy-splashing-dawn.md`.
+- **Siguiente (requiere recursos del usuario):** E4 publicar `vigia-core@v0.4.0`; E7-E8 requirements/daily.yml/web + repo GitHub + secrets + Pages; E9-E11 migrar `seen.db` → dry-run → run paralelo → archivar el fork. **El bot desplegado del hermano NO se toca hasta verificar el nuevo.**

@@ -48,6 +48,13 @@ class Profile:
     extra_sources: dict = field(default_factory=dict)
     source_params: dict = field(default_factory=dict)
 
+    # --- Enricher: enums de process_type válidos (sanitización del LLM) ---
+    # Cada bot puede ampliarlos (p.ej. docencia añade lectorado/auxiliar/privada/
+    # ele); el default genérico cubre el perfil enfermería sin cambios.
+    valid_process_types: tuple[str, ...] = (
+        "oposicion", "bolsa", "concurso_traslados", "interinaje", "temporal", "otro",
+    )
+
 
 # ---------------------------------------------------------------------------
 # Registro del perfil activo (un perfil por proceso)

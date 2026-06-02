@@ -604,10 +604,10 @@ def _parse_json_block(text: str) -> dict[str, Any]:
     raise ValueError("no se encontró bloque JSON en la respuesta del LLM")
 
 
-# Conjuntos válidos para sanitizar valores enum del LLM.
-_VALID_PROCESS_TYPES = {
-    "oposicion", "bolsa", "concurso_traslados", "interinaje", "temporal", "otro",
-}
+# Conjuntos válidos para sanitizar valores enum del LLM. Los process_type vienen
+# del perfil activo (cada bot declara los suyos en vigia/profile.py); el default
+# genérico reproduce el conjunto histórico. _VALID_FASES es común a todos.
+_VALID_PROCESS_TYPES = frozenset(get_active_profile().valid_process_types)
 _VALID_FASES = {
     "convocatoria", "admitidos_provisional", "admitidos_definitivo",
     "examen", "calificacion", "propuesta_nombramiento", "otro",

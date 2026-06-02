@@ -27,6 +27,7 @@ from urllib.parse import urljoin, urlparse
 import requests
 
 from vigia.config import FAST_KEYWORDS, normalize
+from vigia.profile import get_active_profile
 from vigia.sources._pdf import download_and_extract_pdf
 from vigia.sources.base import RawItem, Source
 
@@ -142,6 +143,25 @@ DEPT_KEYWORDS_FOR_BODY = [
     "ministerio de juventud",
 ]
 
+
+def _boe_params() -> dict:
+    """Parámetros de la fuente BOE leídos del perfil activo, EN RUNTIME (no en
+    import-time: un bot puede fijar su perfil después de importar este módulo).
+
+    Claves opcionales en `get_active_profile().source_params["boe"]`:
+      - `dept_keywords` (list[str]): whitelist de departamentos cuyo cuerpo HTML
+        se inspecciona. Default: cobertura sanitaria histórica (enfermería).
+      - `fetch_pdfs` (bool): si descargar PDFs anexos cuando el dept es relevante
+        y no hubo match en título/cuerpo. Default `True`.
+      - `timeout_api` / `timeout_body` / `timeout_pdf` (int): timeouts de red.
+        Defaults 20/20/20.
+
+    Sin override (p.ej. el perfil enfermería, `source_params={}`), reproduce el
+    comportamiento histórico byte-idéntico.
+    """
+    return get_active_profile().source_params.get("boe", {})
+
+
 class BOESource(Source):
     name = "boe"
     # Probe: la home del API de datos abiertos. No depende de fecha.
@@ -170,7 +190,7 @@ class BOESource(Source):
         resp = requests.get(
             url,
             headers={**self._default_headers(), "Accept": "application/json"},
-            timeout=SUMARIO_FETCH_TIMEOUT,
+            timeout=_boe_params().get("timeout_api", SUMARIO_FETCH_TIMEOUT),
         )
         if resp.status_code == 404:
             return []  # día sin BOE (festivo nacional)
@@ -248,6 +268,10 @@ class BOESource(Source):
         plazas vive en un anexo separado, y procesos genéricos de Defensa
         / Mutuas con bases técnicas anexas.
         """
+        params = _boe_params()
+        dept_keywords = params.get("dept_keywords", DEPT_KEYWORDS_FOR_BODY)
+        fetch_pdfs = params.get("fetch_pdfs", True)
+
         titulo_norm = normalize(titulo)
 
         # Check rápido: ¿el título ya contiene algo relevante?
@@ -255,7 +279,7 @@ class BOESource(Source):
 
         # ¿Vale la pena descargar el body?
         dept_norm = normalize(dept_name)
-        is_relevant_dept = any(kw in dept_norm for kw in DEPT_KEYWORDS_FOR_BODY)
+        is_relevant_dept = any(kw in dept_norm for kw in dept_keywords)
         should_fetch_body = (
             sec_code in SECTIONS_TO_FETCH_BODY
             and (is_relevant_dept or has_fast_kw)
@@ -277,7 +301,8 @@ class BOESource(Source):
         # disparar fetch de PDF para items con un "enfermería" tangencial
         # en el título de un dept totalmente no-sanitario.
         if (
-            is_relevant_dept
+            fetch_pdfs
+            and is_relevant_dept
             and pdf_links
             and not any(kw in normalize(body_text) for kw in FAST_KEYWORDS)
             and not has_fast_kw
@@ -330,7 +355,11 @@ class BOESource(Source):
         """
         from bs4 import BeautifulSoup
 
-        resp = requests.get(url, headers=self._default_headers(), timeout=BODY_FETCH_TIMEOUT)
+        resp = requests.get(
+            url,
+            headers=self._default_headers(),
+            timeout=_boe_params().get("timeout_body", BODY_FETCH_TIMEOUT),
+        )
         resp.raise_for_status()
         soup = BeautifulSoup(resp.text, "lxml")
         content = (
@@ -379,5 +408,5 @@ class BOESource(Source):
         return download_and_extract_pdf(
             url,
             headers=self._default_headers(),
-            timeout=PDF_FETCH_TIMEOUT,
+            timeout=_boe_params().get("timeout_pdf", PDF_FETCH_TIMEOUT),
         )
