@@ -14,7 +14,7 @@
 | 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ✅ hecha (repo público + tag v0.3.0) |
 | 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | ✅ **hecha** — **replanteada** (ver corrección abajo): bot nuevo **en producción** (vigia-core v0.4.0 + repo + CI verde + cutover sin re-alertas; fork archivado) |
 | 5 | Reestructurar documentación (CLAUDE.md maestro + por bot) | ✅ **hecha** — maestro en `vigia-core` + CLAUDE.md por bot (reparto "autonomía operativa") + memoria reestructurada |
-| 6 | (Opcional) Migrar enfermería a consumir `vigia-core` | ⬜ pendiente |
+| 6 | Migrar enfermería a consumir `vigia-core` | ✅ **hecha** — repo fino sobre `vigia-core@v0.4.0` en producción (merge + run real con 0 re-alertas) |
 
 Eje transversal continuo: expansión de fuentes (boletines autonómicos → core; Instituto Cervantes y portales privados → perfil docente). **Roadmap de fuentes docentes futuras (colegios privados, ELE, canales sindicales, InfoJobs/Jooble, alertas de calendario): `vigia-docencia/ROADMAP.md`.**
 
@@ -152,9 +152,10 @@ a sus rutas + enlace al maestro.
 - [x] Memoria reestructurada a proyecto maestro + nota por bot (`project_docencia.md` nuevo; `project_multibot.md` enfocado a plataforma; `project_vigia.md` adelgazado; `MEMORY.md` actualizado).
 - **Verifica:** ✅ la guía del maestro (Parte 3) cubre cada paso realmente ejecutado en la Fase 4 (Profile, entrypoint, extra_sources, requirements@tag, VIGIA_STATE_DIR, daily.yml, web, 3 secrets, migración `seen.db`, cutover); enlaces resuelven; ningún bot duplica la guía larga.
 
-### Fase 6 — (Opcional) Migrar enfermería al core
-- [ ] `vigia-enfermeria`: borrar copia del core; crear `vigia_enfermeria/`; `requirements.txt` → `vigia-core@tag`; `daily.yml` → `python -m vigia_enfermeria.main`. **No tocar state/gh-pages/secrets/URL.**
-- **Verifica:** `workflow_dispatch` `dry_run=true`; comparar `items.json` contra baseline de Fase 0; mergear solo si coincide; primer run real controlado.
+### Fase 6 — Migrar enfermería al core ✅
+- [x] `vigia-enfermeria` → **repo fino** que consume `vigia-core@v0.4.0` por pip: borrada la copia del core (`vigia/`, −7800 líneas) + `pyproject.toml`; paquete `vigia_enfermeria/` (entrypoint `python -m vigia_enfermeria` que fija `DEFAULT` antes del pipeline); `requirements.txt` → `vigia-core@v0.4.0`; `daily.yml`/`maintenance.yml` con `VIGIA_STATE_DIR=${{ github.workspace }}/state` + nuevo entrypoint. `state`/`gh-pages`/secrets/URL **intactos**. Decisión: paquete propio (no `python -m vigia.main` pelado), consistente con docencia.
+- [x] **Verificación con red** (PR [tragabytes/vigia-enfermeria#8](https://github.com/tragabytes/vigia-enfermeria/pull/8)): `vigia/` (feat) byte-idéntico a `vigia-core@v0.4.0` (diff ignorando CRLF = vacío); `ci.yml` aislado en PR (pip install @v0.4.0 + **472 passed, 2 skipped** + dry-run, sin tocar state/gh-pages/Telegram); merge a `main`; primer run real controlado ([run 26824149227](https://github.com/tragabytes/vigia-enfermeria/actions/runs/26824149227)): **0 alertas enviadas** (6 matches; 1 "nuevo" = snapshot cosmético suprimido por diff_summarizer → 0 re-alertas, confirma `id_hash` idénticos). state/gh-pages actualizados con normalidad.
+- **Cabos sueltos (no bloqueantes):** el paso "Publicar dashboard" cuela `vigia_enfermeria/__pycache__/*.pyc` en `gh-pages` (su `git add -A` sin `.gitignore` en esa rama; preexistente, sin impacto en el sitio). Probe `csic_sede` con timeout transitorio (`continue-on-error`).
 
 ## Eje transversal — expansión de fuentes (post-MVP, incremental, 1 por PR)
 - [ ] Boletines autonómicos (secundaria por CCAA) → **al core** (genéricos). Patrón calcado de `boe.py`/`bocm.py`. Priorizar por dónde busque el hermano.
@@ -232,3 +233,11 @@ a sus rutas + enlace al maestro.
   - **`alerta-empleo/CLAUDE.md`** (reescrito en `feat/plataforma-multibot`): quita Karpathy→enlace, añade nota doble-rol (enfermería en prod + copia de trabajo del core hasta F6), mantiene reglas 5–9 con rutas de enfermería + específicos sanitarios.
   - **Memoria** reestructurada a maestro + nota por bot.
 - **Siguiente:** Fase 6 (migrar enfermería al core, opcional con red) o **ampliar fuentes del bot docente** (`vigia-docencia/ROADMAP.md`: ELE/privados/sindicatos — mayor valor para el hermano). Mergear antes los 2 PRs de docs.
+
+### 2026-06-02 — Sesión 4 (Fase 6: migrar enfermería al core)
+- **Estado de partida:** `feat/plataforma-multibot` = `main` + 8 commits (Fases 0-5) sin mergear; producción corría el código pre-refactor. `vigia/` (feat) verificado **byte-idéntico** a `vigia-core@v0.4.0` (diff ignorando CRLF = vacío). `vigia-core@v0.4.0` ya contiene el perfil de enfermería (`_default_profile.DEFAULT`) y sus 4 fuentes sanitarias.
+- **Decisión del usuario:** repo fino con **paquete propio `vigia_enfermeria`** (entrypoint que fija `DEFAULT`), consistente con docencia.
+- **Hecho:** paquete `vigia_enfermeria/` + `requirements.txt`→`vigia-core@v0.4.0` + `daily.yml`/`maintenance.yml` (`VIGIA_STATE_DIR` + entrypoint) + `ci.yml` (PR aislado) + borrado de `vigia/` (−7800) y `pyproject.toml`. Commit `c5cfd2f`.
+- **Verificación con red:** CI del PR [#8](https://github.com/tragabytes/vigia-enfermeria/pull/8) verde (pip install @v0.4.0 + **472 passed, 2 skipped** + dry-run, sin tocar state/gh-pages/Telegram). Checkpoint con el usuario → OK. Merge a `main` (`d21a3e6`). **Primer run real** ([26824149227](https://github.com/tragabytes/vigia-enfermeria/actions/runs/26824149227)): 6 matches, 1 "nuevo" (snapshot cosmético suprimido por diff_summarizer) → **0 alertas enviadas, 0 re-alertas**. state/gh-pages actualizados con normalidad. **Fase 6 cerrada — todas las fases (0-6) completas.**
+- **Cabos sueltos (no bloqueantes):** `git add -A` del paso "Publicar dashboard" cuela `__pycache__` en `gh-pages` (preexistente); probe `csic_sede` timeout transitorio.
+- **Siguiente posible:** ampliar fuentes del bot docente (`vigia-docencia/ROADMAP.md`).
