@@ -149,6 +149,10 @@ jobs:
           fi
           touch .nojekyll
 
+          # No publicar artefactos de Python (caches) que el checkout de
+          # gh-pages arrastra del working tree del run.
+          find . -name '__pycache__' -type d -prune -exec rm -rf {} + 2>/dev/null || true
+
           git add -A
           git diff --staged --quiet || \
             git commit -m "dashboard: maintenance $(date -u +%Y-%m-%dT%H:%M:%SZ) [skip ci]"
