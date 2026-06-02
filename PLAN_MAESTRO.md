@@ -11,7 +11,7 @@
 | 0 | Red de seguridad (empaquetado + baseline) | ✅ hecha (tests verdes; editable install pendiente de toolchain) |
 | 1 | `Profile` + enfermería byte-idéntico (refactor interno) | ✅ hecha (472 tests verdes) |
 | 2 | Registro extensible de fuentes + fix multi-repo (`DB_PATH`) | ✅ hecha (472 tests verdes) |
-| 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ⬜ pendiente |
+| 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ✅ hecha (repo público + tag v0.3.0) |
 | 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | ⬜ pendiente |
 | 5 | Reestructurar documentación (CLAUDE.md maestro + por bot) | ⬜ pendiente |
 | 6 | (Opcional) Migrar enfermería a consumir `vigia-core` | ⬜ pendiente |
@@ -110,10 +110,10 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - **Verifica:** ✅ **472 passed, 2 skipped**; registro = 20 fuentes (16+4) sin ciclo; 19 habilitadas; override `VIGIA_STATE_DIR` OK.
 - **Nota:** los archivos de las 4 fuentes específicas siguen físicamente en `vigia/sources/`; se moverán al repo del bot en Fase 3/6. En Fase 2 solo cambió quién las registra (el perfil, no el core).
 
-### Fase 3 — Publicar `vigia-core` *(no toca enfermería)*
-- [ ] `git subtree split --prefix=vigia` → repo `tragabytes/vigia-core` + su `pyproject.toml` + tests del core. Tag `v0.3.0`.
-- [ ] El repo `vigia-enfermeria` no se modifica (conserva su copia; duplicación temporal aceptada hasta Fase 6).
-- **Verifica:** en venv limpio, `pip install git+…/vigia-core.git@v0.3.0` instala; `import vigia` OK; `pytest` del core verde.
+### Fase 3 — Publicar `vigia-core` ✅
+- [x] Repo nuevo **https://github.com/tragabytes/vigia-core** (público) con `vigia/` + `tests/` + `pyproject.toml` + `requirements.txt` + `README.md`. Tag **v0.3.0**. (Snapshot por copia, sin historia; sin `web/`/`daily.yml`/`docs` de enfermería.)
+- [x] El repo `vigia-enfermeria` NO se modificó (conserva su copia; duplicación temporal hasta Fase 6).
+- **Verifica:** ✅ la suite pasa en la copia autónoma (**472 passed, 2 skipped**); tag `v0.3.0` en remoto; contenido = solo el core. ⚠️ `pip install git+…@v0.3.0` no validable en local (toolchain 2021); se valida en el CI del bot docente (Fase 4).
 
 ### Fase 4 — Bot docente `vigia-docencia` *(entregable)*
 - [ ] Repo nuevo: `requirements.txt` con `vigia-core@v0.3.0`; `vigia_docencia/{profile,main}.py`, `sources/`, `web/`, `daily.yml`, secrets + bot de Telegram, ramas `state`/`gh-pages`, Pages.
@@ -182,3 +182,9 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - `storage.DB_PATH`: override `VIGIA_STATE_DIR` + fallback histórico. `codem` migrado a call-time (rompe ciclo de import perfil↔fuente).
 - Verificado: **472 passed, 2 skipped**; registro 20 (16+4) sin ciclo; 19 habilitadas; override DB_PATH OK.
 - **Siguiente:** Fase 3 (publicar core como repo `vigia-core`: subtree split + pyproject + tag) o Fase 4 (bot docente), según prioridad.
+
+### 2026-06-02 — Sesión 2 (Fase 3)
+- Publicado **https://github.com/tragabytes/vigia-core** (público), tag **v0.3.0**. Contenido: `vigia/` + `tests/` + `pyproject.toml` + `requirements.txt` + `README.md` (snapshot por copia; sin historia ni assets de enfermería).
+- Verificado: la copia es autónoma (472 passed, 2 skipped); tag en remoto; contenido correcto. `vigia-enfermeria` intacto.
+- Instalable: `pip install git+https://github.com/tragabytes/vigia-core.git@v0.3.0` (validación real de instalación en Fase 4 / CI con toolchain moderno).
+- **Siguiente:** Fase 4 — bot docente `vigia-docencia` (repo fino que consume `vigia-core@v0.3.0`): definir perfil docente (keywords/prompts), fuente Instituto Cervantes, bot de Telegram, web, daily.yml. Requiere recursos del usuario (repo + token Telegram).
