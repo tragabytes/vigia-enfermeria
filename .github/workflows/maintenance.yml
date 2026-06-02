@@ -17,6 +17,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      # vigia-core pip-instalado → fijar VIGIA_STATE_DIR (si no, DB_PATH caería
+      # en site-packages). Anclado al state/ del workspace (rama `state`).
+      VIGIA_STATE_DIR: ${{ github.workspace }}/state
 
     steps:
       - name: Descargar código
@@ -75,7 +79,7 @@ jobs:
           # hace nada — el sentido del workflow es enriquecer, así que lo
           # esperamos configurado.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python -m vigia.main --maintenance
+        run: python -m vigia_enfermeria --maintenance
 
       - name: Guardar BD de estado
         if: always()

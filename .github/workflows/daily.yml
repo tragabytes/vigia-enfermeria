@@ -20,6 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # necesario para guardar estado en rama state
+    env:
+      # vigia-core está pip-instalado → storage.DB_PATH caería en site-packages
+      # si no se fija. Lo anclamos al state/ del workspace (rama `state`).
+      VIGIA_STATE_DIR: ${{ github.workspace }}/state
 
     steps:
       - name: Descargar código
@@ -85,14 +89,14 @@ jobs:
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
             ARGS="$ARGS --dry-run"
           fi
-          python -m vigia.main $ARGS
+          python -m vigia_enfermeria $ARGS
 
       - name: Probe de salud de fuentes
         # Se ejecuta siempre (incluso si el pipeline falla) para diagnóstico.
         # No corta el workflow aunque alguna fuente esté "error" — solo informa.
         if: always()
         continue-on-error: true
-        run: python -m vigia.main --probe
+        run: python -m vigia_enfermeria --probe
 
       - name: Guardar BD de estado
         if: always()

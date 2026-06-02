@@ -1,0 +1,30 @@
+name: ci
+
+# Validación aislada en cada PR: que vigia-core@tag resuelve por pip, que los
+# tests del bot pasan contra el core instalado, y que el entrypoint arranca el
+# pipeline en dry-run. NO toca state/gh-pages/Telegram (sin secrets ni pasos de
+# guardado): es seguro para verificar la migración antes de mergear a main.
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Instalar dependencias (incluye vigia-core@tag)
+        run: pip install -r requirements.txt
+
+      - name: Tests
+        run: python -m pytest tests/ -v --tb=short
+
+      - name: Dry-run (lista matches; no persiste ni notifica)
+        run: python -m vigia_enfermeria --dry-run
