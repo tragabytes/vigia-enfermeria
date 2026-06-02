@@ -26,26 +26,8 @@ from vigia import dashboard, diff_summarizer, enricher, maintenance
 from vigia.config import SOURCES_ENABLED
 from vigia.extractor import extract
 from vigia.notifier import send
-from vigia.sources.administracion_gob import AdministracionGobSource
-from vigia.sources.aena import AENASource
-from vigia.sources.ayuntamiento_madrid import AyuntamientoMadridSource
-from vigia.sources.boam import BOAMSource
-from vigia.sources.bocm import BOCMSource
-from vigia.sources.boe import BOESource
-from vigia.sources.canal_isabel_ii import CanalIsabelIISource
-from vigia.sources.canal_isabel_ii_calendario import CanalIsabelIICalendarioSource
-from vigia.sources.ciemat import CIEMATSource
-from vigia.sources.cm_ficha_enfermeria import ComunidadMadridFichaEnfermeriaSource
-from vigia.sources.codem import CODEMSource
-from vigia.sources.comunidad_madrid import ComunidadMadridSource
-from vigia.sources.csic_sede import CSICSedeSource
-from vigia.sources.datos_madrid import DatosMadridSource
-from vigia.sources.iac import IACSource
-from vigia.sources.isciii import ISCIIISource
-from vigia.sources.las_rozas import LasRozasSource
-from vigia.sources.metro_madrid import MetroMadridSource
-from vigia.sources.sap_successfactors import SapSuccessfactorsSource
-from vigia.sources.universidades_madrid import UniversidadesMadridSource
+from vigia.profile import get_active_profile
+from vigia.sources.registry import CORE_SOURCES
 from vigia.storage import Storage
 from vigia.watchers.detail_watcher import DetailWatcher
 
@@ -55,28 +37,11 @@ logger = logging.getLogger(__name__)
 # El workflow lo pushea a la rama gh-pages tras cada run.
 DASHBOARD_OUT_DIR = "docs/data"
 
-SOURCE_REGISTRY = {
-    "boe": BOESource,
-    "bocm": BOCMSource,
-    "boam": BOAMSource,
-    "ayuntamiento_madrid": AyuntamientoMadridSource,
-    "comunidad_madrid": ComunidadMadridSource,
-    "cm_ficha_enfermeria": ComunidadMadridFichaEnfermeriaSource,
-    "metro_madrid": MetroMadridSource,
-    "canal_isabel_ii": CanalIsabelIISource,
-    "canal_isabel_ii_calendario": CanalIsabelIICalendarioSource,
-    "administracion_gob": AdministracionGobSource,
-    "codem": CODEMSource,
-    "datos_madrid": DatosMadridSource,
-    "ciemat": CIEMATSource,
-    "isciii": ISCIIISource,
-    "universidades_madrid": UniversidadesMadridSource,
-    "sap_successfactors": SapSuccessfactorsSource,
-    "las_rozas": LasRozasSource,
-    "aena": AENASource,
-    "iac": IACSource,
-    "csic_sede": CSICSedeSource,
-}
+# El registro efectivo combina las fuentes del core (genéricas) con las que
+# aporta el perfil activo (Profile.extra_sources: fuentes propias del perfil,
+# p.ej. el feed del Colegio de Enfermería). Se mantiene como atributo de
+# módulo porque varios tests lo monkeypatchean.
+SOURCE_REGISTRY = {**CORE_SOURCES, **get_active_profile().extra_sources}
 
 
 def _default_since() -> date:

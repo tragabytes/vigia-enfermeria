@@ -24,6 +24,7 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+import os
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
@@ -32,7 +33,15 @@ from typing import Any, Iterable, Optional
 
 logger = logging.getLogger(__name__)
 
-DB_PATH = Path(__file__).parent.parent / "state" / "seen.db"
+# Ruta de la BD de estado. Por defecto, junto al repo (comportamiento
+# histórico: <repo>/state/seen.db). Cuando el core se instala como paquete,
+# `__file__` apunta a site-packages; por eso un bot que consuma el core debe
+# fijar VIGIA_STATE_DIR para que su estado viva en su propio cwd/rama state.
+_STATE_DIR_ENV = os.environ.get("VIGIA_STATE_DIR")
+if _STATE_DIR_ENV:
+    DB_PATH = Path(_STATE_DIR_ENV) / "seen.db"
+else:
+    DB_PATH = Path(__file__).parent.parent / "state" / "seen.db"
 
 # Versión actual del esquema de enriquecimiento. Si subimos esto en el futuro
 # (ej. v3 = clustering de procesos relacionados), `iter_items_for_enrichment`

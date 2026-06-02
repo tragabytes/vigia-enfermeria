@@ -25,7 +25,8 @@ from xml.etree import ElementTree as ET
 
 import requests
 
-from vigia.config import FAST_KEYWORDS, normalize
+from vigia.config import normalize
+from vigia.profile import get_active_profile
 from vigia.sources.base import RawItem, Source
 
 logger = logging.getLogger(__name__)
@@ -110,7 +111,7 @@ class CODEMSource(Source):
                 continue
 
             combined = f"{title} {desc_text}"
-            if not any(kw in normalize(combined) for kw in FAST_KEYWORDS):
+            if not any(kw in normalize(combined) for kw in get_active_profile().fast_keywords):
                 continue
 
             items.append(

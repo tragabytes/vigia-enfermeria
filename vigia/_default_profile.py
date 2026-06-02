@@ -14,6 +14,10 @@ para no romper los imports existentes.
 from __future__ import annotations
 
 from vigia.profile import Profile
+from vigia.sources.canal_isabel_ii_calendario import CanalIsabelIICalendarioSource
+from vigia.sources.cm_ficha_enfermeria import ComunidadMadridFichaEnfermeriaSource
+from vigia.sources.codem import CODEMSource
+from vigia.sources.isciii import ISCIIISource
 
 # ---------------------------------------------------------------------------
 # Términos de búsqueda (sección 3 del plan)
@@ -452,6 +456,14 @@ DEFAULT = Profile(
     enricher_allowed_fetch_hosts=_ENRICHER_ALLOWED_FETCH_HOSTS,
     diff_system_prompt=_DIFF_SYSTEM_PROMPT,
     sources_enabled=tuple(_SOURCES_ENABLED),
-    extra_sources={},
+    # Fuentes específicas del perfil enfermería (no genéricas): el feed del
+    # Colegio de Enfermería de Madrid y los hash-watchers sanitarios. El core
+    # NO las conoce; las registra el perfil.
+    extra_sources={
+        "codem": CODEMSource,
+        "cm_ficha_enfermeria": ComunidadMadridFichaEnfermeriaSource,
+        "isciii": ISCIIISource,
+        "canal_isabel_ii_calendario": CanalIsabelIICalendarioSource,
+    },
     source_params={},
 )

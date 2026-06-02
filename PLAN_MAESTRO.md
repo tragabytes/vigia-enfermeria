@@ -10,7 +10,7 @@
 |---|---|---|
 | 0 | Red de seguridad (empaquetado + baseline) | ✅ hecha (tests verdes; editable install pendiente de toolchain) |
 | 1 | `Profile` + enfermería byte-idéntico (refactor interno) | ✅ hecha (472 tests verdes) |
-| 2 | Registro extensible de fuentes + fix multi-repo (`DB_PATH`) | ⬜ pendiente |
+| 2 | Registro extensible de fuentes + fix multi-repo (`DB_PATH`) | ✅ hecha (472 tests verdes) |
 | 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ⬜ pendiente |
 | 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | ⬜ pendiente |
 | 5 | Reestructurar documentación (CLAUDE.md maestro + por bot) | ⬜ pendiente |
@@ -102,11 +102,13 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - **Verifica:** ✅ **472 passed, 2 skipped** sin tocar tests + sanity check de la fachada.
 - **Notas de diseño:** el extractor lee de la fachada en import-time (modelo *un perfil por proceso*, sin cache dinámica). `vigia/main.py` (core) se deja **agnóstico**: NO fija perfil; el lazy default cubre enfermería y cada bot fijará el suyo (Fase 4). `SEARCH_TERMS`/`DEPT_KEYWORDS_FOR_BODY` se quedan de momento en sus fuentes; se moverán a `source_params` en Fase 4.
 
-### Fase 2 — Registro extensible + fix multi-repo
-- [ ] `vigia/sources/registry.py` con `CORE_SOURCES` (las ~18 genéricas). Sanitarias (`cm_ficha_enfermeria`, `isciii`, `canal_isabel_ii_calendario`, `codem`) → `DEFAULT.extra_sources`.
-- [ ] `main.py`: `SOURCE_REGISTRY = {**CORE_SOURCES, **get_active_profile().extra_sources}`.
-- [ ] `storage.py:35` `DB_PATH` resuelve desde cwd / `VIGIA_STATE_DIR` con fallback (bug latente: `__file__.parent.parent` → `site-packages` al instalar como paquete).
-- **Verifica:** `pytest` verde (monkeypatch de registry intacto); `--probe` lista las 19 fuentes; DB se crea en el cwd.
+### Fase 2 — Registro extensible + fix multi-repo ✅
+- [x] `vigia/sources/registry.py` con `CORE_SOURCES` (16 genéricas). Específicas de enfermería (`codem`, `cm_ficha_enfermeria`, `isciii`, `canal_isabel_ii_calendario`) → `DEFAULT.extra_sources`.
+- [x] `main.py`: `SOURCE_REGISTRY = {**CORE_SOURCES, **get_active_profile().extra_sources}` (sigue como atributo de módulo; 20 fuentes).
+- [x] `storage.py` `DB_PATH`: override por `VIGIA_STATE_DIR` + fallback histórico idéntico (`<repo>/state/seen.db`).
+- [x] `codem` migrado a leer `fast_keywords` del perfil en call-time (rompe el ciclo de import perfil↔fuente).
+- **Verifica:** ✅ **472 passed, 2 skipped**; registro = 20 fuentes (16+4) sin ciclo; 19 habilitadas; override `VIGIA_STATE_DIR` OK.
+- **Nota:** los archivos de las 4 fuentes específicas siguen físicamente en `vigia/sources/`; se moverán al repo del bot en Fase 3/6. En Fase 2 solo cambió quién las registra (el perfil, no el core).
 
 ### Fase 3 — Publicar `vigia-core` *(no toca enfermería)*
 - [ ] `git subtree split --prefix=vigia` → repo `tragabytes/vigia-core` + su `pyproject.toml` + tests del core. Tag `v0.3.0`.
@@ -173,3 +175,10 @@ Cada fase = un PR en rama (nunca commit directo a `main` sin pedir). Criterio co
 - `extractor`, 13 fuentes y `dashboard` NO tocados (leen vía fachada). `vigia/main.py` se deja agnóstico (no fija perfil).
 - Verificado: **472 passed, 2 skipped** sin tocar tests + sanity check.
 - **Siguiente:** Fase 2 — `vigia/sources/registry.py` (CORE_SOURCES) + mover fuentes sanitarias a `extra_sources` del perfil + fix `DB_PATH` (cwd / `VIGIA_STATE_DIR`).
+
+### 2026-06-02 — Sesión 2 (Fase 2)
+- `vigia/sources/registry.py` con `CORE_SOURCES` (16 genéricas). Las 4 específicas de enfermería → `DEFAULT.extra_sources`.
+- `main.py`: `SOURCE_REGISTRY = {**CORE_SOURCES, **extra_sources}` (atributo de módulo, 20 fuentes).
+- `storage.DB_PATH`: override `VIGIA_STATE_DIR` + fallback histórico. `codem` migrado a call-time (rompe ciclo de import perfil↔fuente).
+- Verificado: **472 passed, 2 skipped**; registro 20 (16+4) sin ciclo; 19 habilitadas; override DB_PATH OK.
+- **Siguiente:** Fase 3 (publicar core como repo `vigia-core`: subtree split + pyproject + tag) o Fase 4 (bot docente), según prioridad.
