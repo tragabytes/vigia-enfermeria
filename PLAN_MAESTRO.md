@@ -13,7 +13,7 @@
 | 2 | Registro extensible de fuentes + fix multi-repo (`DB_PATH`) | ✅ hecha (472 tests verdes) |
 | 3 | Publicar el core como repo `vigia-core` (no toca enfermería) | ✅ hecha (repo público + tag v0.3.0) |
 | 4 | Bot docente `vigia-docencia` (el entregable para el hermano) | ✅ **hecha** — **replanteada** (ver corrección abajo): bot nuevo **en producción** (vigia-core v0.4.0 + repo + CI verde + cutover sin re-alertas; fork archivado) |
-| 5 | Reestructurar documentación (CLAUDE.md maestro + por bot) | ⬜ pendiente |
+| 5 | Reestructurar documentación (CLAUDE.md maestro + por bot) | ✅ **hecha** — maestro en `vigia-core` + CLAUDE.md por bot (reparto "autonomía operativa") + memoria reestructurada |
 | 6 | (Opcional) Migrar enfermería a consumir `vigia-core` | ⬜ pendiente |
 
 Eje transversal continuo: expansión de fuentes (boletines autonómicos → core; Instituto Cervantes y portales privados → perfil docente). **Roadmap de fuentes docentes futuras (colegios privados, ELE, canales sindicales, InfoJobs/Jooble, alertas de calendario): `vigia-docencia/ROADMAP.md`.**
@@ -143,11 +143,14 @@ Migración por etapas que **porta** el perfil docente ya rodado del fork (no lo 
 - [x] E9-E11: `seen.db` del fork (74 items) migrado → **primer run real con 0 re-alertas** (3 matches → 0 nuevos); Telegram verificado (`send_test`); **cron del fork apagado + repo archivado**.
 - **Resultado:** bot en producción (cron L-V 08:00 UTC), dashboard https://tragabytes.github.io/vigia-docencia/. Ampliación de fuentes: `vigia-docencia/ROADMAP.md`.
 
-### Fase 5 — Documentación
-- [ ] CLAUDE.md maestro en `vigia-core`: Karpathy + convenciones genéricas del pipeline + guía "cómo crear un nuevo bot/perfil".
-- [ ] CLAUDE.md por bot (enfermería, docencia) con puntero al maestro.
-- [ ] Memoria (`MEMORY.md`, `project_vigia.md`) reestructurada a proyecto maestro + nota por bot.
-- **Verifica:** un bot nuevo se puede arrancar siguiendo solo la guía del maestro.
+### Fase 5 — Documentación ✅
+Reparto acordado con el usuario: **"autonomía operativa"** — lo genérico (Karpathy + guía
+crear-bot) vive solo en el maestro; cada bot lleva sus convenciones del pipeline adaptadas
+a sus rutas + enlace al maestro.
+- [x] CLAUDE.md maestro en `vigia-core` (NUEVO): Parte 1 Karpathy (canónica) + Parte 2 convenciones del pipeline desacopladas de enfermería + Parte 3 guía "cómo crear un bot/perfil" (contrato `Profile`, entrypoint, repo-fino, cutover 0-realertas, contratos del core, publicación por tag). + fix README `@v0.3.0`→`@v0.4.0`. PR: tragabytes/vigia-core#1.
+- [x] CLAUDE.md por bot: `vigia-docencia` (NUEVO, fino, enlaza al maestro; PR tragabytes/vigia-docencia#1) y `alerta-empleo` (reescrito: quita Karpathy→enlace, añade nota doble-rol core/enfermería, mantiene reglas 5–9 con rutas de enfermería + específicos sanitarios; en `feat/plataforma-multibot`).
+- [x] Memoria reestructurada a proyecto maestro + nota por bot (`project_docencia.md` nuevo; `project_multibot.md` enfocado a plataforma; `project_vigia.md` adelgazado; `MEMORY.md` actualizado).
+- **Verifica:** ✅ la guía del maestro (Parte 3) cubre cada paso realmente ejecutado en la Fase 4 (Profile, entrypoint, extra_sources, requirements@tag, VIGIA_STATE_DIR, daily.yml, web, 3 secrets, migración `seen.db`, cutover); enlaces resuelven; ningún bot duplica la guía larga.
 
 ### Fase 6 — (Opcional) Migrar enfermería al core
 - [ ] `vigia-enfermeria`: borrar copia del core; crear `vigia_enfermeria/`; `requirements.txt` → `vigia-core@tag`; `daily.yml` → `python -m vigia_enfermeria.main`. **No tocar state/gh-pages/secrets/URL.**
@@ -219,3 +222,13 @@ Migración por etapas que **porta** el perfil docente ya rodado del fork (no lo 
   - **`vigia-docencia`** (local `proyectos/vigia-docencia`): `Profile` docente portado 1:1 del fork + entrypoint `python -m vigia_docencia` (fija perfil antes del pipeline) + BOCM-RSS custom. **Validación offline 19/19** (oráculo del fork + caso trampa) + wiring end-to-end OK (BOE core + BOCM custom).
 - **Plan por etapas (E0–E11):** `.claude/plans/zazzy-splashing-dawn.md`.
 - **Cierre del cutover (misma sesión 3):** E4–E11 completadas. `vigia-core@v0.4.0` publicado; **github.com/tragabytes/vigia-docencia** creado, CI verde (`pip install @v0.4.0` + tests + dry-run real bocm 36/boe 34, 0 errores), Pages activo, 3 secrets (reutilizado el bot del fork). `seen.db` (74 items) migrado → **primer run real con 0 re-alertas** (3 matches → 0 nuevos); Telegram verificado (`send_test`). Fork: cron apagado (`bba0da2`) + **archivado**. **Fase 4 cerrada.** Ampliación futura de fuentes: `vigia-docencia/ROADMAP.md`. Pendiente opcional: Fases 5 (docs) y 6 (migrar enfermería al core).
+
+### 2026-06-02 — Sesión 4 (Fase 5: documentación)
+- **Hallazgo:** ni `vigia-core` ni `vigia-docencia` tenían `CLAUDE.md`; el único (enfermería) mezclaba genérico (Karpathy + convenciones del pipeline) con específico, sin guía "crear bot". Los tres repos están clonados en `proyectos/`; `vigia-core` se mantiene por copia manual (sin script de sync).
+- **Decisiones del usuario:** reparto **"autonomía operativa"** (genérico solo en el maestro; cada bot con sus convenciones adaptadas + enlace); memoria **completa**; **rama + PR por repo**.
+- **Hecho:**
+  - **`vigia-core/CLAUDE.md`** (maestro, NUEVO): Karpathy + convenciones del pipeline (desacopladas de enfermería) + guía "cómo crear un bot/perfil" (Profile, entrypoint `set_active_profile`+import diferido, repo-fino, fuente core-vs-bot, cutover 0-realertas, contratos del core, publicación por tag) + fix README `@v0.4.0`. **PR [tragabytes/vigia-core#1](https://github.com/tragabytes/vigia-core/pull/1)**.
+  - **`vigia-docencia/CLAUDE.md`** (NUEVO, fino): enlaza al maestro; específico de docencia (vigia-core@v0.4.0, entrypoint, perfil 005 G·H + ELE, BOCM custom) + convenciones con rutas del bot. **PR [tragabytes/vigia-docencia#1](https://github.com/tragabytes/vigia-docencia/pull/1)**.
+  - **`alerta-empleo/CLAUDE.md`** (reescrito en `feat/plataforma-multibot`): quita Karpathy→enlace, añade nota doble-rol (enfermería en prod + copia de trabajo del core hasta F6), mantiene reglas 5–9 con rutas de enfermería + específicos sanitarios.
+  - **Memoria** reestructurada a maestro + nota por bot.
+- **Siguiente:** Fase 6 (migrar enfermería al core, opcional con red) o **ampliar fuentes del bot docente** (`vigia-docencia/ROADMAP.md`: ELE/privados/sindicatos — mayor valor para el hermano). Mergear antes los 2 PRs de docs.

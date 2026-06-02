@@ -1,77 +1,39 @@
-# CLAUDE.md
+# CLAUDE.md — vigia-enfermeria
 
-Reglas operativas para esta base de código. Dos bloques:
+Bot de la plataforma vigia para convocatorias de **Enfermería del Trabajo** en la
+administración pública (Madrid). Es el bot original.
 
-1. **Karpathy Guidelines** — comportamiento general para reducir errores típicos de un LLM al programar. Adaptado de [forrestchang/andrej-karpathy-skills](https://github.com/forrestchang/andrej-karpathy-skills) (MIT). Genérico, aplica a cualquier proyecto.
-2. **Convenciones de vigia-enfermeria** — gotchas operativos específicos de este pipeline. Aprendidos en producción.
-
-**Compromiso:** estas reglas priman cautela sobre velocidad. Para tareas triviales, usa el sentido común.
-
----
-
-## Parte 1 — Karpathy Guidelines (adaptado, MIT)
-
-### 1. Pensar antes de programar
-
-**No asumas. No ocultes confusión. Saca a la luz los compromisos.**
-
-Antes de implementar:
-- Enuncia tus supuestos. Si dudas, pregunta.
-- Si hay varias interpretaciones posibles, preséntalas — no elijas en silencio.
-- Si existe una alternativa más simple, dilo. Empuja cuando esté justificado.
-- Si algo no está claro, para. Nombra lo que te confunde. Pregunta.
-
-### 2. Simplicidad primero
-
-**El mínimo código que resuelve el problema. Nada especulativo.**
-
-- Ningún feature más allá de lo pedido.
-- Sin abstracciones para código de un solo uso.
-- Sin "flexibilidad" o "configurabilidad" que no se haya pedido.
-- Sin manejo de errores para escenarios imposibles.
-- Si escribes 200 líneas y podían ser 50, reescríbelo.
-
-Pregúntate: "¿Un ingeniero senior diría que esto está sobrecomplicado?". Si sí, simplifica.
-
-### 3. Cambios quirúrgicos
-
-**Toca solo lo que debas. Limpia solo tu propio desorden.**
-
-Al editar código existente:
-- No "mejores" código adyacente, comentarios o formato.
-- No refactorices lo que no está roto.
-- Imita el estilo existente, aunque tú lo harías de otra manera.
-- Si ves código muerto no relacionado, menciónalo — no lo borres.
-
-Cuando tus cambios crean huérfanos:
-- Elimina imports/variables/funciones que TUS cambios dejaron sin usar.
-- No elimines código muerto preexistente salvo que se pida.
-
-*test:* cada línea modificada debe trazar directamente a la petición del usuario.
-
-### 4. Ejecución guiada por objetivo
-
-**Define criterios de éxito. Itera hasta verificar.**
-
-Transforma tareas en metas verificables:
-- "Añadir validación" → "Escribe tests para inputs inválidos y haz que pasen".
-- "Arregla el bug" → "Escribe un test que lo reproduzca y haz que pase".
-- "Refactoriza X" → "Asegura que los tests pasan antes y después".
-
-Para tareas multipaso, enuncia un plan breve:
-```
-1. [Paso] → verifica: [check]
-2. [Paso] → verifica: [check]
-3. [Paso] → verifica: [check]
-```
-
-Criterios fuertes te permiten iterar sin supervisión. Criterios débiles ("haz que funcione") obligan a aclarar todo el rato.
+> **Reglas generales (obligatorias):** Karpathy Guidelines + convenciones del pipeline
+> + guía "cómo crear un bot" viven en el **CLAUDE.md maestro** de vigia-core:
+> <https://github.com/tragabytes/vigia-core/blob/main/CLAUDE.md>. Este documento recoge
+> el **doble rol** de este repo y las **convenciones específicas de enfermería**.
 
 ---
 
-## Parte 2 — Convenciones de vigia-enfermeria
+## Doble rol de este repo (hasta la Fase 6)
 
-Específicas de este repo. Ordenadas por frecuencia de tropiezo en sesiones reales.
+Este repo es a la vez:
+
+1. **El bot de Enfermería del Trabajo en producción** (rama `main`, cron en Actions,
+   dashboard <https://tragabytes.github.io/vigia-enfermeria>). El perfil vive en
+   `vigia/_default_profile.py` (es el perfil por defecto del core).
+2. **La copia de trabajo del core** (`vigia/`), duplicada con `vigia-core` hasta que la
+   **Fase 6** (opcional) migre enfermería a consumir el core por pip.
+
+**El trabajo del proyecto multi-bot va en la rama `feat/plataforma-multibot`** (no en
+`main`). Al tocar el core desde aquí: cambios **aditivos**, suite **472 passed, 2
+skipped** sin tocar los tests existentes, y sin romper los contratos fijados por los
+tests (`extract(raw)` mantiene firma; `vigia.main.SOURCE_REGISTRY` y `SOURCES_ENABLED`
+son atributos de módulo; `normalize` importable de `vigia.config`). Después, re-publicar
+el tag de `vigia-core` y bumpear el `requirements.txt` de cada bot. Plan vivo:
+[`PLAN_MAESTRO.md`](PLAN_MAESTRO.md).
+
+---
+
+## Convenciones del pipeline (con las rutas de enfermería)
+
+Las versiones genéricas están en el maestro; aquí con los ejemplos reales de este bot.
+Ordenadas por frecuencia de tropiezo.
 
 ### 5. El estado vive en GitHub, no en disco
 
@@ -119,6 +81,24 @@ Específicas de este repo. Ordenadas por frecuencia de tropiezo en sesiones real
 - Síntoma típico: `comunidad_madrid 2 raw items, 1 errores` con probe verde — el "1 errores" es la rama perdida.
 
 *test:* después de un fix, lee `gh run view <id> --log | grep -E "WARNING|errores"`, no solo el `conclusion: success`.
+
+---
+
+## Específico de enfermería
+
+- **Fuentes sanitarias propias** (en `vigia/sources/`, registradas como `extra_sources`
+  del perfil enfermería, no en `CORE_SOURCES`): `codem` (RSS del Colegio de Enfermería),
+  `cm_ficha_enfermeria` (hash-watcher de la ficha de la Comunidad de Madrid — genera
+  alerta real al usuario), `isciii` (hash-watcher, hoy snapshot silencioso) y
+  `canal_isabel_ii_calendario`. El resto de fuentes son genéricas (`CORE_SOURCES`).
+- **Perfil:** `vigia/_default_profile.py` (patrones, watchlist, prompts, hosts, branding
+  de Enfermería del Trabajo). El fast-keyword es `"enfermer"` (no `"enferm"`: evita
+  "enfermedades").
+- **Entorno (Windows):** `python -m vigia.main --probe`/`--dry-run` revientan con
+  `UnicodeEncodeError` (cp1252) al imprimir `→`; usa `PYTHONIOENCODING=utf-8`. No afecta
+  al runner Linux de Actions.
+- **pytest** en este shell requiere `--capture=no` (la captura por descriptores de
+  fichero peta con "I/O operation on closed file").
 
 ---
 
