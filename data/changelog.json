@@ -1,6 +1,14 @@
 [
   {
     "date": "2026-06-02",
+    "commit": "9b865ee",
+    "kind": "ci",
+    "scope": "",
+    "title": "no publicar __pycache__ en gh-pages (limpieza antes de git add -A)",
+    "body": "El checkout a gh-pages arrastra los caches de Python generados en runtime; el git add -A los colaba en la rama publicada. Se eliminan antes de añadir."
+  },
+  {
+    "date": "2026-06-02",
     "commit": "c5cfd2f",
     "kind": "feat",
     "scope": "",
@@ -22,13 +30,5 @@
     "scope": "sources",
     "title": "registro extensible + fix DB_PATH multi-repo (Fase 2)",
     "body": "El registro de fuentes se compone del core (genericas) mas las que aporta el perfil activo; la BD de estado se puede redirigir por entorno."
-  },
-  {
-    "date": "2026-06-01",
-    "commit": "08ea731",
-    "kind": "feat",
-    "scope": "profile",
-    "title": "introduce Profile + perfil por defecto (Fase 1)",
-    "body": "Separa lo especifico del perfil (keywords, prompts, watchlist, branding) del nucleo agnostico. Enfermeria byte-identico."
   }
 ]
