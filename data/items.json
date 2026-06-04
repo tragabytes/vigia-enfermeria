@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "2671d076eac3cd21",
+    "source": "universidades_madrid",
+    "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "titulo": "Resuelta 22/01/2026 Pruebas selectivas para el ingreso en la Escala Especial Superior de Servicios de la Universidad Autónoma de Madrid para el Person [snapshot b2e1de5226]",
+    "fecha": "2026-06-04",
+    "categoria": "traslado",
+    "first_seen_at": "2026-06-04T11:09:37.621117",
+    "summary": "Pruebas selectivas (oposición libre) para ingreso en la Escala Especial Superior de Servicios de la UAM: un puesto de Enfermero/a en el Servicio de Prevención y Salud. Convocatoria resuelta el 22/01/2026.",
+    "is_relevant": true,
+    "relevance_reason": "La convocatoria ofrece una plaza de Enfermero/a en el Servicio de Prevención y Salud de la UAM, correspondiente a Enfermería del Trabajo/Salud Laboral en un servicio de prevención.",
+    "process_type": "oposicion",
+    "organismo": "Universidad Autónoma de Madrid (UAM)",
+    "centro": "Servicio de Prevención y Salud – UAM",
+    "plazas": 1,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-01-22",
+    "tasas_eur": null,
+    "url_bases": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "url_inscripcion": null,
+    "requisitos_clave": [
+      "Titulación de Enfermería (Grado o Diplomatura)",
+      "Especialidad en Enfermería del Trabajo o habilitación equivalente para Servicio de Prevención",
+      "Acceso a Escala Especial Superior de Servicios de la UAM"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Convocatoria resuelta (22/01/2026). Consultar resolución final en uam.es/uam/ptgas para verificar adjudicación.",
+    "confidence": 0.6,
+    "enriched_at": "2026-06-04T11:09:53.226793+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "d3c57e573404c23d",
     "source": "comunidad_madrid",
     "url": "https://sede.comunidad.madrid/oferta-empleo/enfermeria-trabajo-0",
