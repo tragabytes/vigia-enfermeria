@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "16bf3ad7acf15ac9",
+    "source": "universidades_madrid",
+    "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "titulo": "Resuelta 22/01/2026 Pruebas selectivas para el ingreso en la Escala Especial Superior de Servicios de la Universidad Autónoma de Madrid para el Person [snapshot ce9c2ed593]",
+    "fecha": "2026-06-08",
+    "categoria": "traslado",
+    "first_seen_at": "2026-06-08T12:34:59.099151",
+    "summary": "UAM convoca por oposición libre 1 plaza de Enfermero/a en el Servicio de Prevención y Salud (Escala Especial Superior de Servicios). Convocatoria resuelta el 22/01/2026.",
+    "is_relevant": true,
+    "relevance_reason": "La convocatoria es para cubrir un puesto de Enfermero/a en el Servicio de Prevención y Salud de la UAM, dentro de la Escala Especial Superior de Servicios, lo que corresponde a Enfermería del Trabajo / Salud Laboral en un Servicio de Prevención.",
+    "process_type": "oposicion",
+    "organismo": "Universidad Autónoma de Madrid (UAM)",
+    "centro": "Servicio de Prevención y Salud - UAM",
+    "plazas": 1,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-01-22",
+    "tasas_eur": null,
+    "url_bases": null,
+    "url_inscripcion": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario",
+    "requisitos_clave": [
+      "Titulación de Enfermería (Diplomado/Grado en Enfermería)",
+      "Especialidad en Enfermería del Trabajo / Salud Laboral (previsible para puesto en Servicio de Prevención)",
+      "Superar pruebas selectivas por el sistema de oposición libre"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Convocatoria ya resuelta (22/01/2026). Consulta el resultado en www.uam.es/uam/ptgas para futuros procesos similares.",
+    "confidence": 0.72,
+    "enriched_at": "2026-06-08T12:35:14.755081+00:00",
+    "enriched_version": 5
+  },
+  {
     "id_hash": "2671d076eac3cd21",
     "source": "universidades_madrid",
     "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",

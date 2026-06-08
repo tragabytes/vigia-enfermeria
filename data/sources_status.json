@@ -5,7 +5,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -14,7 +14,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -41,16 +41,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 6
   },
   {
     "name": "boe",
     "url": "https://boe.es/datosabiertos/",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='boe.es', port=443): Max retries exceeded with url: /datosabiertos/ (Caused by ConnectTimeoutError(<HTTPSConnection(host='boe.es', port=443) at 0x7f568af72690>, 'Connection to boe.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 7
   },
   {
@@ -59,7 +59,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +68,7 @@
     "status": "error",
     "code": null,
     "detail": "HTTPSConnectionPool(host='www.ciemat.es', port=443): Max retries exceeded with url: /ofertas-de-empleo (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1016)')))",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 2
   },
   {
@@ -77,7 +77,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 5
   },
   {
@@ -86,7 +86,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 4
   },
   {
@@ -95,7 +95,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 14
   },
   {
@@ -103,8 +103,8 @@
     "url": "https://sede.csic.gob.es/tramites/convocatorias-de-personal",
     "status": "error",
     "code": null,
-    "detail": "HTTPSConnectionPool(host='sede.csic.gob.es', port=443): Max retries exceeded with url: /tramites/convocatorias-de-personal (Caused by ConnectTimeoutError(<HTTPSConnection(host='sede.csic.gob.es', port=443) at 0x7f568a1b1f10>, 'Connection to sede.csic.gob.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "detail": "HTTPSConnectionPool(host='sede.csic.gob.es', port=443): Max retries exceeded with url: /tramites/convocatorias-de-personal (Caused by ConnectTimeoutError(<HTTPSConnection(host='sede.csic.gob.es', port=443) at 0x7fe62af5b750>, 'Connection to sede.csic.gob.es timed out. (connect timeout=10)'))",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -113,7 +113,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 1
   },
   {
@@ -122,7 +122,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -131,16 +131,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
     "name": "las_rozas",
     "url": "https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo",
-    "status": "error",
-    "code": 415,
-    "detail": "Unsupported Media Type",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -149,7 +149,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 0
   },
   {
@@ -158,16 +158,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
     "total_hits": 1
   },
   {
     "name": "universidades_madrid",
     "url": "https://www.ucm.es/convocatorias-vigentes-pas",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='www.ucm.es', port=443): Max retries exceeded with url: /convocatorias-vigentes-pas (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.ucm.es', port=443) at 0x7f568a1affd0>, 'Connection to www.ucm.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-05T11:38:46.139562+00:00",
-    "total_hits": 6
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-08T12:35:28.564214+00:00",
+    "total_hits": 7
   }
 ]
