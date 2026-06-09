@@ -3,12 +3,12 @@
     "id": "T-01",
     "name": "SERMAS",
     "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
-    "hits": 11,
+    "hits": 14,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "admitidos_definitivo",
+    "latest_phase": "propuesta_nombramiento",
     "item_ids": [
       "7c7cf06753cdc77c",
       "540d6a651569c4aa",
@@ -20,7 +20,10 @@
       "477665a57d787814",
       "07fd6d40b3f62811",
       "b5833965d1028561",
-      "d3c57e573404c23d"
+      "d3c57e573404c23d",
+      "4204583f038fa430",
+      "f2d01203b7f38f05",
+      "150969dda79b94ed"
     ]
   },
   {
@@ -366,7 +369,7 @@
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 5,
+    "hits": 6,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
@@ -377,7 +380,8 @@
       "e3fb3ce2ebe2ef69",
       "c868d93ad65d5783",
       "2671d076eac3cd21",
-      "16bf3ad7acf15ac9"
+      "16bf3ad7acf15ac9",
+      "b1bc8879b10a6a29"
     ]
   },
   {
