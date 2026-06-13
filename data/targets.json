@@ -146,7 +146,7 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "convocatoria",
+    "latest_phase": "otro",
     "item_ids": [
       "7cf7d0f72e19707b"
     ]
@@ -290,29 +290,25 @@
     "id": "T-23",
     "name": "CIEMAT",
     "desc": "Centro de Investigaciones Energéticas, Medioambientales y Tecnológicas",
-    "hits": 1,
-    "active": true,
+    "hits": 0,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "convocatoria",
-    "item_ids": [
-      "cfa64389ffa0260b"
-    ]
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-24",
     "name": "Policía Nacional",
     "desc": "Cuerpo Nacional de Policía — Servicio de Prevención y Sanitario",
-    "hits": 1,
+    "hits": 0,
     "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "convocatoria",
-    "item_ids": [
-      "961becb796a4c975"
-    ]
+    "latest_phase": null,
+    "item_ids": []
   },
   {
     "id": "T-25",
@@ -359,7 +355,7 @@
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "otro",
+    "latest_phase": "convocatoria",
     "item_ids": [
       "ffbe29dae00deb98",
       "06be5b56b6377631"
@@ -369,21 +365,14 @@
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 8,
-    "active": true,
+    "hits": 1,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
     "latest_phase": "propuesta_nombramiento",
     "item_ids": [
-      "e3d2ffe18d849152",
-      "e3fb3ce2ebe2ef69",
-      "c868d93ad65d5783",
-      "2671d076eac3cd21",
-      "16bf3ad7acf15ac9",
-      "b1bc8879b10a6a29",
-      "96852a6c4bebd88e",
-      "3b7589dabc60494c"
+      "e3d2ffe18d849152"
     ]
   },
   {
@@ -500,13 +489,15 @@
     "id": "T-39",
     "name": "EGOA Sanidad y Consumo",
     "desc": "Escala de Gestión de Organismos Autónomos, esp. Sanidad y Consumo (Min. Sanidad) — incluye Área de Enfermería abierta a Diplomatura/Grado en Enfermería",
-    "hits": 0,
+    "hits": 1,
     "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "examen",
+    "item_ids": [
+      "2a6a69249db8974b"
+    ]
   },
   {
     "id": "T-40",

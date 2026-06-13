@@ -1,27 +1,27 @@
 {
   "total_items": 55,
   "total_today": 0,
-  "total_relevant": 47,
-  "total_irrelevant": 8,
+  "total_relevant": 38,
+  "total_irrelevant": 17,
   "total_enriched": 54,
   "total_open_deadlines": 0,
   "by_category": {
     "bolsa": 7,
     "nombramiento": 2,
     "oep": 1,
-    "oposicion": 21,
-    "otro": 11,
-    "traslado": 13
+    "oposicion": 25,
+    "otro": 16,
+    "traslado": 4
   },
-  "days_watching": 47,
+  "days_watching": 48,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-06-12T11:50:51.467330+00:00",
+  "last_run_at": "2026-06-13T10:10:30.340485+00:00",
   "next_run_at": "2026-06-15T08:00:00+00:00",
   "sources_online": 17,
   "sources_total": 19,
-  "targets_active": 6,
+  "targets_active": 4,
   "targets_urgent": 0,
   "targets_total": 43,
   "version": "0.4.0",
-  "commit": "ba617a6"
+  "commit": "f1466a6"
 }
