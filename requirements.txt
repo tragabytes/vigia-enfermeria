@@ -1,6 +1,6 @@
 # El núcleo del pipeline (fetch→extract→enrich→notify→dashboard) vive en
 # vigia-core y se instala por tag. Arrastra requests/bs4/lxml/pdfplumber/anthropic.
-vigia-core @ git+https://github.com/tragabytes/vigia-core@v0.4.0
+vigia-core @ git+https://github.com/tragabytes/vigia-core@v0.4.1
 
 # Solo para CI/tests del bot
 pytest>=8.0
