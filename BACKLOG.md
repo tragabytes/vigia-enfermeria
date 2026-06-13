@@ -518,25 +518,52 @@ Era el mismo problema que el bug #2: el portal `sede.comunidad.madrid` también 
 
 ## 🆕 Nuevas fuentes a añadir
 
-### 🔭 PENDIENTE — Mutuas de AT/EP + Servicios de Prevención Ajenos (Incremento 4 del roadmap de servicio)
+### 🟢 EN CURSO — Mutuas de AT/EP + Servicios de Prevención Ajenos (Incremento 4 del roadmap de servicio)
 
 **El mayor empleador de Enfermería del Trabajo y hoy SIN fuente.** Las mutuas
-colaboradoras con la Seguridad Social (FREMAP, Asepeyo, MC Mutual,
-Fraternidad-Muprespa, Mutua Universal, Umivale Activa, Ibermutua…) y los
-servicios de prevención ajenos privados (Quirónprevención, Cualtis, Preving,
-Valora Prevención…) contratan enfermería del trabajo de forma estructural y
-publican en **sus propios portales de empleo**, que muchas veces **no** pasan
-por BOE/BOCM.
+colaboradoras con la Seguridad Social y los servicios de prevención ajenos
+privados contratan enfermería del trabajo de forma estructural y publican en
+**sus propios portales de empleo**, que muchas veces **no** pasan por BOE/BOCM.
 
-**Hipótesis de implementación (a validar con research):** varias usan ATS tipo
-**SAP SuccessFactors** o similares, para los que ya existe maquinaria
-(`vigia/sources/sap_successfactors.py`, con su lista de `_Portal` hardcodeada
-RENFE/Correos). Pasos: (1) research de qué portales/ATS usan y si son
-parseables (riesgo: WAF / JS-only, como en otros stubs); (2) añadir los que sean
-SAP SF a la lista de portales (o crear fuente nueva si usan otro ATS);
-(3) `STRONG/WEAK_PATTERNS` ya cubren "servicio de prevención + enfermer", validar
-con ofertas reales antes de fijar el diseño (regla del CLAUDE.md). Decisión
-abierta: ¿genérico al core o `extra_source` del perfil enfermería?
+**Research 2026-06-13 — la hipótesis SAP SuccessFactors quedó descartada:**
+ninguna mutua/SPA usa SAP SF directamente. Mapa real de ATS y parseabilidad
+(verificada con HTTP crudo, no solo WebFetch):
+
+| Cluster | Entidades | Veredicto |
+|---|---|---|
+| **ePreselec** (ASP.NET, `{org}.epreselec.com`) | **Fraternidad-Muprespa** ✅ (Preving 404, reconfirmar subdominio) | **Viable** — HTML server-side con ofertas, sin WAF/403/login |
+| InfoJobs (agregador) | FREMAP, Asepeyo, MC Mutual, Umivale, Egarsat… (~10) | ❌ Ofertas por JS + WAF DataDome probable → necesita navegador headless |
+| TalentClue | Quirónprevención | ❌ SPA, ofertas no en el markup inicial |
+| Portales propios | Ibermutua, Mutua Montañesa | ❌ HTTP 403 |
+| Email | Mutua Universal | ❌ Sin portal (gestión por email) |
+
+**✅ Implementado (vigia-core@v0.5.0) — fuente genérica `epreselec`:**
+- `vigia/sources/epreselec.py`: ATS multi-tenant, **genérica en `CORE_SOURCES`**
+  (decisión: core, no `extra_source`). Lista de tenants inyectada por el perfil
+  vía `source_params["epreselec"]["empresas"]` (patrón de `boe.py`) — el core
+  compartido no hardcodea empleadores de un solo bot.
+- Tenant inicial: **Fraternidad-Muprespa** (`fraternidad.epreselec.com`).
+- Selectores reales: oferta = `<a data_idoferta>`, título `span.op-titulo`,
+  provincia `span.op-provincia`, fecha `span.op-fecha` ("DD de MES, YYYY").
+- Sin URL GET por oferta (detalle vía `__doPostBack`) → URL sintética estable
+  `Ofertas.aspx?idOferta={id}` para dedup/enlace.
+- **Validado con ofertas reales** (regla del CLAUDE.md): las 5 ofertas de
+  enfermería de hoy son **asistenciales** (URGENCIAS, HOSPITALIZACIÓN) y el
+  extractor STRONG/WEAK las **descarta correctamente** (0 falsos positivos). El
+  bot alertará cuando aparezca una titulada "del trabajo / salud laboral /
+  servicio de prevención". 9 tests en `test_epreselec.py`.
+
+**Follow-ups:**
+- Paginación `__doPostBack` de ePreselec: hoy solo se lee la página 1 (las
+  ofertas nuevas salen arriba, orden descendente; suficiente para watcher diario).
+- Confirmar otros tenants ePreselec vivos y ampliar `source_params` (la URL de
+  Preving del research dio 404 — buscar el subdominio real).
+- Candidato a `_WEAK_CONTEXT_PATTERNS`: `("vigilancia de la salud", "enfermer")`
+  — denominación habitual en mutuas. **No añadir a ciegas**: esperar a ver una
+  oferta real que hoy se escape.
+- InfoJobs / TalentClue / portales 403: **verificados no-viables sin navegador
+  headless** (el runner de Actions no lo tiene). No re-investigar salvo que se
+  monte infraestructura Playwright.
 
 ### ~~CODEM — sección de comunicaciones~~ ✅ Resuelto (2026-04-25, commit `a6fa1ef`)
 
