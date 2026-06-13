@@ -18,6 +18,8 @@
 
 Eje transversal continuo: expansión de fuentes (boletines autonómicos → core; Instituto Cervantes y portales privados → perfil docente). **Roadmap de fuentes docentes futuras (colegios privados, ELE, canales sindicales, InfoJobs/Jooble, alertas de calendario): `vigia-docencia/ROADMAP.md`.**
 
+> **Mantenimiento — `vigia-core@v0.4.1` (2026-06-13):** desactivadas `ciemat` y `csic_sede` del perfil de enfermería (fallaban en **cada** run desde el runner de Actions y solo generaban ruido de error en Telegram/dashboard, sin hits útiles: `ciemat` SSL en probe/detail_watcher aunque el fetch lo sortea con `verify=False`; `csic_sede` `ConnectTimeout` persistente a `sede.csic.gob.es`, 0 hits históricos) + `ciemat` añadida a `EXCLUDED_SOURCES` del `DetailWatcher`. **Cierra el cabo suelto del probe de `csic_sede`** anotado en la Fase 6. Cobertura real intacta vía BOE. Ambos bots bumpeados a `@v0.4.1`. PRs: [vigia-core#2](https://github.com/tragabytes/vigia-core/pull/2), [vigia-enfermeria#9](https://github.com/tragabytes/vigia-enfermeria/pull/9), [vigia-docencia#7](https://github.com/tragabytes/vigia-docencia/pull/7).
+
 > ### ⚠️ Corrección de premisa (sesión 3, 2026-06-02)
 > La Fase 4 se escribió asumiendo construir el bot docente **desde cero**. **No es así**: el bot del hermano **ya existía desplegado** — `alerta-empleo-profe` (repo `tragabytes/alerta-empleo-profe`, dashboard en vivo, cron L-V, 41 tests), creado el 26-abr como **fork monolítico** del pipeline (copia de `vigia/` con perfil docente inline). Había **tres copias** del pipeline (enfermería, vigia-core, fork docente).
 >
