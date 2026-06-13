@@ -518,6 +518,26 @@ Era el mismo problema que el bug #2: el portal `sede.comunidad.madrid` también 
 
 ## 🆕 Nuevas fuentes a añadir
 
+### 🔭 PENDIENTE — Mutuas de AT/EP + Servicios de Prevención Ajenos (Incremento 4 del roadmap de servicio)
+
+**El mayor empleador de Enfermería del Trabajo y hoy SIN fuente.** Las mutuas
+colaboradoras con la Seguridad Social (FREMAP, Asepeyo, MC Mutual,
+Fraternidad-Muprespa, Mutua Universal, Umivale Activa, Ibermutua…) y los
+servicios de prevención ajenos privados (Quirónprevención, Cualtis, Preving,
+Valora Prevención…) contratan enfermería del trabajo de forma estructural y
+publican en **sus propios portales de empleo**, que muchas veces **no** pasan
+por BOE/BOCM.
+
+**Hipótesis de implementación (a validar con research):** varias usan ATS tipo
+**SAP SuccessFactors** o similares, para los que ya existe maquinaria
+(`vigia/sources/sap_successfactors.py`, con su lista de `_Portal` hardcodeada
+RENFE/Correos). Pasos: (1) research de qué portales/ATS usan y si son
+parseables (riesgo: WAF / JS-only, como en otros stubs); (2) añadir los que sean
+SAP SF a la lista de portales (o crear fuente nueva si usan otro ATS);
+(3) `STRONG/WEAK_PATTERNS` ya cubren "servicio de prevención + enfermer", validar
+con ofertas reales antes de fijar el diseño (regla del CLAUDE.md). Decisión
+abierta: ¿genérico al core o `extra_source` del perfil enfermería?
+
 ### ~~CODEM — sección de comunicaciones~~ ✅ Resuelto (2026-04-25, commit `a6fa1ef`)
 
 Añadido el feed RSS de "Actualidad" de CODEM (~2400 items, 8MB) además del de "Empleo público" original. La fuente `codem.py` ahora itera sobre `CODEM_RSS_FEEDS = [(label, url), ...]` y deduplica vía `extra["feed"]`. En la inspección manual aparecía ya un match obvio en los primeros items: *"Canal de Isabel II convoca una plaza de enfermera especialista en Enfermería del Trabajo"*.
