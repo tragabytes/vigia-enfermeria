@@ -1,5 +1,35 @@
 [
   {
+    "id_hash": "cf1d555fcbea053d",
+    "source": "sap_successfactors",
+    "url": "https://empleo.renfe.com/job/El-Pilar-EAE26-053059-T%C3%A9cnicoa-de-Entrada-de-Enfermer%C3%ADa-del-Trabajo-Vari/1361274257/",
+    "titulo": "EAE26-05/3059 Técnico/a de Entrada de Enfermería del Trabajo [snapshot b48ad9e09b]",
+    "fecha": "2026-06-15",
+    "categoria": "otro",
+    "first_seen_at": "2026-06-15T14:01:24.331322",
+    "summary": "RENFE convoca plaza de Técnico/a de Entrada de Enfermería del Trabajo (ref. EAE26-05/3059). Proceso de selección con plazo de inscripción ya cerrado. Organismo: Renfe (El Pilar).",
+    "is_relevant": true,
+    "relevance_reason": "La convocatoria es específicamente para Técnico/a de Entrada de Enfermería del Trabajo, especialidad de Enfermería del Trabajo/Salud Laboral.",
+    "process_type": "otro",
+    "organismo": "Renfe",
+    "centro": "El Pilar",
+    "plazas": null,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": null,
+    "tasas_eur": null,
+    "url_bases": "https://empleo.renfe.com/job/El-Pilar-EAE26-053059-T%C3%A9cnicoa-de-Entrada-de-Enfermer%C3%ADa-del-Trabajo-Vari/1361274257/",
+    "url_inscripcion": null,
+    "requisitos_clave": [
+      "Titulación en Enfermería con especialidad en Enfermería del Trabajo",
+      "Categoría: Técnico/a de Entrada"
+    ],
+    "fase": "otro",
+    "next_action": "Plazo de inscripción cerrado. Consultar empleo.renfe.com para nuevas convocatorias similares.",
+    "confidence": 0.6,
+    "enriched_at": "2026-06-15T14:01:36.427471+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "3b7589dabc60494c",
     "source": "universidades_madrid",
     "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
