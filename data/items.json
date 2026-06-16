@@ -1,5 +1,37 @@
 [
   {
+    "id_hash": "77f59bd8cafea2e8",
+    "source": "universidades_madrid",
+    "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "titulo": "Resuelta 22/01/2026 Pruebas selectivas para el ingreso en la Escala Especial Superior de Servicios de la Universidad Autónoma de Madrid para el Person [snapshot f367419ec0]",
+    "fecha": "2026-06-16",
+    "categoria": "traslado",
+    "first_seen_at": "2026-06-16T12:59:38.564446",
+    "summary": "UAM convoca pruebas selectivas por oposición libre para 1 plaza de Enfermero/a en el Servicio de Prevención y Salud (Escala Especial Superior de Servicios). Convocatoria resuelta el 22/01/2026.",
+    "is_relevant": true,
+    "relevance_reason": "La convocatoria es para un puesto de Enfermero/a en el Servicio de Prevención y Salud de la UAM, lo que corresponde a Enfermería del Trabajo / Salud Laboral en un servicio de prevención de riesgos laborales.",
+    "process_type": "oposicion",
+    "organismo": "Universidad Autónoma de Madrid (UAM)",
+    "centro": "Servicio de Prevención y Salud",
+    "plazas": 1,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": null,
+    "tasas_eur": null,
+    "url_bases": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "url_inscripcion": null,
+    "requisitos_clave": [
+      "Titulación de Enfermería (Diplomado/Graduado en Enfermería)",
+      "Especialidad en Enfermería del Trabajo / Salud Laboral (implícita por el puesto en Servicio de Prevención)",
+      "Acceso a Escala Especial Superior de Servicios de la UAM",
+      "Sistema de oposición libre"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Convocatoria resuelta el 22/01/2026. Consulta el resultado en la web de PTGAS de la UAM.",
+    "confidence": 0.72,
+    "enriched_at": "2026-06-16T12:59:54.748489+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "cf1d555fcbea053d",
     "source": "sap_successfactors",
     "url": "https://empleo.renfe.com/job/El-Pilar-EAE26-053059-T%C3%A9cnicoa-de-Entrada-de-Enfermer%C3%ADa-del-Trabajo-Vari/1361274257/",
