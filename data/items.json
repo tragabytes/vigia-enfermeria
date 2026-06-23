@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "e23d5a980e2b7048",
+    "source": "cm_ficha_enfermeria",
+    "url": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "titulo": "Comunidad de Madrid — Ficha Diplomado en Enfermería del Trabajo [snapshot 585fe49436]",
+    "fecha": "2026-03-25",
+    "categoria": "oposicion",
+    "first_seen_at": "2026-06-23T11:22:45.667489",
+    "summary": "Oposición libre a 9 plazas (1 discapacidad) de Diplomado en Enfermería del Trabajo (Grupo II, Nivel 8, Área D) CM. Orden 1074/2025 (BOCM 08/05/2025). Plazo inscripción: 09/05–10/06/2025. 2.º ejercicio realizado el 19/06/2026.",
+    "is_relevant": true,
+    "relevance_reason": "Convocatoria de pruebas selectivas para la categoría profesional 'Diplomado en Enfermería Especialista, Especialidad de Enfermería del Trabajo' de la Comunidad de Madrid. Especialidad explícita y directa.",
+    "process_type": "oposicion",
+    "organismo": "Comunidad de Madrid — Dirección General de la Función Pública",
+    "centro": "Subdirección General de Planificación de Efectivos y Selección",
+    "plazas": 9,
+    "deadline_inscripcion": "2025-06-10",
+    "fecha_publicacion_oficial": "2025-05-08",
+    "tasas_eur": null,
+    "url_bases": "https://www.comunidad.madrid/docs/assets/2018/04/06/dipl.sal_.pub_enfermeria.pdf",
+    "url_inscripcion": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "requisitos_clave": [
+      "Titulación: Diplomado/Graduado en Enfermería con Especialidad en Enfermería del Trabajo reconocida",
+      "Acceso libre (sistema general); cupo específico de discapacidad (1 plaza)",
+      "Categoría profesional laboral Grupo II, Nivel 8, Área D de la Comunidad de Madrid"
+    ],
+    "fase": "examen",
+    "next_action": "Proceso en fase de 2.º ejercicio (realizado 19/06/2026). Consultar resolución final en sede.comunidad.madrid / ref. E5783.",
+    "confidence": 0.95,
+    "enriched_at": "2026-06-23T11:22:57.081068+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "92b781cedc2e955e",
     "source": "universidades_madrid",
     "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
