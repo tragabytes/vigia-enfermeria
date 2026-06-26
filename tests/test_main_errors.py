@@ -115,12 +115,14 @@ class TestRunSourceTuple:
 
 
 class TestMainPropagaErrores:
-    def test_pipeline_envia_telegram_con_errores_aunque_no_haya_novedades(
+    def test_pipeline_no_envia_telegram_si_solo_hay_errores(
         self, monkeypatch, tmp_path
     ):
         """
-        Con 0 matches pero con errores en una fuente, el notifier DEBE
-        ser invocado (antes del fix se omitía el envío).
+        Con 0 matches y solo errores de fuentes, el notifier NO debe
+        invocarse: los fallos de fuentes son ruido de infraestructura no
+        accionable para el usuario. Siguen visibles para el operador en los
+        logs de Actions y el dashboard, pero no se notifican.
         """
         from vigia import main as main_module
 
@@ -138,12 +140,11 @@ class TestMainPropagaErrores:
             main_module, "DASHBOARD_OUT_DIR", str(tmp_path / "dashboard"),
         )
 
-        # Capturamos lo que llega al notifier
-        capturado = {}
+        # El notifier NO debe llamarse
+        llamadas = []
 
         def fake_send(items, errors, run_date=None):
-            capturado["items"] = items
-            capturado["errors"] = errors
+            llamadas.append((items, errors))
 
         monkeypatch.setattr(main_module, "send", fake_send)
 
@@ -152,11 +153,8 @@ class TestMainPropagaErrores:
 
         main_module.main()
 
-        # Debe haberse llamado al notifier con el error de la fuente
-        assert capturado.get("items") == []
-        assert capturado.get("errors") == [
-            ("failing_source", "simulated 403 Forbidden")
-        ]
+        # Sin novedades ni recordatorios, los errores solos no notifican
+        assert llamadas == []
 
     def test_pipeline_no_envia_telegram_si_todo_va_bien_y_sin_novedades(
         self, monkeypatch, tmp_path
