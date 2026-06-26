@@ -44,12 +44,22 @@ nunca para el **usuario**.
 
 ## Naturaleza de los errores (ninguno accionable para un opositor)
 
-- **Transitorios (mayoría):** ConnectTimeout/ReadTimeout a `boe.es`,
-  `sede.comunidad.madrid`, `uam.es`, `codem.es`, `empleo.aena.es`. Throttling de la IP del
-  runner de GitHub Actions — los mismos hosts del plan aparcado de relay VPS.
-- **Persistentes:** `isciii` devuelve 500 cuatro días seguidos (23–26 Jun); `las_rozas`
-  devuelve 415 (Unsupported Media Type). Probable problema de endpoint/headers
-  (bot-detection, `Accept` ausente). Se investiga aparte; no deben llegar al usuario igualmente.
+**Todos** son la misma causa: el **WAF/edge de varias sedes públicas bloquea
+intermitentemente la IP del runner de GitHub Actions** (Azure). Verificado el 26-06: los
+endpoints de `isciii` y `las_rozas` devuelven **200 OK desde una IP residencial española
+con los mismos headers** (solo `User-Agent`); el runner recibe error. Confirmado además por
+la intermitencia en los logs (las_rozas e isciii trajeron items varios días de la misma
+semana — 22-25 Jun — y fallaron otros).
+
+- **Como timeout:** ConnectTimeout/ReadTimeout a `boe.es`, `sede.comunidad.madrid`,
+  `uam.es`, `codem.es`, `empleo.aena.es`.
+- **Como código de error del edge:** `isciii` → 500 (varios días seguidos, 23–26 Jun);
+  `las_rozas` → 415 (Unsupported Media Type). **No es un bug de cabeceras ni un endpoint
+  caído** (descartado por el probe); es la misma IP-blocking.
+
+Son los hosts del plan aparcado de **relay VPS** (ver memoria `project_relay_vps.md`).
+**No hay fix de código**: el arreglo de cobertura real (que las fuentes traigan items) es
+enrutar el fetch por el VPS; mientras tanto ya **no molestan al usuario** (este incidente).
 
 ## Acción correctiva
 
@@ -68,6 +78,11 @@ Release: tag `vigia-core@v0.5.1` → bump de `requirements.txt` en este repo.
 
 ## Follow-ups
 
-- **vigia-docencia** (`@v0.4.4`): mismo bug por compartir núcleo. Backport del mismo cambio
-  (rama desde `v0.4.4` → `v0.4.5` → bump), en sesión aparte.
-- **Endpoints persistentes** `isciii` (500) y `las_rozas` (415): investigar headers/método.
+- **vigia-docencia** (`@v0.4.4`): mismo bug por compartir núcleo. **HECHO** (2026-06-26):
+  backport `vigia-core@v0.4.5` ([vigia-core release/v0.4.5]) + bump
+  ([vigia-docencia#12](https://github.com/tragabytes/vigia-docencia/pull/12)).
+- **`isciii` (500) / `las_rozas` (415):** diagnosticado — **no es nuestro código**, es
+  IP-blocking del runner (devuelven 200 desde IP limpia). Se recuperarán con el **relay VPS**
+  (plan aparcado hasta tras el Mundial, ~20/07/2026; `project_relay_vps.md`). Sin acción de
+  código pendiente. Como ya no afectan al usuario, no urge; si se quisiera quitar el ruido de
+  los logs antes del relay, valorar desactivarlas como se hizo con `ciemat`/`csic_sede`.
