@@ -1,5 +1,21 @@
 [
   {
+    "date": "2026-06-26",
+    "commit": "9068ee2",
+    "kind": "feat",
+    "scope": "",
+    "title": "cobertura RTVE (bump vigia-core v0.5.2)",
+    "body": "Bumpea vigia-core v0.5.1 -> v0.5.2, que anade la fuente RTVE: parsea la"
+  },
+  {
+    "date": "2026-06-26",
+    "commit": "4623ed1",
+    "kind": "fix",
+    "scope": "",
+    "title": "silenciar errores de fuentes a los usuarios (bump core v0.5.1)",
+    "body": "Bumpea vigia-core v0.5.0 -> v0.5.1, que deja de adjuntar los errores de"
+  },
+  {
     "date": "2026-06-13",
     "commit": "01b3806",
     "kind": "feat",
@@ -14,21 +30,5 @@
     "scope": "",
     "title": "bump vigia-core a v0.4.2 (recordatorios de cierre de plazo + campos accionables)",
     "body": "v0.4.2 añade avisos de cierre de plazo (7/3/1 días, sección \"Cierran pronto\")"
-  },
-  {
-    "date": "2026-06-02",
-    "commit": "9b865ee",
-    "kind": "ci",
-    "scope": "",
-    "title": "no publicar __pycache__ en gh-pages (limpieza antes de git add -A)",
-    "body": "El checkout a gh-pages arrastra los caches de Python generados en runtime; el git add -A los colaba en la rama publicada. Se eliminan antes de añadir."
-  },
-  {
-    "date": "2026-06-02",
-    "commit": "c5cfd2f",
-    "kind": "feat",
-    "scope": "",
-    "title": "migrar enfermería a repo fino sobre vigia-core@v0.4.0 (Fase 6)",
-    "body": "Enfermería deja de tener su copia del core (vigia/) y lo consume por pip, igual que vigia-docencia. El código es byte-idéntico a v0.4.0 (verificado), así que el comportamiento no cambia."
   }
 ]

@@ -457,7 +457,7 @@
   {
     "id": "T-36",
     "name": "RTVE",
-    "desc": "Radio Televisión Española — cobertura indirecta BOE/BOCM (SPA absoluta sin endpoint público)",
+    "desc": "Radio Televisión Española — parser propio de la página corporativa de ofertas (banco de datos Enfermería de Empresa) + cobertura BOE/BOCM; la SPA de inscripción convocatorias.rtve.es no es parseable",
     "hits": 0,
     "active": false,
     "nearest_deadline": null,

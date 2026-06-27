@@ -5,16 +5,16 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
     "name": "aena",
     "url": "https://empleo.aena.es/empleo/PFSrv?accion=inicio",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='empleo.aena.es', port=443): Max retries exceeded with url: /empleo/PFSrv?accion=inicio (Caused by ConnectTimeoutError(<HTTPSConnection(host='empleo.aena.es', port=443) at 0x7fc7e02a7ad0>, 'Connection to empleo.aena.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -41,16 +41,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 6
   },
   {
     "name": "boe",
     "url": "https://boe.es/datosabiertos/",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='boe.es', port=443): Max retries exceeded with url: /datosabiertos/ (Caused by ConnectTimeoutError(<HTTPSConnection(host='boe.es', port=443) at 0x7fc7e027f250>, 'Connection to boe.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 8
   },
   {
@@ -59,7 +59,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +68,7 @@
     "status": "unknown",
     "code": null,
     "detail": "sin probe en este run",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 2
   },
   {
@@ -77,16 +77,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 7
   },
   {
     "name": "codem",
     "url": "https://www.codem.es/RssHyperLink.ashx?Idioma=940267a2-4160-4ee0-a17a-a3cc00a7c64c&Web=e8d948e0-b75e-4537-8e16-687622b6b7ce&Menu=e0fed1d6-aff3-4b0d-be4d-7a276dea3867&Canal=d8b9b124-8147-4727-a7a7-2d1b9184ea01",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='www.codem.es', port=443): Max retries exceeded with url: /RssHyperLink.ashx?Idioma=940267a2-4160-4ee0-a17a-a3cc00a7c64c&Web=e8d948e0-b75e-4537-8e16-687622b6b7ce&Menu=e0fed1d6-aff3-4b0d-be4d-7a276dea3867&Canal=d8b9b124-8147-4727-a7a7-2d1b9184ea01 (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.codem.es', port=443) at 0x7fc7e029acd0>, 'Connection to www.codem.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 4
   },
   {
@@ -95,7 +95,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 20
   },
   {
@@ -104,7 +104,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 1
   },
   {
@@ -113,7 +113,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -122,7 +122,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -131,7 +131,7 @@
     "status": "error",
     "code": 500,
     "detail": "Internal Server Error",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -140,7 +140,7 @@
     "status": "error",
     "code": 415,
     "detail": "Unsupported Media Type",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -149,7 +149,16 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "total_hits": 0
+  },
+  {
+    "name": "rtve",
+    "url": "https://www.rtve.es/corporacion/ofertas-empleo/",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 0
   },
   {
@@ -158,16 +167,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 2
   },
   {
     "name": "universidades_madrid",
     "url": "https://www.ucm.es/convocatorias-vigentes-pas",
-    "status": "ok",
-    "code": 200,
-    "detail": "",
-    "last_probe_at": "2026-06-26T10:52:48.518839+00:00",
+    "status": "error",
+    "code": null,
+    "detail": "HTTPSConnectionPool(host='www.ucm.es', port=443): Max retries exceeded with url: /convocatorias-vigentes-pas (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.ucm.es', port=443) at 0x7f2637163890>, 'Connection to www.ucm.es timed out. (connect timeout=10)'))",
+    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
     "total_hits": 14
   }
 ]
