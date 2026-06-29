@@ -5,7 +5,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -14,7 +14,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -41,7 +41,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 6
   },
   {
@@ -50,7 +50,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 8
   },
   {
@@ -59,7 +59,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +68,7 @@
     "status": "unknown",
     "code": null,
     "detail": "sin probe en este run",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 2
   },
   {
@@ -77,7 +77,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 7
   },
   {
@@ -86,7 +86,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 4
   },
   {
@@ -95,7 +95,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 20
   },
   {
@@ -104,7 +104,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 1
   },
   {
@@ -113,7 +113,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -122,7 +122,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -131,16 +131,16 @@
     "status": "error",
     "code": 500,
     "detail": "Internal Server Error",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
     "name": "las_rozas",
     "url": "https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo",
-    "status": "error",
-    "code": 415,
-    "detail": "Unsupported Media Type",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -149,7 +149,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 0
   },
   {
@@ -158,8 +158,8 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
-    "total_hits": 0
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
+    "total_hits": 1
   },
   {
     "name": "sap_successfactors",
@@ -167,16 +167,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
     "total_hits": 2
   },
   {
     "name": "universidades_madrid",
     "url": "https://www.ucm.es/convocatorias-vigentes-pas",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='www.ucm.es', port=443): Max retries exceeded with url: /convocatorias-vigentes-pas (Caused by ConnectTimeoutError(<HTTPSConnection(host='www.ucm.es', port=443) at 0x7f2637163890>, 'Connection to www.ucm.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-06-27T07:13:53.304786+00:00",
-    "total_hits": 14
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-06-29T12:39:40.281158+00:00",
+    "total_hits": 15
   }
 ]

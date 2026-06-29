@@ -365,7 +365,7 @@
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 5,
+    "hits": 6,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
@@ -376,7 +376,8 @@
       "77f59bd8cafea2e8",
       "b902e8cecb9b6214",
       "92b781cedc2e955e",
-      "8e3c84c8f69e353a"
+      "8e3c84c8f69e353a",
+      "7e68cea990d69db8"
     ]
   },
   {
@@ -458,13 +459,15 @@
     "id": "T-36",
     "name": "RTVE",
     "desc": "Radio Televisión Española — parser propio de la página corporativa de ofertas (banco de datos Enfermería de Empresa) + cobertura BOE/BOCM; la SPA de inscripción convocatorias.rtve.es no es parseable",
-    "hits": 0,
-    "active": false,
+    "hits": 1,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": null,
-    "item_ids": []
+    "latest_phase": "convocatoria",
+    "item_ids": [
+      "979e615c9d256dcf"
+    ]
   },
   {
     "id": "T-37",
