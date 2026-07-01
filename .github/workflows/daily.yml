@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write  # necesario para guardar estado en rama state
+      issues: write    # necesario para la alerta de salud (--health-issue)
     env:
       # vigia-core está pip-instalado → storage.DB_PATH caería en site-packages
       # si no se fija. Lo anclamos al state/ del workspace (rama `state`).
@@ -97,6 +98,14 @@ jobs:
         if: always()
         continue-on-error: true
         run: python -m vigia_enfermeria --probe
+
+      - name: Alerta de salud (GitHub issue)
+        # Abre/actualiza/cierra una issue con las fuentes en 'error' del probe.
+        if: always()
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python -m vigia_enfermeria --health-issue
 
       - name: Guardar BD de estado
         if: always()
