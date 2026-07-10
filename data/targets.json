@@ -127,7 +127,7 @@
     "name": "Canal de Isabel II",
     "desc": "Canal de Isabel II — SP Mancomunado",
     "hits": 2,
-    "active": true,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
