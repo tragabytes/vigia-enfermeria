@@ -1,5 +1,35 @@
 [
   {
+    "id_hash": "dfea6e7ab135f55e",
+    "source": "rtve",
+    "url": "https://www.convocatorias.rtve.es",
+    "titulo": "Convocatoria 1/2026: Banco de Datos de Enfermería de Empresa",
+    "fecha": "2026-07-14",
+    "categoria": "bolsa",
+    "first_seen_at": "2026-07-14T09:56:23.412620",
+    "summary": "Convocatoria 1/2026 RTVE: Banco de Datos (bolsa) para contratos de duración determinada — ocupación 'Enfermería de Empresa'. Pruebas específicas de acceso. Corporación RTVE, S.A., S.M.E.",
+    "is_relevant": true,
+    "relevance_reason": "La convocatoria es explícitamente para la ocupación tipo 'Enfermería de Empresa' (sinónimo de Enfermería del Trabajo) de RTVE, creando un Banco de Datos para contratos de duración determinada, equivalente a una bolsa de empleo.",
+    "process_type": "bolsa",
+    "organismo": "Corporación de Radio y Televisión Española, S.A., S.M.E. (RTVE)",
+    "centro": null,
+    "plazas": null,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": null,
+    "tasas_eur": null,
+    "url_bases": null,
+    "url_inscripcion": "https://www.convocatorias.rtve.es",
+    "requisitos_clave": [
+      "Titulación en Enfermería con especialidad en Enfermería del Trabajo / Enfermería de Empresa",
+      "Requisitos específicos a determinar en las bases de la convocatoria"
+    ],
+    "fase": "convocatoria",
+    "next_action": "Consultar bases completas en convocatorias.rtve.es y presentar solicitud dentro del plazo indicado en la convocatoria 1/2026.",
+    "confidence": 0.62,
+    "enriched_at": "2026-07-14T09:56:37.791453+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "320b6ee7d2988a68",
     "source": "boe",
     "url": "https://www.boe.es/diario_boe/txt.php?id=BOE-A-2026-15174",

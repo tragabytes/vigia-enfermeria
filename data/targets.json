@@ -463,14 +463,15 @@
     "id": "T-36",
     "name": "RTVE",
     "desc": "Radio Televisión Española — parser propio de la página corporativa de ofertas (banco de datos Enfermería de Empresa) + cobertura BOE/BOCM; la SPA de inscripción convocatorias.rtve.es no es parseable",
-    "hits": 1,
+    "hits": 2,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
     "latest_phase": "convocatoria",
     "item_ids": [
-      "979e615c9d256dcf"
+      "979e615c9d256dcf",
+      "dfea6e7ab135f55e"
     ]
   },
   {
