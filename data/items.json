@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "5f243e94a3412454",
+    "source": "universidades_madrid",
+    "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "titulo": "Resuelta 22/01/2026 Pruebas selectivas para el ingreso en la Escala Especial Superior de Servicios de la Universidad Autónoma de Madrid para el Person [snapshot 8cda32c49b]",
+    "fecha": "2026-07-15",
+    "categoria": "traslado",
+    "first_seen_at": "2026-07-15T10:03:55.562953",
+    "summary": "UAM convoca oposición libre (1 plaza) para Enfermero/a en Servicio de Prevención y Salud, Escala Especial Superior de Servicios. Estado: Resuelta el 22/01/2026. Proceso ya finalizado.",
+    "is_relevant": true,
+    "relevance_reason": "Convocatoria de oposición libre para un puesto de Enfermero/a en el Servicio de Prevención y Salud de la UAM (Escala Especial Superior de Servicios), encuadrado en salud laboral/prevención de riesgos, equivalente a Enfermería del Trabajo.",
+    "process_type": "oposicion",
+    "organismo": "Universidad Autónoma de Madrid (UAM)",
+    "centro": "Servicio de Prevención y Salud",
+    "plazas": 1,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": null,
+    "tasas_eur": null,
+    "url_bases": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
+    "url_inscripcion": null,
+    "requisitos_clave": [
+      "Titulación de Enfermería (Grado o Diplomatura)",
+      "Especialidad en Enfermería del Trabajo o equivalente para Servicio de Prevención",
+      "Condición de funcionario/a de carrera o acceso libre según convocatoria"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Proceso ya resuelto (22/01/2026). Consultar resultado en la web de PTGAS de la UAM si interesa como referencia.",
+    "confidence": 0.72,
+    "enriched_at": "2026-07-15T10:04:13.663522+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "dfea6e7ab135f55e",
     "source": "rtve",
     "url": "https://www.convocatorias.rtve.es",
