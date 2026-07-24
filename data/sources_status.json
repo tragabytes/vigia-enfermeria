@@ -5,16 +5,16 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
     "name": "aena",
     "url": "https://empleo.aena.es/empleo/PFSrv?accion=inicio",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='empleo.aena.es', port=443): Max retries exceeded with url: /empleo/PFSrv?accion=inicio (Caused by ConnectTimeoutError(<HTTPSConnection(host='empleo.aena.es', port=443) at 0x7fcfb1702210>, 'Connection to empleo.aena.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -41,7 +41,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 7
   },
   {
@@ -50,7 +50,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 10
   },
   {
@@ -59,7 +59,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +68,7 @@
     "status": "unknown",
     "code": null,
     "detail": "sin probe en este run",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 2
   },
   {
@@ -77,8 +77,8 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
-    "total_hits": 11
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
+    "total_hits": 12
   },
   {
     "name": "codem",
@@ -86,7 +86,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 4
   },
   {
@@ -95,7 +95,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 22
   },
   {
@@ -104,7 +104,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 1
   },
   {
@@ -113,7 +113,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -122,16 +122,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
     "name": "isciii",
     "url": "https://www.isciii.es/bolsa-empleo/proceso-selectivo",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='www.isciii.es', port=443): Read timed out. (read timeout=10)",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -140,7 +140,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -149,7 +149,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 0
   },
   {
@@ -158,7 +158,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 2
   },
   {
@@ -167,7 +167,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 2
   },
   {
@@ -176,7 +176,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-07-23T10:21:13.784274+00:00",
+    "last_probe_at": "2026-07-24T10:15:33.465664+00:00",
     "total_hits": 22
   }
 ]
