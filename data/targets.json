@@ -351,7 +351,7 @@
     "name": "UAH",
     "desc": "Universidad de Alcalá — PTGAS / Servicio de Prevención",
     "hits": 2,
-    "active": true,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
