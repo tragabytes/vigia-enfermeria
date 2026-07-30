@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "541c019d794df4ce",
+    "source": "cm_ficha_enfermeria",
+    "url": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "titulo": "Comunidad de Madrid — Ficha Diplomado en Enfermería del Trabajo [snapshot 59cb495f92]",
+    "fecha": "2026-03-25",
+    "categoria": "oposicion",
+    "first_seen_at": "2026-07-30T10:33:32.194035",
+    "summary": "CM convoca 9 plazas laborales de Diplomado Enfermería del Trabajo (Grupo II, Niv.8, Área D). Oposición 2025. Proceso en fase final: resolución 22/07/2026 con elección de puesto hasta 24/08/2026.",
+    "is_relevant": true,
+    "relevance_reason": "Convocatoria de pruebas selectivas (oposición) específicamente para la categoría Diplomado en Enfermería Especialista, Especialidad Enfermería del Trabajo, de la Comunidad de Madrid.",
+    "process_type": "oposicion",
+    "organismo": "Comunidad de Madrid — Dirección General de Función Pública",
+    "centro": null,
+    "plazas": 9,
+    "deadline_inscripcion": "2025-06-10",
+    "fecha_publicacion_oficial": "2025-05-08",
+    "tasas_eur": null,
+    "url_bases": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "url_inscripcion": "https://www.comunidad.madrid/empleo/diplomado-enfermeria-trabajo",
+    "requisitos_clave": [
+      "Título de Graduado/Diplomado en Enfermería o título universitario habilitante para el ejercicio de la profesión de Enfermería",
+      "Título de especialidad de Enfermería del Trabajo",
+      "Acceso libre (incluye cupo discapacidad: 1 plaza)"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Proceso en elección de plaza (ampliado hasta 24/08/2026): accede a 'Tramitación' en sede.comunidad.madrid con ref. E5783 para elegir puesto.",
+    "confidence": 0.95,
+    "enriched_at": "2026-07-30T10:33:47.023040+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "1087af6eb224651f",
     "source": "universidades_madrid",
     "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
