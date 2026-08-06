@@ -141,14 +141,15 @@
     "id": "T-11",
     "name": "Ayto. Madrid",
     "desc": "Ayuntamiento de Madrid — IMD, Bomberos, Policía Municipal",
-    "hits": 1,
-    "active": false,
+    "hits": 2,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
     "latest_phase": "otro",
     "item_ids": [
-      "7cf7d0f72e19707b"
+      "7cf7d0f72e19707b",
+      "14ca385db3534921"
     ]
   },
   {
@@ -365,7 +366,7 @@
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 17,
+    "hits": 18,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
@@ -388,7 +389,8 @@
       "a72fae87a6571f13",
       "1087af6eb224651f",
       "5c1a89959c4d4772",
-      "fdf9008bba170981"
+      "fdf9008bba170981",
+      "519de3521a110bb0"
     ]
   },
   {
