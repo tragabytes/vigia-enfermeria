@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "f3670e600c7ef334",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
+    "titulo": "Bolsa de trabajo Enfermería del Trabajo Bloque I",
+    "fecha": "2026-08-06",
+    "categoria": "bolsa",
+    "first_seen_at": "2026-08-07T09:00:06.869321",
+    "summary": "Bolsa única permanente Bloque I — Enfermería del Trabajo (Grupo II, Niv.8, Área D), CM. Fase: acreditación de requisitos y elección de zonas geográficas. Plazo: 6–19 ago 2026. Sin tasas.",
+    "is_relevant": true,
+    "relevance_reason": "Bolsa única permanentemente abierta (Bloque I) específicamente para la categoría profesional de Diplomado en Enfermería Especialista, Especialidad Enfermería del Trabajo (Grupo II, Nivel 8, Área D) de la Comunidad de Madrid.",
+    "process_type": "bolsa",
+    "organismo": "Comunidad de Madrid — Dirección General de Función Pública",
+    "centro": "Consejería de Economía, Hacienda y Empleo",
+    "plazas": null,
+    "deadline_inscripcion": "2026-08-19",
+    "fecha_publicacion_oficial": "2026-08-05",
+    "tasas_eur": 0.0,
+    "url_bases": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
+    "url_inscripcion": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
+    "requisitos_clave": [
+      "Haber participado en el proceso selectivo de la categoría Diplomado Enfermería Especialista — Especialidad Enfermería del Trabajo",
+      "Haber obtenido la puntuación mínima establecida por el tribunal en la fase de oposición",
+      "No haber superado el proceso selectivo (acceso por bolsa, no por plaza fija)"
+    ],
+    "fase": "admitidos_provisional",
+    "next_action": "Acreditar requisitos y elegir zonas geográficas en sede.comunidad.madrid antes del 19/08/2026 (plazo 6–19 ago).",
+    "confidence": 0.93,
+    "enriched_at": "2026-08-07T09:00:23.885932+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "519de3521a110bb0",
     "source": "universidades_madrid",
     "url": "https://www.uam.es/uam/ptgas/listado-concursos-oposiciones-bolsas-personal-funcionario#e0a8563ffc16",
