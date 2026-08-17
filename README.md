@@ -183,17 +183,9 @@ vigia/
     metro_madrid.py
     administracion_gob.py
 tests/
-  test_extractor.py
-  test_main_errors.py
-  test_probe.py
-  test_storage.py
-  test_dashboard.py
-  test_enricher.py
-  test_codem_feeds.py
-  test_datos_madrid.py
-  test_ciemat_source.py
-  test_boe_pdf_anexos.py
-  test_organism_coverage.py
+  conftest.py               # fija el perfil (DEFAULT) antes de importar el core
+  test_perfil_enfermeria.py # smoke del perfil: matching y categorías canónicas
+                            # (los tests del pipeline viven en vigia-core)
 utils/
   test_telegram.py
 .github/workflows/
