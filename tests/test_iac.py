@@ -121,4 +121,4 @@ class TestIACSource:
 
     def test_probe_url_es_listado(self):
         source = IACSource()
-        assert source.probe_url == "https://www.iac.es/es/empleo"
+        assert source.probe_url == "https://www.iac.es/es/ofertas-de-trabajo"
