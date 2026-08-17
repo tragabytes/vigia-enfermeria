@@ -10,23 +10,26 @@ administración pública (Madrid). Es el bot original.
 
 ---
 
-## Doble rol de este repo (hasta la Fase 6)
+## Repo fino sobre vigia-core
 
-Este repo es a la vez:
+Este repo es **el bot de Enfermería del Trabajo en producción** (rama `main`, cron en
+Actions, dashboard <https://tragabytes.github.io/vigia-enfermeria>), montado como
+**repo fino** sobre el core:
 
-1. **El bot de Enfermería del Trabajo en producción** (rama `main`, cron en Actions,
-   dashboard <https://tragabytes.github.io/vigia-enfermeria>). El perfil vive en
-   `vigia/_default_profile.py` (es el perfil por defecto del core).
-2. **La copia de trabajo del core** (`vigia/`), duplicada con `vigia-core` hasta que la
-   **Fase 6** (opcional) migre enfermería a consumir el core por pip.
-
-**El trabajo del proyecto multi-bot va en la rama `feat/plataforma-multibot`** (no en
-`main`). Al tocar el core desde aquí: cambios **aditivos**, suite **472 passed, 2
-skipped** sin tocar los tests existentes, y sin romper los contratos fijados por los
-tests (`extract(raw)` mantiene firma; `vigia.main.SOURCE_REGISTRY` y `SOURCES_ENABLED`
-son atributos de módulo; `normalize` importable de `vigia.config`). Después, re-publicar
-el tag de `vigia-core` y bumpear el `requirements.txt` de cada bot. Plan vivo:
-[`PLAN_MAESTRO.md`](PLAN_MAESTRO.md).
+- El pipeline entero (extractor, enricher, notifier, storage, dashboard y todas las
+  fuentes) vive en **vigia-core** y se instala por pip con tag pineado
+  (`requirements.txt`: `vigia-core @ git+…/vigia-core@vX.Y.Z`). Aquí **no hay copia
+  local del core** — la antigua "Fase 6" (migración a pip) ya se completó.
+- `vigia_enfermeria/__main__.py` es el entrypoint: fija el perfil **DEFAULT** del core
+  (Enfermería del Trabajo, `vigia/_default_profile.py` en vigia-core) con
+  `set_active_profile()` **antes** de importar `vigia.main`.
+- `tests/` contiene solo el smoke del perfil (`conftest.py` que fija el perfil +
+  `test_perfil_enfermeria.py`); la suite del pipeline vive en vigia-core (PR #31).
+- Para tocar el core (patrones, prompts o fuentes del perfil incluidos): commit y
+  **nuevo tag** en el repo vigia-core, y después bumpear el `requirements.txt` de este
+  repo (y del resto de bots). Contratos y proceso: maestro §3.6-3.7.
+- `PLAN.md`, `PLAN_MAESTRO.md`, `BACKLOG.md` e `incidents/` son **registro histórico**
+  de la migración, no planes vivos.
 
 ---
 
@@ -71,7 +74,7 @@ Ordenadas por frecuencia de tropiezo.
 - Timeouts ajustados, fast-keywords, cascadas de fecha con fallback a `today()`, FALSE_POSITIVE_PATTERNS — todos viven duplicados en `boe.py / bocm.py / comunidad_madrid.py / ciemat.py / universidades_madrid.py / sap_successfactors.py`.
 - Cuando subiste el timeout en `comunidad_madrid` a 30s, `ciemat` siguió en 20s con el mismo síntoma. Cuando creaste `recalcular_fechas_comunidad_madrid`, `universidades_madrid` quedó con el mismo bug sin equivalente.
 
-*test:* al cerrar un fix de una fuente, lanza `grep -nE "timeout=|fallback a today\(\)" vigia/sources/*.py` para localizar gemelos.
+*test:* al cerrar un fix de una fuente, lanza `grep -nE "timeout=|fallback a today\(\)" vigia/sources/*.py` **en el checkout de vigia-core** (aquí no hay fuentes) para localizar gemelos.
 
 ### 9. Probe ≠ runtime
 
@@ -86,15 +89,15 @@ Ordenadas por frecuencia de tropiezo.
 
 ## Específico de enfermería
 
-- **Fuentes sanitarias propias** (en `vigia/sources/`, registradas como `extra_sources`
-  del perfil enfermería, no en `CORE_SOURCES`): `codem` (RSS del Colegio de Enfermería),
+- **Fuentes sanitarias propias** (en `vigia/sources/` **de vigia-core**, registradas
+  como `extra_sources` del perfil enfermería, no en `CORE_SOURCES`): `codem` (RSS del Colegio de Enfermería),
   `cm_ficha_enfermeria` (hash-watcher de la ficha de la Comunidad de Madrid — genera
   alerta real al usuario), `isciii` (hash-watcher, hoy snapshot silencioso) y
   `canal_isabel_ii_calendario`. El resto de fuentes son genéricas (`CORE_SOURCES`).
-- **Perfil:** `vigia/_default_profile.py` (patrones, watchlist, prompts, hosts, branding
-  de Enfermería del Trabajo). El fast-keyword es `"enfermer"` (no `"enferm"`: evita
-  "enfermedades").
-- **Entorno (Windows):** `python -m vigia.main --probe`/`--dry-run` revientan con
+- **Perfil:** `vigia/_default_profile.py` **en vigia-core** (patrones, watchlist,
+  prompts, hosts, branding de Enfermería del Trabajo). El fast-keyword es `"enfermer"`
+  (no `"enferm"`: evita "enfermedades").
+- **Entorno (Windows):** `python -m vigia_enfermeria --probe`/`--dry-run` revientan con
   `UnicodeEncodeError` (cp1252) al imprimir `→`; usa `PYTHONIOENCODING=utf-8`. No afecta
   al runner Linux de Actions.
 - **pytest** en este shell requiere `--capture=no` (la captura por descriptores de

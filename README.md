@@ -56,7 +56,7 @@ Si el mensaje llega a tu Telegram, las credenciales son correctas.
 
 ### 5. Subir el código al repositorio
 
-Desde la raíz del proyecto (carpeta `alerta-empleo`):
+Desde la raíz del proyecto:
 
 ```bash
 git init
@@ -113,13 +113,13 @@ Coste estimado al volumen real (≤3 items relevantes/día): ~$3-5/año. El pipe
 pip install -r requirements.txt
 
 # Ejecutar sin notificar (solo imprimir hallazgos)
-python -m vigia.main --dry-run
+python -m vigia_enfermeria --dry-run
 
 # Backfill: procesar desde una fecha concreta
-python -m vigia.main --since 2025-01-01 --dry-run
+python -m vigia_enfermeria --since 2025-01-01 --dry-run
 
 # Ejecutar completo (con Telegram y guardado en BD)
-TELEGRAM_BOT_TOKEN="..." TELEGRAM_CHAT_ID="..." python -m vigia.main
+TELEGRAM_BOT_TOKEN="..." TELEGRAM_CHAT_ID="..." python -m vigia_enfermeria
 ```
 
 ## Ejecutar los tests
@@ -159,40 +159,33 @@ python -m pytest tests/ -v
 
 ## Estructura del proyecto
 
+El pipeline completo (extractor, enricher, notifier, storage, dashboard y todas las
+fuentes) vive en [vigia-core](https://github.com/tragabytes/vigia-core) y se instala
+por pip con tag pineado. Este repo es el **repo fino** del bot y solo aporta:
+
 ```
-vigia/
-  config.py          # keywords, sources, normalización
-  main.py            # pipeline principal
-  extractor.py       # motor de matching (regex strong/weak, FP)
-  enricher.py        # capa IA v2 (Sonnet 4.6 + tool use → JSON estructurado)
-  notifier.py        # envío Telegram con countdown + chips
-  storage.py         # SQLite con migración aditiva idempotente (v2)
-  dashboard.py       # exportador JSON (items + sources + targets + meta + changelog)
-  sources/
-    boe.py           # API BOE
-    bocm.py          # XML BOCM
-    boam.py          # PDF BOAM
-    comunidad_madrid.py
-    canal_isabel_ii.py
-    codem.py
-    ayuntamiento_madrid.py
-    datos_madrid.py  # API CKAN del Ayto. Madrid
-    ciemat.py        # listado web + extracción de PDFs anexos
-    isciii.py        # hash-watcher de proceso-selectivo (bolsa de empleo)
-    cm_ficha_enfermeria.py  # hash-watcher de la ficha del proceso (CM)
-    metro_madrid.py
-    administracion_gob.py
+vigia_enfermeria/
+  __main__.py      # entrypoint: fija el perfil DEFAULT del core y lanza el pipeline
 tests/
   conftest.py               # fija el perfil (DEFAULT) antes de importar el core
   test_perfil_enfermeria.py # smoke del perfil: matching y categorías canónicas
                             # (los tests del pipeline viven en vigia-core)
 utils/
   test_telegram.py
+web/                        # frontend del dashboard (se publica en gh-pages)
+  index.html
+  app.js
+  styles.css
 .github/workflows/
-  daily.yml
+  daily.yml        # cron diario: pipeline completo + push a state/gh-pages
+  ci.yml           # en cada PR: instala vigia-core@tag, tests y dry-run
+  maintenance.yml  # manual: reprocesa/enriquece la BD (--maintenance)
+requirements.txt   # vigia-core @ git+https://github.com/tragabytes/vigia-core@vX.Y.Z
 ```
 
 ## Pipeline
+
+Todos estos módulos viven en vigia-core; se describen aquí como referencia rápida.
 
 ```
 sources/*.py  →  extractor.py  →  storage (filter_new)  →  enricher.py (v2)  →  storage (update_enrichment)  →  dashboard.export_all  →  notifier.py (filtra is_relevant=false)
