@@ -1,5 +1,36 @@
 [
   {
+    "id_hash": "66b094a4016ae69c",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
+    "titulo": "Bolsa de trabajo Enfermería del Trabajo Bloque I [snapshot c8694ae1de]",
+    "fecha": "2026-08-19",
+    "categoria": "bolsa",
+    "first_seen_at": "2026-08-19T08:42:51.827762",
+    "summary": "Bolsa trabajo Enfermería del Trabajo (Bloque I) CM. Plazo acreditación requisitos y elección zonas geográficas: 6-19 ago 2026. Sin tasas. Resolución DG Función Pública 28/07/2026 (BOCM nº185, 5/08/2026).",
+    "is_relevant": true,
+    "relevance_reason": "Convocatoria explícita de bolsa única permanentemente abierta para la categoría 'Diplomado en Enfermería Especialista, Especialidad Enfermería del Trabajo' (Grupo II, Nivel 8 Área D) de la Comunidad de Madrid.",
+    "process_type": "bolsa",
+    "organismo": "Comunidad de Madrid – Dirección General de Función Pública",
+    "centro": null,
+    "plazas": null,
+    "deadline_inscripcion": "2026-08-19",
+    "fecha_publicacion_oficial": "2026-08-05",
+    "tasas_eur": 0.0,
+    "url_bases": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
+    "url_inscripcion": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
+    "requisitos_clave": [
+      "Haber participado en el proceso selectivo de la categoría Diplomado en Enfermería Especialista – Especialidad Enfermería del Trabajo",
+      "Haber obtenido la puntuación mínima establecida por el tribunal en la fase de oposición",
+      "No haber superado el proceso selectivo (acceso como no aprobado)"
+    ],
+    "fase": "otro",
+    "next_action": "Acreditar requisitos y elegir zonas geográficas en sede.comunidad.madrid antes del 19/08/2026 mediante 'Acciones sobre la solicitud'.",
+    "confidence": 0.92,
+    "enriched_at": "2026-08-19T08:43:02.620791+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "f839105fa252fc47",
     "source": "comunidad_madrid",
     "url": "https://sede.comunidad.madrid/oferta-empleo/diplomado-enfermeria-trabajo",
