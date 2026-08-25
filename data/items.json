@@ -1,5 +1,37 @@
 [
   {
+    "id_hash": "f0b7c34e5a9f5b87",
+    "source": "comunidad_madrid",
+    "url": "https://sede.comunidad.madrid/oferta-empleo/diplomado-enfermeria-trabajo",
+    "titulo": "Proceso de acceso libre para Diplomado en Enfermería Especialista en Enfermería del Trabajo (2025) [snapshot 69ea52e5e6]",
+    "fecha": "2026-08-25",
+    "categoria": "oposicion",
+    "first_seen_at": "2026-08-25T08:46:00.539873",
+    "summary": "9 plazas (8 libre + 1 discapacidad) Diplomado Enfermería Especialista Enfermería del Trabajo, CM. Oposición. Orden 1074/2025, BOCM 8-may-2025. Proceso concluido: lista superación jul-2026, elección plazas finalizada ago-2026.",
+    "is_relevant": true,
+    "relevance_reason": "Convocatoria explícita de 9 plazas de acceso libre para la categoría 'Diplomado en Enfermería Especialista, Especialidad Enfermería del Trabajo' de la Comunidad de Madrid.",
+    "process_type": "oposicion",
+    "organismo": "Comunidad de Madrid – Consejería de Economía, Hacienda y Empleo / Dirección General de Función Pública",
+    "centro": null,
+    "plazas": 9,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2025-05-08",
+    "tasas_eur": 41.18,
+    "url_bases": "https://www.bocm.es/boletin/CM_Orden_BOCM/2025/05/08/BOCM-20250508-109.PDF",
+    "url_inscripcion": "https://sede.comunidad.madrid/oferta-empleo/diplomado-enfermeria-trabajo",
+    "requisitos_clave": [
+      "Título de Graduado/Diplomado en Enfermería o equivalente habilitante para ejercer la profesión",
+      "Título de especialidad de Enfermería del Trabajo",
+      "Nacionalidad española o de Estado miembro de la UE (o asimilados)",
+      "Abono de tasa de 41,18 € (salvo exención)"
+    ],
+    "fase": "propuesta_nombramiento",
+    "next_action": "Proceso concluido: elección de plaza finalizada (plazo ampliado hasta 24/08/2026). Consultar resolución definitiva en sede.comunidad.madrid.",
+    "confidence": 0.92,
+    "enriched_at": "2026-08-25T08:46:20.880835+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "66b094a4016ae69c",
     "source": "comunidad_madrid",
     "url": "https://sede.comunidad.madrid/oferta-empleo/bolsa-enfermeria-trabajo-bi",
