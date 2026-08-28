@@ -4,7 +4,7 @@
     "name": "SERMAS",
     "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
     "hits": 14,
-    "active": true,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
