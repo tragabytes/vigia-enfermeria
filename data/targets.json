@@ -354,22 +354,23 @@
     "id": "T-28",
     "name": "UAH",
     "desc": "Universidad de Alcalá — PTGAS / Servicio de Prevención",
-    "hits": 2,
-    "active": false,
+    "hits": 3,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
-    "latest_phase": "convocatoria",
+    "latest_phase": "propuesta_nombramiento",
     "item_ids": [
       "ffbe29dae00deb98",
-      "06be5b56b6377631"
+      "06be5b56b6377631",
+      "16bab3e0415597cd"
     ]
   },
   {
     "id": "T-29",
     "name": "UAM",
     "desc": "Universidad Autónoma de Madrid — PTGAS / Servicio de Prevención y Salud",
-    "hits": 19,
+    "hits": 20,
     "active": true,
     "nearest_deadline": null,
     "days_until": null,
@@ -394,7 +395,8 @@
       "5c1a89959c4d4772",
       "fdf9008bba170981",
       "519de3521a110bb0",
-      "162e49310cf1e747"
+      "162e49310cf1e747",
+      "034c39d7736668b3"
     ]
   },
   {
