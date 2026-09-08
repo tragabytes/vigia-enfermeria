@@ -1,9 +1,9 @@
 {
-  "total_items": 132,
-  "total_today": 2,
-  "total_relevant": 114,
+  "total_items": 133,
+  "total_today": 1,
+  "total_relevant": 115,
   "total_irrelevant": 18,
-  "total_enriched": 131,
+  "total_enriched": 132,
   "total_open_deadlines": 0,
   "by_category": {
     "bolsa": 25,
@@ -11,13 +11,13 @@
     "oep": 2,
     "oposicion": 57,
     "otro": 17,
-    "traslado": 29
+    "traslado": 30
   },
-  "days_watching": 134,
+  "days_watching": 135,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-09-07T14:00:21.209318+00:00",
-  "next_run_at": "2026-09-08T08:00:00+00:00",
-  "sources_online": 17,
+  "last_run_at": "2026-09-08T12:47:45.092755+00:00",
+  "next_run_at": "2026-09-09T08:00:00+00:00",
+  "sources_online": 18,
   "sources_total": 20,
   "targets_active": 6,
   "targets_urgent": 0,
