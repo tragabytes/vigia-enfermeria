@@ -177,6 +177,6 @@
     "code": 200,
     "detail": "content-check falló: HTTPSConnectionPool(host='www.uc3m.es', port=443): Max retries exceeded with url: /empleo/pas/novedades_empleo_publico (Caused by NewConnectionError(\"HTTPSConnection(host='www.uc3m.es', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable\"))",
     "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
-    "total_hits": 37
+    "total_hits": 3
   }
 ]
