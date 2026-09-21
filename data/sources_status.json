@@ -5,7 +5,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -14,7 +14,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -23,7 +23,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -32,7 +32,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -41,17 +41,17 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 14
   },
   {
     "name": "boe",
     "url": "https://boe.es/datosabiertos/",
-    "status": "error",
-    "code": null,
-    "detail": "HTTPSConnectionPool(host='boe.es', port=443): Max retries exceeded with url: /datosabiertos/ (Caused by ConnectTimeoutError(<HTTPSConnection(host='boe.es', port=443) at 0x7f7f4cb53c10>, 'Connection to boe.es timed out. (connect timeout=10)'))",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
-    "total_hits": 10
+    "status": "ok",
+    "code": 200,
+    "detail": "",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
+    "total_hits": 12
   },
   {
     "name": "canal_isabel_ii",
@@ -59,7 +59,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 1
   },
   {
@@ -68,7 +68,7 @@
     "status": "unknown",
     "code": null,
     "detail": "sin probe en este run",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 2
   },
   {
@@ -77,7 +77,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 26
   },
   {
@@ -86,7 +86,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 4
   },
   {
@@ -95,8 +95,8 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
-    "total_hits": 42
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
+    "total_hits": 43
   },
   {
     "name": "datos_madrid",
@@ -104,7 +104,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 2
   },
   {
@@ -113,7 +113,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -122,7 +122,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -131,16 +131,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
     "name": "las_rozas",
     "url": "https://www.lasrozas.es/el-ayuntamiento/Convocatorias-en-plazo",
-    "status": "error",
+    "status": "ok",
     "code": 200,
-    "detail": "HTTP OK pero el selector no devolvió elementos (posible parser roto)",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "detail": "",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -149,7 +149,7 @@
     "status": "skipped",
     "code": null,
     "detail": "fuente sin probe_url (stub o cobertura delegada)",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 0
   },
   {
@@ -158,7 +158,7 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 2
   },
   {
@@ -167,16 +167,16 @@
     "status": "ok",
     "code": 200,
     "detail": "",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 2
   },
   {
     "name": "universidades_madrid",
     "url": "https://www.ucm.es/convocatorias-vigentes-pas",
-    "status": "error",
+    "status": "ok",
     "code": 200,
-    "detail": "content-check falló: HTTPSConnectionPool(host='www.uc3m.es', port=443): Max retries exceeded with url: /empleo/pas/novedades_empleo_publico (Caused by NewConnectionError(\"HTTPSConnection(host='www.uc3m.es', port=443): Failed to establish a new connection: [Errno 101] Network is unreachable\"))",
-    "last_probe_at": "2026-09-18T12:43:27.479106+00:00",
+    "detail": "",
+    "last_probe_at": "2026-09-21T15:00:32.468927+00:00",
     "total_hits": 3
   }
 ]
