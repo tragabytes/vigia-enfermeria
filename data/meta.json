@@ -13,15 +13,15 @@
     "otro": 38,
     "traslado": 6
   },
-  "days_watching": 157,
+  "days_watching": 158,
   "first_seen_at": "2026-04-26T08:14:47.529556",
-  "last_run_at": "2026-09-30T14:45:34.545107+00:00",
-  "next_run_at": "2026-10-01T08:00:00+00:00",
+  "last_run_at": "2026-10-01T15:13:59.543255+00:00",
+  "next_run_at": "2026-10-02T08:00:00+00:00",
   "sources_online": 18,
   "sources_total": 20,
   "targets_active": 3,
   "targets_urgent": 0,
   "targets_total": 43,
   "version": "0.4.0",
-  "commit": "0e3d363"
+  "commit": "bf2f86d"
 }
