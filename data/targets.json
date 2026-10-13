@@ -463,7 +463,7 @@
     "name": "RTVE",
     "desc": "Radio Televisión Española — parser propio de la página corporativa de ofertas (banco de datos Enfermería de Empresa) + cobertura BOE/BOCM; la SPA de inscripción convocatorias.rtve.es no es parseable",
     "hits": 2,
-    "active": true,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
