@@ -2,7 +2,7 @@
 
 Para arrancar una sesión: lee primero el `RELEVO.md` de vigia-core (estado común) y luego esto.
 
-**Estado (14/10/2026).** En producción con vigia-core **v0.8.4**. Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
+**Estado (14/10/2026).** En producción con vigia-core **v0.8.5**. Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
 
 ## Pendientes vivos
 
