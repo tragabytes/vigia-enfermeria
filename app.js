@@ -520,11 +520,11 @@ function renderFeed() {
 }
 function cardHTML(it, i) {
   const chips = chipsHTML(it);
-  // Modelo del enricher (mostrado en el header del summary). Items v2
+  // Modelo del enricher (mostrado en el header del summary). Items v2+
   // pasaron por Sonnet; legacy v1 por Haiku. Items sin enriquecer todavía
   // (enriched_version=null) llevan el placeholder neutro.
   let enrichedTag = '';
-  if (it.enriched_version === 2) enrichedTag = 'claude-sonnet-4-6';
+  if (it.enriched_version >= 2) enrichedTag = 'claude-sonnet-4-6';
   else if (it.enriched_version === 1) enrichedTag = 'claude-haiku-4-5';
   else enrichedTag = 'pending enrichment';
 

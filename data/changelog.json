@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-10-14",
+    "commit": "096e12e",
+    "kind": "fix",
+    "scope": "web",
+    "title": "etiqueta del modelo para enriched_version >= 2",
+    "body": "El dashboard solo reconocía las versiones 1 y 2 del enricher; con la 6"
+  },
+  {
     "date": "2026-06-26",
     "commit": "9068ee2",
     "kind": "feat",
@@ -22,13 +30,5 @@
     "scope": "",
     "title": "bump vigia-core a v0.4.3 (mejor extracción de deadline) + registrar Incremento 4",
     "body": "v0.4.3 sube la tasa de extracción de deadline_inscripcion (snippets de plazo +"
-  },
-  {
-    "date": "2026-06-13",
-    "commit": "33f9077",
-    "kind": "feat",
-    "scope": "",
-    "title": "bump vigia-core a v0.4.2 (recordatorios de cierre de plazo + campos accionables)",
-    "body": "v0.4.2 añade avisos de cierre de plazo (7/3/1 días, sección \"Cierran pronto\")"
   }
 ]
