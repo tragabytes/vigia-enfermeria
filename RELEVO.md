@@ -2,7 +2,7 @@
 
 Para arrancar una sesión: lee primero el `RELEVO.md` de vigia-core (estado común) y luego esto.
 
-**Estado (14/10/2026).** En producción con vigia-core **v0.10.0** (mira 3 días hacia atrás). Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
+**Estado (14/10/2026).** En producción con vigia-core **v0.11.1** (mira 3 días hacia atrás). Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
 
 ## Resuelto el 16/10/2026 (núcleo v0.10.0, DECISIONES D24-D26)
 - **URJC y UPM**: no necesitan fuente propia. Sus oposiciones salen en el BOE, y el BOE y el BOCM ya abren las convocatorias de personal no docente de universidades. Las bolsas temporales de la UPM solo están en su web; hoy no compensa (no hay ninguna de enfermería).
