@@ -2,23 +2,24 @@
 
 Para arrancar una sesión: lee primero el `RELEVO.md` de vigia-core (estado común) y luego esto.
 
-**Estado (14/10/2026).** En producción con vigia-core **v0.9.0** (mira 3 días hacia atrás). Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
+**Estado (14/10/2026).** En producción con vigia-core **v0.10.0** (mira 3 días hacia atrás). Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
+
+## Resuelto el 16/10/2026 (núcleo v0.10.0, DECISIONES D24-D26)
+- **URJC y UPM**: no necesitan fuente propia. Sus oposiciones salen en el BOE, y el BOE y el BOCM ya abren las convocatorias de personal no docente de universidades. Las bolsas temporales de la UPM solo están en su web; hoy no compensa (no hay ninguna de enfermería).
+- **ePreselec**: con una página basta (pocas ofertas al día). Se añaden SPMAS y Applus, **solo ofertas de Madrid**. Preving ya no usa ePreselec.
+- **«Vigilancia de la salud» + enfermería** cuenta como señal válida.
 
 ## Pendientes vivos
 
 Sacados de `historico/BACKLOG.md`, `historico/PLAN_MAESTRO.md`, `historico/PLAN.md` e `historico/incidents/`, y comprobados contra el código el 14/10/2026. Lo que el backlog daba por pendiente pero ya está hecho u obsoleto no aparece.
 
 ### Fuentes que faltan
-- **Universidad Rey Juan Carlos (URJC)**: no se vigila. Antes, comprobar si sus plazas ya llegan por el BOE. Notas técnicas en el backlog. *Medio.*
-- **Universidad Politécnica de Madrid (UPM)**: falta investigar dónde publica. *Medio.*
 - **UAH, bolsa de empleo**: algunas ofertas quedan escondidas en un desplegable. *Pequeño.*
-- **ePreselec**: solo lee la primera página y solo una empresa (Fraternidad-Muprespa); falta encontrar el subdominio de Preving. *Pequeño/medio.*
 - **INIA (SharePoint), IEO (no responde), FNMT, EMT, Paradores, Majadahonda y otros ayuntamientos**: hoy solo hay cobertura indirecta por BOE/BOCM. *Medio cada uno.*
 - **Mutuas y servicios de prevención en InfoJobs, TalentClue y portales que dan 403**: bloqueado; haría falta un navegador automatizado. *Grande.*
 - **Metro de Madrid por InfoEmpleo o LinkedIn**: solo si se demuestra que se pierde algo. *Medio.*
 
 ### Mejoras
-- **Añadir «vigilancia de la salud» como contexto débil** del extractor, cuando aparezca un caso real que se escape. *Pequeño.*
 - **Medir y subir la tasa de plazos de inscripción extraídos** (~29 % en junio; hay una mejora en v0.4.3 sin medir). *Medio.*
 - **Dashboard en el móvil**: rediseñar «Base de datos histórica» (tarjetas, filtros plegables). El backlog pide hacer antes una maqueta con Laureano. *Medio.*
 - **Decidir si se desactivan `isciii` y `las_rozas`** para quitar ruido de los logs. *Pequeño, decisión de Laureano.*
