@@ -9,6 +9,20 @@ Para arrancar una sesión: lee primero el `RELEVO.md` de vigia-core (estado com�
 - **ePreselec**: con una página basta (pocas ofertas al día). Se añaden SPMAS y Applus, **solo ofertas de Madrid**. Preving ya no usa ePreselec.
 - **«Vigilancia de la salud» + enfermería** cuenta como señal válida.
 
+## Siguiente en cola (apuntado el 16/10/2026)
+
+Por orden. Lo de la lista larga de abajo sigue vivo, pero esto va primero.
+
+**Sin decisión previa (se puede hacer directamente):**
+1. **Bolsa de la UAH**: ofertas escondidas en un desplegable. *Pequeño.*
+2. **INIA, FNMT, EMT, Paradores y ayuntamientos medianos**: investigar cuáles tienen portal propio legible; hoy solo hay cobertura indirecta por BOE/BOCM. *Medio.*
+3. **Medir la tasa de plazos de inscripción** que saca el enricher (29 % en junio). Si sigue baja, los recordatorios de «cierra en 3 días» fallan. *Medio.*
+
+**Necesitan una decisión de Laureano antes:**
+4. **Dashboard en el móvil**: primero maquetas para elegir.
+5. **`/seguir` un proceso concreto**: el diseño está en `historico/BACKLOG.md`.
+6. **Desactivar `isciii` y `las_rozas`**, que solo meten ruido en los logs.
+
 ## Pendientes vivos
 
 Sacados de `historico/BACKLOG.md`, `historico/PLAN_MAESTRO.md`, `historico/PLAN.md` e `historico/incidents/`, y comprobados contra el código el 14/10/2026. Lo que el backlog daba por pendiente pero ya está hecho u obsoleto no aparece.
@@ -31,6 +45,3 @@ Sacados de `historico/BACKLOG.md`, `historico/PLAN_MAESTRO.md`, `historico/PLAN.
 - **Enricher nivel 3**: enlazar correcciones y anexos con su convocatoria. *Grande.*
 - **Auditoría mensual con IA de organismos que faltan** (el agente semanal solo vigila las fuentes que ya existen). *Medio.*
 - **CSV histórico de todos los hallazgos.** *Pequeño.*
-
-### Mantenimiento
-- **Acciones de GitHub con Node 20** (`checkout@v4`, `setup-python@v5`): GitHub ya las ejecuta con Node 24 y funcionan, pero avisa. Ver núcleo, `DECISIONES.md` D17.
