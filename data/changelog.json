@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-10-16",
+    "commit": "58ff721",
+    "kind": "ci",
+    "scope": "",
+    "title": "checkout@v5 y setup-python@v6 (Node 24)",
+    "body": "Solo cambian el runtime a Node 24; la persistencia de credenciales que usa"
+  },
+  {
     "date": "2026-10-14",
     "commit": "096e12e",
     "kind": "fix",
@@ -22,13 +30,5 @@
     "scope": "",
     "title": "silenciar errores de fuentes a los usuarios (bump core v0.5.1)",
     "body": "Bumpea vigia-core v0.5.0 -> v0.5.1, que deja de adjuntar los errores de"
-  },
-  {
-    "date": "2026-06-13",
-    "commit": "01b3806",
-    "kind": "feat",
-    "scope": "",
-    "title": "bump vigia-core a v0.4.3 (mejor extracción de deadline) + registrar Incremento 4",
-    "body": "v0.4.3 sube la tasa de extracción de deadline_inscripcion (snippets de plazo +"
   }
 ]
