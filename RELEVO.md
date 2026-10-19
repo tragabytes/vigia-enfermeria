@@ -4,6 +4,9 @@ Para arrancar una sesión: lee primero el `RELEVO.md` de vigia-core (estado com�
 
 **Estado (14/10/2026).** En producción con vigia-core **v0.15.0** (mira 3 días hacia atrás). Dailies en verde del 1 al 14/10, salvo el 7/10: GitHub devolvió un error 500 al subir el dashboard (fallo suyo, pasajero).
 
+## Resuelto el 19/10/2026
+- **Bolsa de la UAH**: no se pierde nada. Los desplegables solo pliegan en pantalla; las 69 ofertas vienen enteras en el HTML y la fuente las lee todas (hoy saca la bolsa de Enfermería del Trabajo, de 2020). Un test del núcleo fija esa estructura.
+
 ## Resuelto el 16/10/2026 (núcleo v0.10.0, DECISIONES D24-D26)
 - **URJC y UPM**: no necesitan fuente propia. Sus oposiciones salen en el BOE, y el BOE y el BOCM ya abren las convocatorias de personal no docente de universidades. Las bolsas temporales de la UPM solo están en su web; hoy no compensa (no hay ninguna de enfermería).
 - **ePreselec**: con una página basta (pocas ofertas al día). Se añaden SPMAS y Applus, **solo ofertas de Madrid**. Preving ya no usa ePreselec.
@@ -14,21 +17,19 @@ Para arrancar una sesión: lee primero el `RELEVO.md` de vigia-core (estado com�
 Por orden. Lo de la lista larga de abajo sigue vivo, pero esto va primero.
 
 **Sin decisión previa (se puede hacer directamente):**
-1. **Bolsa de la UAH**: ofertas escondidas en un desplegable. *Pequeño.*
-2. **INIA, FNMT, EMT, Paradores y ayuntamientos medianos**: investigar cuáles tienen portal propio legible; hoy solo hay cobertura indirecta por BOE/BOCM. *Medio.*
-3. **Medir la tasa de plazos de inscripción** que saca el enricher (29 % en junio). Si sigue baja, los recordatorios de «cierra en 3 días» fallan. *Medio.*
+1. **INIA, FNMT, EMT, Paradores y ayuntamientos medianos**: investigar cuáles tienen portal propio legible; hoy solo hay cobertura indirecta por BOE/BOCM. *Medio.*
+2. **Medir la tasa de plazos de inscripción** que saca el enricher (29 % en junio). Si sigue baja, los recordatorios de «cierra en 3 días» fallan. *Medio.*
 
 **Necesitan una decisión de Laureano antes:**
-4. **Dashboard en el móvil**: primero maquetas para elegir.
-5. **`/seguir` un proceso concreto**: el diseño está en `historico/BACKLOG.md`.
-6. **Desactivar `isciii` y `las_rozas`**, que solo meten ruido en los logs.
+3. **Dashboard en el móvil**: primero maquetas para elegir.
+4. **`/seguir` un proceso concreto**: el diseño está en `historico/BACKLOG.md`.
+5. **Desactivar `isciii` y `las_rozas`**, que solo meten ruido en los logs.
 
 ## Pendientes vivos
 
 Sacados de `historico/BACKLOG.md`, `historico/PLAN_MAESTRO.md`, `historico/PLAN.md` e `historico/incidents/`, y comprobados contra el código el 14/10/2026. Lo que el backlog daba por pendiente pero ya está hecho u obsoleto no aparece.
 
 ### Fuentes que faltan
-- **UAH, bolsa de empleo**: algunas ofertas quedan escondidas en un desplegable. *Pequeño.*
 - **INIA (SharePoint), IEO (no responde), FNMT, EMT, Paradores, Majadahonda y otros ayuntamientos**: hoy solo hay cobertura indirecta por BOE/BOCM. *Medio cada uno.*
 - **Mutuas y servicios de prevención en InfoJobs, TalentClue y portales que dan 403**: bloqueado; haría falta un navegador automatizado. *Grande.*
 - **Metro de Madrid por InfoEmpleo o LinkedIn**: solo si se demuestra que se pierde algo. *Medio.*
