@@ -3,8 +3,8 @@
     "id": "T-01",
     "name": "SERMAS",
     "desc": "Servicio Madrileño de Salud (incluye 11 hospitales públicos)",
-    "hits": 20,
-    "active": false,
+    "hits": 23,
+    "active": true,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
@@ -29,7 +29,10 @@
       "344c287b2b6c8bf2",
       "95397d9420fd1298",
       "83b7eb970d9a7640",
-      "163e5005a70ec4b6"
+      "163e5005a70ec4b6",
+      "7fd7a642377f68ab",
+      "6717140d60ca277b",
+      "f2054395ec92c18c"
     ]
   },
   {
@@ -148,7 +151,7 @@
     "name": "Ayto. Madrid",
     "desc": "Ayuntamiento de Madrid — IMD, Bomberos, Policía Municipal",
     "hits": 2,
-    "active": true,
+    "active": false,
     "nearest_deadline": null,
     "days_until": null,
     "urgent": false,
