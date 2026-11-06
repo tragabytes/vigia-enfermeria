@@ -1,5 +1,35 @@
 [
   {
+    "id_hash": "6e8b4e5a222ef8e7",
+    "source": "epreselec",
+    "url": "https://spmas.epreselec.com/Ofertas/Ofertas.aspx?idOferta=3376479",
+    "titulo": "Enfermero/a general o  Especialista en Enfermería del Trabajo - Madrid (Temporal) [snapshot 9132b22e0c]",
+    "fecha": "2026-11-06",
+    "categoria": "otro",
+    "first_seen_at": "2026-11-06T15:47:15.440780",
+    "summary": "Oferta temporal de Enfermero/a general o Especialista en Enfermería del Trabajo en Madrid. Publicada el 03/11/2026 en portal de SPA (SPMAS/epreselec). Detalles de funciones, requisitos y condiciones no accesibles por restricción de dominio.",
+    "is_relevant": true,
+    "relevance_reason": "La oferta es explícitamente para 'Enfermero/a general o Especialista en Enfermería del Trabajo' en Madrid, con carácter temporal, publicada en un portal de un Servicio de Prevención Ajeno (epreselec/SPMAS).",
+    "process_type": "temporal",
+    "organismo": "SPMAS (Servicio de Prevención Mancomunado/Ajeno) — Adevinta Jobs / epreselec",
+    "centro": "Madrid",
+    "plazas": 1,
+    "deadline_inscripcion": null,
+    "fecha_publicacion_oficial": "2026-11-03",
+    "tasas_eur": null,
+    "url_bases": "https://spmas.epreselec.com/Ofertas/Ofertas.aspx?idOferta=3376479",
+    "url_inscripcion": "https://spmas.epreselec.com/Ofertas/Ofertas.aspx?idOferta=3376479",
+    "requisitos_clave": [
+      "Titulación de Enfermería (Grado o Diplomatura)",
+      "Especialidad en Enfermería del Trabajo (o perfil de Enfermería general con experiencia en salud laboral)"
+    ],
+    "fase": "convocatoria",
+    "next_action": "Acceder a https://spmas.epreselec.com/Ofertas/Ofertas.aspx?idOferta=3376479 e inscribirse directamente en la oferta.",
+    "confidence": 0.62,
+    "enriched_at": "2026-11-06T15:47:33.374303+00:00",
+    "enriched_version": 6
+  },
+  {
     "id_hash": "b5433df93ea06c6f",
     "source": "epreselec",
     "url": "https://spmas.epreselec.com/Ofertas/Ofertas.aspx?idOferta=3376479",
